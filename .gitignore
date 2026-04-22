@@ -43,3 +43,4 @@ tmp/
 # Secrets
 *.pem
 google-service-account*.json
+apps/web/next-env.d.ts

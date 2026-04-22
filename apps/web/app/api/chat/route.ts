@@ -1,7 +1,7 @@
 import { z } from "zod";
-import type Anthropic from "@anthropic-ai/sdk";
-import { anthropic, CHAT_MODEL } from "@/lib/anthropic";
-import { buildSystemPrompt } from "@/lib/prompt";
+import type { Content, FunctionCall, Part } from "@google/genai";
+import { genai, CHAT_MODEL } from "@/lib/llm";
+import { buildSystemInstruction } from "@/lib/prompt";
 import { toolDefinitions, runTool } from "@/lib/tools";
 import { requireSession } from "@/lib/auth";
 
@@ -22,7 +22,7 @@ export async function POST(req: Request) {
   const session = await requireSession(req);
   const { messages } = bodySchema.parse(await req.json());
 
-  const systemBlocks = buildSystemPrompt({
+  const systemInstruction = buildSystemInstruction({
     role: session.role,
     audience: session.audience,
   });
@@ -39,13 +39,15 @@ export async function POST(req: Request) {
       try {
         await runAgentLoop({
           session,
-          systemBlocks,
+          systemInstruction,
           initialMessages: messages,
           emit,
         });
         emit("done", {});
       } catch (err) {
-        emit("error", { message: err instanceof Error ? err.message : String(err) });
+        emit("error", {
+          message: err instanceof Error ? err.message : String(err),
+        });
       } finally {
         controller.close();
       }
@@ -64,56 +66,69 @@ export async function POST(req: Request) {
 
 async function runAgentLoop(params: {
   session: Awaited<ReturnType<typeof requireSession>>;
-  systemBlocks: ReturnType<typeof buildSystemPrompt>;
+  systemInstruction: string;
   initialMessages: ClientMessage[];
   emit: (event: string, data: unknown) => void;
 }) {
-  const { session, systemBlocks, initialMessages, emit } = params;
+  const { session, systemInstruction, initialMessages, emit } = params;
   const citations: string[] = [];
-  const convo: Anthropic.Messages.MessageParam[] = initialMessages.map((m) => ({
-    role: m.role,
-    content: m.content,
+
+  const contents: Content[] = initialMessages.map((m) => ({
+    role: m.role === "assistant" ? "model" : "user",
+    parts: [{ text: m.content }],
   }));
 
   for (let turn = 0; turn < 6; turn++) {
-    const streamHandle = anthropic.messages.stream({
+    const response = await genai.models.generateContentStream({
       model: CHAT_MODEL,
-      max_tokens: 1024,
-      system: systemBlocks,
-      tools: toolDefinitions,
-      messages: convo,
+      contents,
+      config: {
+        systemInstruction,
+        tools: [{ functionDeclarations: toolDefinitions }],
+      },
     });
 
-    streamHandle.on("text", (delta) => {
-      emit("delta", { text: delta });
-    });
+    const accumulatedParts: Part[] = [];
+    const functionCalls: FunctionCall[] = [];
 
-    const final = await streamHandle.finalMessage();
+    for await (const chunk of response) {
+      const candidate = chunk.candidates?.[0];
+      const parts = candidate?.content?.parts ?? [];
+      for (const part of parts) {
+        if (part.text) {
+          emit("delta", { text: part.text });
+          accumulatedParts.push({ text: part.text });
+        }
+        if (part.functionCall) {
+          functionCalls.push(part.functionCall);
+          accumulatedParts.push({ functionCall: part.functionCall });
+        }
+      }
+    }
 
-    convo.push({ role: "assistant", content: final.content });
+    contents.push({ role: "model", parts: accumulatedParts });
 
-    if (final.stop_reason !== "tool_use") {
+    if (functionCalls.length === 0) {
       emit("citations", { citations: Array.from(new Set(citations)) });
       return;
     }
 
-    const toolUses = final.content.filter(
-      (b): b is Anthropic.Messages.ToolUseBlock => b.type === "tool_use"
-    );
-    const toolResults: Anthropic.Messages.ToolResultBlockParam[] = [];
-    for (const tu of toolUses) {
-      emit("tool_start", { name: tu.name, input: tu.input });
-      const out = await runTool(tu.name, tu.input, session);
+    const responseParts: Part[] = [];
+    for (const fc of functionCalls) {
+      const name = fc.name ?? "";
+      emit("tool_start", { name, input: fc.args });
+      const out = await runTool(name, fc.args ?? {}, session);
       if (out.citations) citations.push(...out.citations);
-      emit("tool_result", { name: tu.name, citations: out.citations ?? [] });
-      toolResults.push({
-        type: "tool_result",
-        tool_use_id: tu.id,
-        content: out.content,
+      emit("tool_result", { name, citations: out.citations ?? [] });
+      responseParts.push({
+        functionResponse: {
+          name,
+          response: { result: out.content },
+        },
       });
     }
 
-    convo.push({ role: "user", content: toolResults });
+    contents.push({ role: "user", parts: responseParts });
   }
 
   emit("error", { message: "Agent tool-use loop exceeded 6 turns" });

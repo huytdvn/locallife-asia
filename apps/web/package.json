@@ -13,8 +13,8 @@
     "build-index": "node scripts/build-index.mjs"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.40.0",
     "@auth/core": "^0.38.0",
+    "@google/genai": "^1.50.1",
     "gray-matter": "^4.0.3",
     "next": "^15.1.0",
     "next-auth": "^5.0.0-beta.25",

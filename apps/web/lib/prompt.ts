@@ -1,38 +1,33 @@
-import type Anthropic from "@anthropic-ai/sdk";
 import type { Role } from "@/lib/rbac";
 import { loadKnowledge } from "@/lib/knowledge-loader";
 
-type SystemBlock = Anthropic.Messages.TextBlockParam;
-
 /**
- * System prompt chia làm 3 block:
- *  1. Persona + rules (tĩnh, ít đổi) → cache_control "ephemeral".
- *  2. Catalog tài liệu (đổi khi knowledge/ thay đổi) → cache_control
- *     "ephemeral"; invalidate qua mtime của KNOWLEDGE_DIR (`loadKnowledge`
- *     tự trả cache theo mtime → cùng version tài liệu thì prompt giống y
- *     → hit cache).
- *  3. Bối cảnh phiên (role, ngày) → không cache (per-request).
+ * Gemini system instruction builder.
+ *
+ * Gemini dùng `systemInstruction` dạng text/Part[], không có per-block
+ * `cache_control` như Anthropic. Để cache persona + catalog khi scale,
+ * dùng Caches API của Gemini:
+ *   `genai.caches.create({ model, contents, systemInstruction, ttl })`
+ * rồi pass `cachedContent: cache.name` vào generateContent. Ta chưa bật
+ * ở Phase 1 vì seed chỉ 11 docs + 71 chunks — system prompt < 8K tokens,
+ * mỗi request dưới 1 cent. Enable khi:
+ *   - Số doc > 500 (catalog block > 20K tokens), HOẶC
+ *   - Trafic > 1k req/ngày trên 1 prompt.
  */
-export function buildSystemPrompt(args: {
+export function buildSystemInstruction(args: {
   role: Role;
   audience: string[];
-}): SystemBlock[] {
+}): string {
   return [
-    {
-      type: "text",
-      text: STATIC_SYSTEM,
-      cache_control: { type: "ephemeral" },
-    },
-    {
-      type: "text",
-      text: buildCatalogBlock(args.audience as Role[]),
-      cache_control: { type: "ephemeral" },
-    },
-    {
-      type: "text",
-      text: `Bối cảnh phiên:\n- Vai trò người dùng: ${args.role}\n- Audience cho phép: ${args.audience.join(", ")}\n- Ngày: ${new Date().toISOString().slice(0, 10)}`,
-    },
-  ];
+    STATIC_SYSTEM,
+    "",
+    buildCatalogBlock(args.audience as Role[]),
+    "",
+    `Bối cảnh phiên:`,
+    `- Vai trò người dùng: ${args.role}`,
+    `- Audience cho phép: ${args.audience.join(", ")}`,
+    `- Ngày: ${new Date().toISOString().slice(0, 10)}`,
+  ].join("\n");
 }
 
 function buildCatalogBlock(audience: Role[]): string {

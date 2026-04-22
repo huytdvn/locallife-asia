@@ -1,26 +1,26 @@
-import type Anthropic from "@anthropic-ai/sdk";
+import { Type, type FunctionDeclaration } from "@google/genai";
 import type { Session } from "@/lib/rbac";
 import { searchKnowledge, getDocument } from "@/lib/retrieval";
 import { canWriteDirect } from "@/lib/rbac";
 
-export const toolDefinitions: Anthropic.Messages.Tool[] = [
+export const toolDefinitions: FunctionDeclaration[] = [
   {
     name: "search_knowledge",
     description:
       "Tìm tài liệu nội bộ (markdown) phù hợp với câu hỏi. Luôn gọi tool này trước khi trả lời câu hỏi nghiệp vụ. Kết quả đã được filter theo quyền người dùng.",
-    input_schema: {
-      type: "object",
+    parameters: {
+      type: Type.OBJECT,
       properties: {
         query: {
-          type: "string",
+          type: Type.STRING,
           description: "Câu truy vấn, tiếng Việt, càng cụ thể càng tốt",
         },
         tags: {
-          type: "array",
-          items: { type: "string" },
+          type: Type.ARRAY,
+          items: { type: Type.STRING },
           description: "Filter theo tags (tuỳ chọn)",
         },
-        top_k: { type: "integer", default: 5 },
+        top_k: { type: Type.INTEGER, description: "Số kết quả (default 5)" },
       },
       required: ["query"],
     },
@@ -29,10 +29,10 @@ export const toolDefinitions: Anthropic.Messages.Tool[] = [
     name: "get_document",
     description:
       "Đọc full markdown của 1 tài liệu theo id. Dùng sau khi search_knowledge cho ra kết quả hứa hẹn và cần xem chi tiết.",
-    input_schema: {
-      type: "object",
+    parameters: {
+      type: Type.OBJECT,
       properties: {
-        id: { type: "string", description: "ULID doc" },
+        id: { type: Type.STRING, description: "ULID doc" },
       },
       required: ["id"],
     },
@@ -41,12 +41,12 @@ export const toolDefinitions: Anthropic.Messages.Tool[] = [
     name: "draft_update",
     description:
       "Tạo PR draft đề xuất thay đổi 1 tài liệu. Mọi role đều gọi được; cần duyệt bởi owner.",
-    input_schema: {
-      type: "object",
+    parameters: {
+      type: Type.OBJECT,
       properties: {
-        id: { type: "string" },
-        rationale: { type: "string" },
-        new_content: { type: "string" },
+        id: { type: Type.STRING },
+        rationale: { type: Type.STRING },
+        new_content: { type: Type.STRING },
       },
       required: ["id", "rationale", "new_content"],
     },
@@ -55,12 +55,12 @@ export const toolDefinitions: Anthropic.Messages.Tool[] = [
     name: "commit_update",
     description:
       "Ghi thẳng vào knowledge base. CHỈ admin dùng. Bắt buộc để lại audit log.",
-    input_schema: {
-      type: "object",
+    parameters: {
+      type: Type.OBJECT,
       properties: {
-        id: { type: "string" },
-        rationale: { type: "string" },
-        new_content: { type: "string" },
+        id: { type: Type.STRING },
+        rationale: { type: Type.STRING },
+        new_content: { type: Type.STRING },
       },
       required: ["id", "rationale", "new_content"],
     },

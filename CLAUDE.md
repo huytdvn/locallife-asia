@@ -84,10 +84,11 @@ Lộ trình 8 tuần, 5 phase:
 
 ## Các file hay đụng
 
-- `apps/web/lib/prompt.ts` — system prompt + prompt caching blocks
-- `apps/web/lib/tools/index.ts` — tool use (search, read, draft, commit)
+- `apps/web/lib/llm.ts` — Gemini client (model: gemini-2.5-flash)
+- `apps/web/lib/prompt.ts` — system instruction + dynamic catalog
+- `apps/web/lib/tools/index.ts` — tool use (search, read, draft, commit) theo schema Gemini FunctionDeclaration
 - `apps/web/lib/rbac.ts` — role + sensitivity guard
-- `apps/web/lib/retrieval.ts` — hybrid search
+- `apps/web/lib/retrieval.ts` — hybrid search (local BM25 + optional Qdrant)
 - `apps/ingest/app/pipeline/frontmatter.py` — FM schema (single source of truth)
 - `knowledge/README.md` — taxonomy + FM spec
 

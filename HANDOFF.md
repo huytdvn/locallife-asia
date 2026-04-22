@@ -25,8 +25,8 @@ không cần hỏi lại. Update khi có thay đổi lớn.
 | RDBMS                       | Neon Postgres                                          |
 | Object storage              | Cloudflare R2 — 2 bucket: `locallife-raw` + `locallife-kb-archive` |
 | Queue                       | Redis + RQ (dev); Upstash (prod)                       |
-| AI provider                 | Anthropic — Sonnet 4.6 (chat), Haiku 4.5 (rerank/tool) |
-| OCR tiếng Việt              | Claude Vision (không dùng Tesseract)                   |
+| AI provider                 | Google — Gemini 2.5 Flash (chat+tool), 2.5 Flash Lite (rerank) |
+| OCR tiếng Việt              | Gemini Vision (thay Claude Vision, Phase 2)            |
 | Auth                        | NextAuth + Google Workspace SSO (`@locallife.asia`)    |
 | RBAC enforcement            | Ở tầng tool (payload filter Qdrant + `canRead()`)      |
 | Knowledge repo              | Sẽ tách ra repo riêng `locallife-knowledge` ở Phase 1  |
@@ -53,9 +53,9 @@ huytdvn/
 │   │   ├── app/api/auth/[...nextauth]/route.ts
 │   │   ├── app/login/page.tsx          Google SSO login
 │   │   ├── middleware.ts               guard /api/chat, /admin
-│   │   ├── lib/anthropic.ts
+│   │   ├── lib/llm.ts                  Gemini 2.5 Flash client
 │   │   ├── lib/auth.ts                 NextAuth v5 + dev X-Dev-Role
-│   │   ├── lib/prompt.ts               3-block system prompt + catalog cache
+│   │   ├── lib/prompt.ts               system instruction + dynamic catalog
 │   │   ├── lib/rbac.ts
 │   │   ├── lib/knowledge-loader.ts     fs walk + FM + H2 chunker + mtime cache
 │   │   ├── lib/bm25.ts                 BM25 in-memory
