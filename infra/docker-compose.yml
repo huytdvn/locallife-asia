@@ -1,0 +1,36 @@
+# Dev services cho local development.
+# Production sẽ dùng managed: Neon (Postgres), Qdrant Cloud, Upstash Redis.
+#
+#   docker compose -f infra/docker-compose.yml up -d
+#
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: locallife-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: locallife
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: locallife-qdrant
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrantdata:/qdrant/storage
+
+  redis:
+    image: redis:7-alpine
+    container_name: locallife-redis
+    ports:
+      - "6379:6379"
+
+volumes:
+  pgdata:
+  qdrantdata:

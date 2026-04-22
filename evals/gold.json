@@ -1,0 +1,100 @@
+{
+  "description": "Gold eval set cho retrieval. Mỗi case: role + query + expected_paths (ít nhất 1 path phải xuất hiện trong top-5 hits).",
+  "cases": [
+    {
+      "id": "hr-01",
+      "role": "employee",
+      "query": "Làm sao xin nghỉ phép?",
+      "expected_paths": [
+        "10-hr/policies/leave-policy.md",
+        "10-hr/forms/leave-request.md"
+      ]
+    },
+    {
+      "id": "hr-02",
+      "role": "employee",
+      "query": "Nghỉ ốm có cần giấy khám không?",
+      "expected_paths": ["10-hr/policies/leave-policy.md"]
+    },
+    {
+      "id": "hr-03",
+      "role": "lead",
+      "query": "Lộ trình 30-60-90 ngày cho nhân viên mới",
+      "expected_paths": ["10-hr/onboarding/30-60-90.md"]
+    },
+    {
+      "id": "ops-01",
+      "role": "employee",
+      "query": "Quy trình onboarding host homestay mới",
+      "expected_paths": ["20-operations/processes/host-onboarding.md"]
+    },
+    {
+      "id": "ops-02",
+      "role": "employee",
+      "query": "Chính sách hoàn tiền khi khách huỷ",
+      "expected_paths": ["20-operations/processes/refund-policy.md"]
+    },
+    {
+      "id": "ops-03",
+      "role": "employee",
+      "query": "Khi nào được hoàn 100% cho khách?",
+      "expected_paths": ["20-operations/processes/refund-policy.md"]
+    },
+    {
+      "id": "product-01",
+      "role": "employee",
+      "query": "Tiêu chuẩn homestay gồm những gì?",
+      "expected_paths": ["30-product/homestay/homestay-standards.md"]
+    },
+    {
+      "id": "partner-01",
+      "role": "employee",
+      "query": "Hợp tác với nghệ nhân như thế nào?",
+      "expected_paths": ["40-partners/artisans/artisan-partnership.md"]
+    },
+    {
+      "id": "partner-02",
+      "role": "lead",
+      "query": "Host Nguyễn Thị Lan ở đâu",
+      "expected_paths": [
+        "40-partners/homestay-hosts/sample-host-nguyen-thi-lan.md"
+      ]
+    },
+    {
+      "id": "company-01",
+      "role": "employee",
+      "query": "Sứ mệnh và tầm nhìn của Local Life Asia",
+      "expected_paths": ["00-company/vision-mission.md"]
+    },
+    {
+      "id": "company-02",
+      "role": "employee",
+      "query": "Giá trị cốt lõi của công ty",
+      "expected_paths": ["00-company/values.md"]
+    },
+    {
+      "id": "finance-admin",
+      "role": "admin",
+      "query": "Công ty giữ bao nhiêu phần trăm commission",
+      "expected_paths": ["50-finance/pricing-structure.md"]
+    },
+    {
+      "id": "rbac-employee-blocked",
+      "role": "employee",
+      "query": "Công ty giữ bao nhiêu phần trăm commission",
+      "expected_paths_must_not_contain": ["50-finance/pricing-structure.md"]
+    },
+    {
+      "id": "form-01",
+      "role": "employee",
+      "query": "Biểu mẫu đơn xin nghỉ",
+      "expected_paths": ["10-hr/forms/leave-request.md"]
+    },
+    {
+      "id": "ops-04",
+      "role": "employee",
+      "query": "Bàn giao trước khi nghỉ dài",
+      "expected_paths": ["10-hr/policies/leave-policy.md"]
+    }
+  ]
+}

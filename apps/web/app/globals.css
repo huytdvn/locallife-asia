@@ -1,0 +1,33 @@
+/* Đồng bộ palette với landing (index.html) */
+:root {
+  --ll-green: #1b6b4a;
+  --ll-green-dark: #144f37;
+  --ll-orange: #f5a623;
+  --ll-cream: #fdf8ef;
+  --ll-ink: #1b2321;
+  --ll-muted: #6b7b76;
+  --ll-border: #e5e0d4;
+  --ll-bg: #faf6ed;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--ll-bg);
+  color: var(--ll-ink);
+  font-family: "Be Vietnam Pro", system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: var(--ll-green);
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
