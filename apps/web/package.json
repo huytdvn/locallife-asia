@@ -7,7 +7,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "smoke:retrieval": "node scripts/smoke-retrieval.mjs",
+    "eval": "node scripts/run-eval.mjs",
+    "build-index": "node scripts/build-index.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.40.0",

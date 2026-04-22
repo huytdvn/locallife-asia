@@ -1,14 +1,17 @@
 import type Anthropic from "@anthropic-ai/sdk";
 import type { Role } from "@/lib/rbac";
+import { loadKnowledge } from "@/lib/knowledge-loader";
 
 type SystemBlock = Anthropic.Messages.TextBlockParam;
 
 /**
- * System prompt được chia làm 2 block:
- *  1. Block tĩnh (persona + rules) → cache_control "ephemeral" → cache hit cao
- *  2. Block động (user role, time, org) → không cache
- *
- * Phase 1 sẽ thêm block thứ 3: "danh mục tài liệu" (cache, rebuild theo commit).
+ * System prompt chia làm 3 block:
+ *  1. Persona + rules (tĩnh, ít đổi) → cache_control "ephemeral".
+ *  2. Catalog tài liệu (đổi khi knowledge/ thay đổi) → cache_control
+ *     "ephemeral"; invalidate qua mtime của KNOWLEDGE_DIR (`loadKnowledge`
+ *     tự trả cache theo mtime → cùng version tài liệu thì prompt giống y
+ *     → hit cache).
+ *  3. Bối cảnh phiên (role, ngày) → không cache (per-request).
  */
 export function buildSystemPrompt(args: {
   role: Role;
@@ -22,9 +25,38 @@ export function buildSystemPrompt(args: {
     },
     {
       type: "text",
+      text: buildCatalogBlock(args.audience as Role[]),
+      cache_control: { type: "ephemeral" },
+    },
+    {
+      type: "text",
       text: `Bối cảnh phiên:\n- Vai trò người dùng: ${args.role}\n- Audience cho phép: ${args.audience.join(", ")}\n- Ngày: ${new Date().toISOString().slice(0, 10)}`,
     },
   ];
+}
+
+function buildCatalogBlock(audience: Role[]): string {
+  try {
+    const docs = loadKnowledge();
+    const visible = docs.filter((d) =>
+      d.meta.audience.some((a) => audience.includes(a))
+    );
+    const lines = visible
+      .map((d) => {
+        const tags = d.meta.tags.slice(0, 4).join(",");
+        return `- ${d.meta.path} | id=${d.meta.id} | audience=[${d.meta.audience.join(",")}] | tags=[${tags}] | ${d.meta.title}`;
+      })
+      .sort();
+    return [
+      "DANH MỤC TÀI LIỆU (catalog — dùng để quyết định search/get nào):",
+      `Tổng cộng ${visible.length} doc hiện đang approved, đã lọc theo audience của phiên.`,
+      "Mỗi dòng: path | id | audience | tags | title",
+      "",
+      ...lines,
+    ].join("\n");
+  } catch (err) {
+    return `DANH MỤC TÀI LIỆU: (không nạp được — ${err instanceof Error ? err.message : String(err)})`;
+  }
 }
 
 const STATIC_SYSTEM = `Bạn là trợ lý AI nội bộ của Local Life Asia — công ty

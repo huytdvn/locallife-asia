@@ -19,16 +19,23 @@ sáng lập Trần Đăng Huy. Repo chứa:
 
 1. **Markdown là contract**. Mọi nội dung nghiệp vụ ở `knowledge/*.md`. DB
    chỉ là cache/index. Khi có xung đột: markdown thắng.
-2. **Một đường đi dữ liệu duy nhất**: `raw → parse → normalize → markdown
-   → commit → index → retrieve → answer`. Đừng thêm shortcut.
-3. **Citation-or-reject**. AI chỉ trả lời những gì có trong knowledge base,
+2. **3-way replication cho text, 2-way cho raw** (xem [`docs/storage.md`](docs/storage.md)):
+   - **Text/markdown/hợp đồng working-copy/partner docs**: Git + Local
+     server công ty + Cloudflare R2 (object-locked, versioned).
+   - **Raw file** (PDF/ảnh/DOCX): Local server công ty + Google Drive.
+   - Chatbot đọc từ **Local server** (mount `KNOWLEDGE_DIR`), không đọc
+     trực tiếp từ git hay R2 trong runtime.
+3. **Một đường đi dữ liệu duy nhất**: `raw → parse → normalize → markdown
+   → commit(git) → sync(local+R2) → index → retrieve → answer`. Đừng
+   thêm shortcut.
+4. **Citation-or-reject**. AI chỉ trả lời những gì có trong knowledge base,
    luôn kèm citation `file#heading`. Không có → nói "chưa có tài liệu".
-4. **RBAC ở tầng tool, không ở prompt**. `canRead()` trong
+5. **RBAC ở tầng tool, không ở prompt**. `canRead()` trong
    `apps/web/lib/rbac.ts` chạy trước khi doc vào context — dù prompt có
    hỏi gì cũng không bypass được.
-5. **Human-in-the-loop cho thay đổi**: AI soạn PR → người duyệt. Chỉ admin
+6. **Human-in-the-loop cho thay đổi**: AI soạn PR → người duyệt. Chỉ admin
    được `commit_update` trực tiếp, và luôn để lại audit.
-6. **Không over-engineer**: Phase 0 là skeleton. Đừng thêm abstraction "cho
+7. **Không over-engineer**: Phase 0 là skeleton. Đừng thêm abstraction "cho
    sau". 3 dòng lặp lại tốt hơn 1 abstraction non.
 
 ## Kế hoạch (xem `/root/.claude/plans/hello-b-t-u-t-greedy-pudding.md` nếu còn)
