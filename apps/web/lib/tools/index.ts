@@ -2,6 +2,13 @@ import { Type, type FunctionDeclaration } from "@google/genai";
 import type { Session } from "@/lib/rbac";
 import { searchKnowledge, getDocument } from "@/lib/retrieval";
 import { canWriteDirect } from "@/lib/rbac";
+import { draftUpdate, commitUpdateDirect, GithubError } from "@/lib/github";
+import { writeAudit } from "@/lib/audit";
+
+function repoPathFor(docPath: string): string {
+  const subdir = process.env.KNOWLEDGE_REPO_SUBDIR ?? "knowledge";
+  return subdir ? `${subdir}/${docPath}` : docPath;
+}
 
 export const toolDefinitions: FunctionDeclaration[] = [
   {
@@ -115,10 +122,40 @@ export async function runTool(
     }
 
     case "draft_update": {
-      // TODO(phase-3): tạo PR qua GitHub API tới knowledge repo
-      return {
-        content: "Đã ghi nhận đề xuất. Phase 3 sẽ tạo PR thật.",
+      const { id, rationale, new_content } = input as {
+        id: string;
+        rationale: string;
+        new_content: string;
       };
+      const doc = await getDocument(session, id);
+      if (!doc) {
+        return { content: "Không tìm thấy doc (hoặc không có quyền đọc)." };
+      }
+      try {
+        const pr = await draftUpdate({
+          id,
+          rationale,
+          newContent: new_content,
+          repoPath: repoPathFor(doc.doc.path),
+          actorEmail: session.email,
+        });
+        await writeAudit({
+          actorEmail: session.email,
+          role: session.role,
+          action: "draft_update",
+          docId: id,
+          answerExcerpt: rationale,
+          metadata: { pr_url: pr.prUrl, branch: pr.branch },
+        });
+        return {
+          content: `Đã tạo PR draft: ${pr.prUrl}. Owner sẽ review & merge.`,
+          citations: [doc.doc.path],
+        };
+      } catch (err) {
+        const msg =
+          err instanceof GithubError ? err.message : "Lỗi tạo PR";
+        return { content: `Không tạo được PR: ${msg}` };
+      }
     }
 
     case "commit_update": {
@@ -128,8 +165,39 @@ export async function runTool(
             "Chỉ admin được ghi trực tiếp. Chuyển sang draft_update để tạo PR.",
         };
       }
-      // TODO(phase-3): commit + audit log
-      return { content: "Đã ghi (phase 3 sẽ thực hiện thật)." };
+      const { id, rationale, new_content } = input as {
+        id: string;
+        rationale: string;
+        new_content: string;
+      };
+      const doc = await getDocument(session, id);
+      if (!doc) {
+        return { content: "Không tìm thấy doc." };
+      }
+      try {
+        const commit = await commitUpdateDirect({
+          id,
+          rationale,
+          newContent: new_content,
+          repoPath: repoPathFor(doc.doc.path),
+          actorEmail: session.email,
+        });
+        await writeAudit({
+          actorEmail: session.email,
+          role: session.role,
+          action: "commit_update",
+          docId: id,
+          answerExcerpt: rationale,
+          metadata: { commit_sha: commit.commitSha, html_url: commit.htmlUrl },
+        });
+        return {
+          content: `Đã commit thẳng: ${commit.htmlUrl}`,
+          citations: [doc.doc.path],
+        };
+      } catch (err) {
+        const msg = err instanceof GithubError ? err.message : "Lỗi commit";
+        return { content: `Không commit được: ${msg}` };
+      }
     }
 
     default:

@@ -1,6 +1,7 @@
 import { canRead, type DocMeta, type Session } from "@/lib/rbac";
 import { loadKnowledge } from "@/lib/knowledge-loader";
 import { search } from "@/lib/bm25";
+import { rerankHits } from "@/lib/rerank";
 
 export interface SearchHit {
   doc: DocMeta;
@@ -49,9 +50,14 @@ export async function searchKnowledge(
       excerpt: excerptOf(hit.chunk.text, opts.query),
       score: hit.score,
     });
-    if (results.length >= topK) break;
+    if (results.length >= topK * 3) break;
   }
-  return results;
+
+  // Rerank nếu có LLM (best-effort). Skip khi RERANK_OFF=1 hoặc không có key.
+  if (process.env.RERANK_OFF === "1" || results.length <= topK) {
+    return results.slice(0, topK);
+  }
+  return rerankHits(opts.query, results, topK);
 }
 
 export async function getDocument(

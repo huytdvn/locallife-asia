@@ -4,6 +4,7 @@ import { genai, CHAT_MODEL } from "@/lib/llm";
 import { buildSystemInstruction } from "@/lib/prompt";
 import { toolDefinitions, runTool } from "@/lib/tools";
 import { requireSession } from "@/lib/auth";
+import { writeAudit, recordUnmatchedQuery } from "@/lib/audit";
 
 export const runtime = "nodejs";
 
@@ -72,6 +73,11 @@ async function runAgentLoop(params: {
 }) {
   const { session, systemInstruction, initialMessages, emit } = params;
   const citations: string[] = [];
+  const toolTrace: Array<{ name: string; input: unknown; resultLength: number }> = [];
+  const finalText: string[] = [];
+
+  const userLastQuery =
+    [...initialMessages].reverse().find((m) => m.role === "user")?.content ?? "";
 
   const contents: Content[] = initialMessages.map((m) => ({
     role: m.role === "assistant" ? "model" : "user",
@@ -98,6 +104,7 @@ async function runAgentLoop(params: {
         if (part.text) {
           emit("delta", { text: part.text });
           accumulatedParts.push({ text: part.text });
+          finalText.push(part.text);
         }
         if (part.functionCall) {
           functionCalls.push(part.functionCall);
@@ -110,6 +117,18 @@ async function runAgentLoop(params: {
 
     if (functionCalls.length === 0) {
       emit("citations", { citations: Array.from(new Set(citations)) });
+      await writeAudit({
+        actorEmail: session.email,
+        role: session.role,
+        action: "chat",
+        query: userLastQuery,
+        answerExcerpt: finalText.join(""),
+        citations: Array.from(new Set(citations)),
+        toolCalls: toolTrace,
+      });
+      if (citations.length === 0 && userLastQuery) {
+        await recordUnmatchedQuery(session.email, session.role, userLastQuery);
+      }
       return;
     }
 
@@ -119,6 +138,7 @@ async function runAgentLoop(params: {
       emit("tool_start", { name, input: fc.args });
       const out = await runTool(name, fc.args ?? {}, session);
       if (out.citations) citations.push(...out.citations);
+      toolTrace.push({ name, input: fc.args, resultLength: out.content.length });
       emit("tool_result", { name, citations: out.citations ?? [] });
       responseParts.push({
         functionResponse: {

@@ -1,0 +1,26 @@
+name: Nightly review bot
+
+on:
+  schedule:
+    # 01:00 UTC mỗi ngày = 08:00 Vietnam (GMT+7)
+    - cron: "0 1 * * *"
+  workflow_dispatch:
+
+jobs:
+  flag-stale:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Run review bot
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          KNOWLEDGE_REPO_OWNER: ${{ github.repository_owner }}
+          KNOWLEDGE_REPO_NAME: ${{ github.event.repository.name }}
+          REVIEW_THRESHOLD_DAYS: "90"
+        run: python3 scripts/review-bot.py --apply

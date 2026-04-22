@@ -142,59 +142,51 @@ huytdvn/
 
 Mục tiêu Phase 1 ĐÃ ĐẠT: recall@5 100% (≥ 95%), precision@1 93.3% (≥ 90%), P50 retrieval 0.4ms (≪ 1.5s). Replication scripts ready, cần env prod để deploy.
 
-## 5. Phase 2 — Ingestion (tuần 3-5)
+## 5. Phase 2 — Ingestion ✅ (code done, cần env để deploy)
 
-Tuần 1 của Phase 2:
-- [`apps/ingest/app/pipeline/parsers/pdf.py`](apps/ingest/app/pipeline/parsers/pdf.py) — unstructured + pdfplumber fallback cho bảng
-- [`apps/ingest/app/pipeline/parsers/image.py`](apps/ingest/app/pipeline/parsers/image.py) — Claude Vision OCR (prompt đã có sẵn trong file)
-- `apps/ingest/app/pipeline/parsers/{docx,xlsx}.py` — mới
-- `apps/ingest/app/pipeline/embed.py` — mới, Voyage-3 + Qdrant upsert
+- Parsers (`apps/ingest/app/pipeline/parsers/`): **PDF** (pdfplumber), **DOCX** (python-docx), **XLSX** (openpyxl), **Image** (Gemini Vision OCR), **MD/TXT**.
+- Pipeline: `parse_file → normalize → suggest_metadata (Gemini JSON) → new_draft FM → to_markdown → commit_via_pr (GitHub API draft)`.
+- Sources: `POST /upload` → dual-write local `$RAW_DIR` + Google Drive → enqueue job. `POST /drive/sync` → service-account poll + cursor Redis.
+- RQ worker (`app.worker`) + Redis.
+- Endpoints full: `/upload`, `/jobs/{id}`, `/drive/sync`, `/health`, Bearer token auth.
+- Settings đầy đủ qua `app/config.py` — tất cả env trong `.env.local`.
 
-Tuần 2 của Phase 2:
-- `apps/ingest/app/sources/upload.py` — handler cho `/upload`:
-  1. Lưu vào local `$RAW_DIR/YYYY/MM/{ulid}.{ext}` (primary).
-  2. Push song song lên Google Drive (service account, tier 2 raw).
-  3. Enqueue parse job.
-- `apps/ingest/app/sources/drive.py` — service account poll `GOOGLE_DRIVE_RAW_FOLDER_ID` + delta detect; kéo bản mới về `$RAW_DIR`.
-- `apps/ingest/app/pipeline/commit.py` — GitHub API tạo PR tới `locallife-knowledge` (tier 1 text).
-- RQ worker thật + Redis.
+## 6. Phase 3 — Governance ✅ (code done)
 
-Tuần 3 của Phase 2:
-- `apps/web/app/admin/page.tsx` — upload UI + job queue status.
-- Webhook merge PR → embed job + sync to R2 archive (tier 3 text) với object-lock.
-- Legal flow: upload hợp đồng ký → ghi 3 nơi đồng bộ (`$LEGAL_DIR`, Drive `LLA Legal`, R2 object-lock); tính SHA-256 viết vào FM working copy.
+- `draft_update` / `commit_update` (apps/web/lib/tools): gọi GitHub API thật qua `apps/web/lib/github.ts` — tạo branch, put file, open PR draft; admin commit thẳng.
+- Postgres schema `apps/web/db/schema.sql`: `roles`, `audit_log`, `unmatched_queries`.
+- `apps/web/lib/audit.ts` ghi audit mọi chat/draft/commit/upload; no-op khi DB tắt.
+- Webhook `apps/web/app/api/webhook/knowledge-merged/route.ts` — HMAC SHA-256 verify → trigger `sync-knowledge.sh` + `sync-to-r2.py --apply`.
+- Admin UI: `/admin` (gate role lead/admin) + upload form (`components/admin-upload.tsx`) proxy qua `/api/admin/upload`.
 
-## 6. Phase 3 — Governance (tuần 5-6)
+## 7. Phase 4 — Chất lượng ✅ (code done)
 
-- [`apps/web/lib/tools/index.ts:118`](apps/web/lib/tools/index.ts) `draft_update` thật (GitHub API)
-- [`apps/web/lib/tools/index.ts:131`](apps/web/lib/tools/index.ts) `commit_update` thật + audit log Postgres
-- Schema `audit_log` (user_id, query, answer, citations, tool_calls, ts)
-- Admin UI review drafts, approve/reject
+- `apps/web/lib/rerank.ts`: Gemini 2.5 Flash Lite rerank top-K sau BM25; RERANK_OFF=1 để tắt (eval không cần LLM).
+- `scripts/review-bot.py`: flag doc `last_reviewed > threshold_days`, tạo GitHub Issue (dry-run mặc định, `--apply` để thực).
+- Analytics: `unmatched_queries` ghi query không có citation match.
 
-## 7. Phase 4 — Chất lượng (tuần 6-8)
+## 8. Deploy & test harness ✅
 
-- Haiku re-rank tối ưu (prompt, batch)
-- Nightly review bot (flag doc `last_reviewed > 90 days`)
-- Analytics: câu hỏi không tìm được → đề xuất doc cần viết (dashboard)
-- Email ingest (`inbox@knowledge.locallife.asia`)
+- Dockerfile cho `apps/web` (Next.js standalone) + `apps/ingest` (Python 3.11).
+- `infra/docker-compose.prod.yml`: web + ingest + worker + postgres (auto-apply schema) + qdrant + redis.
+- CI: `.github/workflows/{ci,nightly-eval,nightly-review-bot}.yml`.
+- Unit tests: `pnpm --filter web test` (6 pass) + `apps/ingest/tests/` pytest.
+- E2E smoke: `BASE=... scripts/e2e-smoke.sh`.
+- Deploy runbook đầy đủ: [`docs/deploy.md`](docs/deploy.md).
 
-## 8. Câu hỏi mở (chưa quyết)
+## 9. Câu hỏi mở (chưa quyết)
 
 - Voyage-3 managed vs `bge-m3` self-host? Đo latency + cost trên 1000 doc thật rồi quyết.
 - `knowledge/` ở Phase 1: submodule riêng hay giữ cùng repo? Đang giữ cùng để dev dễ; tách khi có nhân viên không dev xem knowledge.
 - Mobile? PWA ở Phase 5+, native sau.
 
-## 9. TODOs cụ thể trong code (grep)
+## 10. TODO tồn đọng (Phase 5+)
 
-```
-apps/web/lib/tools/index.ts:118    TODO(phase-3): tạo PR qua GitHub API
-apps/web/lib/tools/index.ts:131    TODO(phase-3): commit + audit log
-apps/ingest/app/main.py:28         TODO(phase-2): raw = local + Drive, enqueue
-apps/ingest/app/main.py:38         TODO(phase-2): Drive delta sync → $RAW_DIR
-apps/ingest/app/pipeline/parsers/pdf.py:10     TODO(phase-2)
-apps/ingest/app/pipeline/parsers/image.py:27   TODO(phase-2): Claude Vision
-scripts/sync-to-r2.py                           TODO(phase-1.7): object-lock R2 archive
-```
+- Email ingest (`inbox@knowledge.locallife.asia`) + SES/Postmark integration.
+- Mobile PWA.
+- Qdrant hybrid retrieval: bật khi scale > 5k chunks (scripts đã sẵn).
+- Analytics dashboard (/admin/analytics) cho unmatched queries.
+- Drafts review UI (/admin/drafts) list PRs filter by label.
 
 ## 10. Cách chạy ngay để sanity-check
 
@@ -213,14 +205,10 @@ pnpm --filter web smoke:retrieval
 pnpm --filter web typecheck
 ```
 
-## 11. Khi nào merge branch?
+## 11. Trạng thái branch & merge
 
-Đề xuất: **merge vào `main` sau khi hoàn thành Phase 1** (chat MVP chạy
-thật với Anthropic API + retrieval + SSO). Trước đó là skeleton, merge
-sớm làm loãng `main`.
-
-Sau merge: tạo branch mới `claude/ingestion-pipeline-<ticket>` cho Phase 2.
+PR #2 (https://github.com/huytdvn/locallife-asia/pull/2) gộp Phase 1+2+3+4+deploy. Sau khi review + điền env + smoke-test, merge vào `main`. Không cần chia nhỏ — các wave đã được commit riêng, dễ review.
 
 ---
 
-*Cập nhật lần cuối: 2026-04-22, commit `c6a9fa9`.*
+*Cập nhật lần cuối: 2026-04-22, bao gồm Phase 1-4 + deploy + test harness.*

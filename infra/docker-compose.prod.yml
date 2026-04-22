@@ -1,0 +1,99 @@
+# Production-like stack. Chạy full hệ thống ở 1 máy (company server).
+# Trước khi up, tạo .env ở root monorepo theo .env.example.
+#
+#   docker compose -f infra/docker-compose.prod.yml --env-file .env.local up -d --build
+#
+# Reverse proxy + TLS tự làm bằng Caddy (bên ngoài stack này) hoặc tier hosting.
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-locallife}
+    ports: ["5432:5432"]
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ../apps/web/db/schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  qdrant:
+    image: qdrant/qdrant:latest
+    restart: unless-stopped
+    ports: ["6333:6333"]
+    volumes:
+      - qdrantdata:/qdrant/storage
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports: ["6379:6379"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  web:
+    build:
+      context: ..
+      dockerfile: apps/web/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      postgres: { condition: service_healthy }
+    env_file: [../.env.local]
+    environment:
+      KNOWLEDGE_DIR: /app/knowledge
+      DATABASE_URL: postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-locallife}
+      INGEST_API_URL: http://ingest:8001
+      NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
+    ports: ["3000:3000"]
+    volumes:
+      # Bind mount knowledge để chatbot đọc bản đã sync từ git (tier 2).
+      - ../knowledge:/app/knowledge:ro
+
+  ingest:
+    build:
+      context: ..
+      dockerfile: apps/ingest/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      redis: { condition: service_healthy }
+    env_file: [../.env.local]
+    environment:
+      REDIS_URL: redis://redis:6379
+      RAW_DIR: /data/raw
+      LEGAL_DIR: /data/legal
+    ports: ["8001:8001"]
+    volumes:
+      - rawdata:/data/raw
+      - legaldata:/data/legal
+
+  worker:
+    build:
+      context: ..
+      dockerfile: apps/ingest/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      redis: { condition: service_healthy }
+    env_file: [../.env.local]
+    environment:
+      REDIS_URL: redis://redis:6379
+      RAW_DIR: /data/raw
+      LEGAL_DIR: /data/legal
+    command: ["python", "-m", "app.worker"]
+    volumes:
+      - rawdata:/data/raw
+      - legaldata:/data/legal
+
+volumes:
+  pgdata:
+  qdrantdata:
+  rawdata:
+  legaldata:

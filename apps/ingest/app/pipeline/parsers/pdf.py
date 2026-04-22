@@ -1,14 +1,33 @@
-"""PDF parser. Dùng unstructured + pdfplumber cho bảng phức tạp."""
+"""PDF parser — pdfplumber. Trích text + tables đơn giản.
+
+Phase 3+ có thể swap sang `unstructured` hoặc Gemini Vision để handle
+scan-PDF / layout phức tạp; hiện tại pdfplumber đủ cho PDF digital.
+"""
 
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any
+
+from app.pipeline.parsers import ParsedDoc
 
 
-def parse_pdf(path: Path) -> dict[str, Any]:
-    # TODO(phase-2):
-    #   - unstructured.partition.pdf(path, strategy="hi_res", infer_table_structure=True)
-    #   - pdfplumber cho bảng bị unstructured parse sai
-    #   - phát hiện tiếng Việt, giữ dấu Unicode chuẩn
-    raise NotImplementedError("PDF parser — Phase 2")
+def parse(path: Path) -> ParsedDoc:
+    import pdfplumber  # lazy import
+
+    text_parts: list[str] = []
+    tables: list[list[list[str]]] = []
+
+    with pdfplumber.open(path) as pdf:
+        for page in pdf.pages:
+            page_text = page.extract_text() or ""
+            text_parts.append(page_text)
+            for t in page.extract_tables() or []:
+                rows = [[cell or "" for cell in row] for row in t]
+                if rows:
+                    tables.append(rows)
+
+    return ParsedDoc(
+        text="\n\n".join(p for p in text_parts if p.strip()),
+        tables=tables,
+        metadata={"source_type": "pdf", "pages": str(len(text_parts))},
+    )
