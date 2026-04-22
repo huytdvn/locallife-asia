@@ -2,6 +2,8 @@ import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { AdminUpload } from "@/components/admin-upload";
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminPage() {
   const session = await auth();
   const role = session?.role ?? "employee";
