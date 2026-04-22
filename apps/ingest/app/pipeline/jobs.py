@@ -65,8 +65,8 @@ def enqueue_ingest(
 
 
 def get_job_status(job_id: str) -> dict[str, Any]:
-    from rq.job import Job
     from rq.exceptions import NoSuchJobError
+    from rq.job import Job
 
     conn = redis.from_url(get_settings().redis_url)
     try:

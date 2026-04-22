@@ -7,7 +7,7 @@ archive ngay 1 file từ pipeline (vd: commit hợp đồng ký xong).
 from __future__ import annotations
 
 import logging
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import Literal
 
 from app.config import ConfigError, get_settings
@@ -54,7 +54,7 @@ def put_immutable(
     bucket_name = s.r2_bucket_raw if bucket == "raw" else s.r2_bucket_kb_archive
     client = _client()
     years = RETENTION_YEARS.get(sensitivity, 3)
-    retain_until = datetime.now(timezone.utc) + timedelta(days=365 * years)
+    retain_until = datetime.now(UTC) + timedelta(days=365 * years)
     client.put_object(
         Bucket=bucket_name,
         Key=key,

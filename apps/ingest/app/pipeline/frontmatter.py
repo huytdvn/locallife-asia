@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import json
 from datetime import date
-from enum import Enum
+from enum import StrEnum
 from typing import Literal
 
 import yaml
@@ -19,13 +19,13 @@ from ulid import ULID
 from app.config import ConfigError, get_settings
 
 
-class Audience(str, Enum):
+class Audience(StrEnum):
     employee = "employee"
     lead = "lead"
     admin = "admin"
 
 
-class Sensitivity(str, Enum):
+class Sensitivity(StrEnum):
     public = "public"
     internal = "internal"
     restricted = "restricted"
