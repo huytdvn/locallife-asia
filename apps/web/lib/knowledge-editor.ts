@@ -129,7 +129,7 @@ export interface CreateDocInput {
 
 const ID_RE = /^[0-9A-Z]{26}$/;
 
-function generateUlid(): string {
+export function generateUlid(): string {
   // Crockford base32, 48-bit timestamp + 80-bit randomness.
   const chars = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
   const now = Date.now();

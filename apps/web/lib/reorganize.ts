@@ -3,6 +3,7 @@ import path from "node:path";
 import matter from "gray-matter";
 import { loadKnowledge, knowledgeRoot } from "@/lib/knowledge-loader";
 import { suggestClassify, improveBody } from "@/lib/ai-assist";
+import { generateUlid } from "@/lib/knowledge-editor";
 import type { DocMeta } from "@/lib/rbac";
 
 /**
@@ -25,10 +26,13 @@ export interface ReorganizeItem {
   pathChanged: boolean;
   titleChanged: boolean;
   bodyChanged: boolean;
-  newBody?: string; // chỉ populate khi rewrite
+  /** Body cũ — dùng để render diff trong UI review. */
+  currentBody?: string;
+  /** Body mới sau khi AI rewrite — chỉ populate khi bodyChanged. */
+  newBody?: string;
   reasoning: string;
   confidence: number;
-  skipped?: string; // reason nếu bỏ qua
+  skipped?: string;
 }
 
 export interface ReorganizePlan {
@@ -86,16 +90,18 @@ async function planOne(
   const titleChanged = newTitle !== meta.title;
 
   let newBody: string | undefined;
+  let currentBody: string | undefined;
   let bodyChanged = false;
   if (mode === "rewrite-and-move") {
     const rewritten = await improveBody(
       newTitle,
       body,
-      "Chuẩn hoá văn phong doanh nghiệp Local Life Asia — lean, rõ, ấm. Thêm H2 cho từng mục chính, dùng bullet/bảng khi có data dạng list, rút gọn câu dài, giữ 100% dữ liệu gốc, không bịa. Giữ YAML front-matter nếu có."
+      "Chuẩn hoá văn phong doanh nghiệp Local Life Asia — lean, rõ, ấm. Thêm H2 cho từng mục chính, dùng bullet/bảng khi có data dạng list, rút gọn câu dài, giữ 100% dữ liệu gốc, không bịa. Giữ YAML front-matter nếu có.",
     );
     const normalized = rewritten.trim();
     if (normalized && normalized !== body.trim()) {
       newBody = normalized;
+      currentBody = body;
       bodyChanged = true;
     }
   }
@@ -109,6 +115,7 @@ async function planOne(
     pathChanged,
     titleChanged,
     bodyChanged,
+    currentBody,
     newBody,
     reasoning: cls.reasoning,
     confidence: cls.confidence,
@@ -167,27 +174,44 @@ export async function buildReorganizePlan(
 }
 
 export interface ApplyResult {
-  moved: number;
+  /** Số file được COPY sang path mới (bản gốc giữ nguyên). */
+  copied: number;
+  /** Số file có body được rewrite in-place. */
   rewrote: number;
+  /** Số file có title được update (in-place hoặc trong copy). */
   titleUpdated: number;
   skipped: number;
   failed: number;
   errors: Array<{ id: string; error: string }>;
+  /** ID của các doc mới được tạo do copy. Admin có thể deprecate bản gốc sau. */
+  createdIds: string[];
 }
 
 /**
- * Apply plan: move file + rewrite body + update title trong FM.
- * Chỉ đụng file đã có trong plan.items (không dựa vào freshly loaded docs).
+ * Apply plan NON-DESTRUCTIVELY.
+ *
+ * Với items có `pathChanged`: COPY file sang path mới (kèm nội dung cập
+ * nhật nếu có) — bản gốc giữ nguyên vẹn. File copy được gán **ULID mới**
+ * để không trùng id với doc gốc, admin review xong rồi tự deprecate bản
+ * cũ hoặc ngược lại.
+ *
+ * Với items chỉ đổi title/body (không đổi path): vẫn write in-place vì
+ * không có chỗ khác để tạo bản copy an toàn. Git history giữ nguyên ràng
+ * để roll-back.
  */
-export function applyReorganizePlan(plan: ReorganizePlan): ApplyResult {
-  const root = knowledgeRoot();
+export function applyReorganizePlan(
+  plan: ReorganizePlan,
+  rootOverride?: string,
+): ApplyResult {
+  const root = rootOverride ?? knowledgeRoot();
   const result: ApplyResult = {
-    moved: 0,
+    copied: 0,
     rewrote: 0,
     titleUpdated: 0,
     skipped: 0,
     failed: 0,
     errors: [],
+    createdIds: [],
   };
 
   for (const item of plan.items) {
@@ -211,25 +235,14 @@ export function applyReorganizePlan(plan: ReorganizePlan): ApplyResult {
         throw new Error("file missing");
       }
 
-      const needsRewrite = item.titleChanged || item.bodyChanged;
-
-      // Only re-serialize + write when content actually changed. Skipping
-      // the write on pure-rename avoids spurious YAML reformatting drift
-      // (e.g., list style changing from `- foo` flow to `  - foo` block).
-      if (needsRewrite) {
-        const raw = fs.readFileSync(currentAbs, "utf8");
-        const parsed = matter(raw);
-        const fm = { ...parsed.data };
-        if (item.titleChanged) {
-          fm.title = item.newTitle;
-        }
-        const bodyToWrite =
-          item.bodyChanged && item.newBody ? item.newBody : parsed.content;
-        const output = matter.stringify(bodyToWrite.trimEnd() + "\n", fm);
-        fs.writeFileSync(currentAbs, output, "utf8");
-      }
+      const raw = fs.readFileSync(currentAbs, "utf8");
+      const parsed = matter(raw);
 
       if (item.pathChanged) {
+        // Non-destructive: copy source → target with content + title
+        // changes baked in. Source file stays on disk intact. Copy gets
+        // a NEW ULID so it's a distinct doc, not an id collision with
+        // the original — admin manually deprecates whichever they reject.
         if (
           fs.existsSync(targetAbs) &&
           path.resolve(targetAbs) !== path.resolve(currentAbs)
@@ -237,17 +250,40 @@ export function applyReorganizePlan(plan: ReorganizePlan): ApplyResult {
           throw new Error(`target already exists: ${item.newPath}`);
         }
         fs.mkdirSync(path.dirname(targetAbs), { recursive: true });
-        // renameSync is atomic on POSIX same-FS moves — avoids the
-        // write/delete race where a failed delete could leave two files
-        // sharing a ULID.
-        fs.renameSync(currentAbs, targetAbs);
-      }
 
-      // Bump counters only after all the FS ops have succeeded, so stats
-      // never double-count a failed item.
-      if (item.titleChanged) result.titleUpdated++;
-      if (item.bodyChanged) result.rewrote++;
-      if (item.pathChanged) result.moved++;
+        const newId = generateUlid();
+        const fmCopy = {
+          ...parsed.data,
+          id: newId,
+          title: item.titleChanged ? item.newTitle : parsed.data.title,
+          // Preserve provenance: note which doc this copy was derived from.
+          derived_from: parsed.data.id ?? null,
+        };
+        const bodyForCopy =
+          item.bodyChanged && item.newBody ? item.newBody : parsed.content;
+        const outputCopy = matter.stringify(
+          bodyForCopy.trimEnd() + "\n",
+          fmCopy,
+        );
+        fs.writeFileSync(targetAbs, outputCopy, "utf8");
+
+        result.copied++;
+        result.createdIds.push(newId);
+        if (item.titleChanged) result.titleUpdated++;
+        if (item.bodyChanged) result.rewrote++;
+      } else if (item.titleChanged || item.bodyChanged) {
+        // No path change — in-place update. Git history gives us rollback,
+        // and there's no unambiguous alternate location to copy to.
+        const fm = { ...parsed.data };
+        if (item.titleChanged) fm.title = item.newTitle;
+        const bodyToWrite =
+          item.bodyChanged && item.newBody ? item.newBody : parsed.content;
+        const output = matter.stringify(bodyToWrite.trimEnd() + "\n", fm);
+        fs.writeFileSync(currentAbs, output, "utf8");
+
+        if (item.titleChanged) result.titleUpdated++;
+        if (item.bodyChanged) result.rewrote++;
+      }
     } catch (err) {
       result.failed++;
       result.errors.push({

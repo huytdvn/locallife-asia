@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import { requireSession } from "@/lib/auth";
 import { writeAudit } from "@/lib/audit";
 import {
@@ -7,6 +8,32 @@ import {
   type ReorganizeMode,
   type ReorganizePlan,
 } from "@/lib/reorganize";
+
+// Validate the plan shape client sends back on apply. Admin-only so blast
+// radius is already limited, but parsing protects against typos/partial
+// states that would otherwise cause confusing FS errors mid-apply.
+const ReorganizeItemSchema = z.object({
+  id: z.string(),
+  currentPath: z.string().min(1),
+  currentTitle: z.string(),
+  newPath: z.string().min(1),
+  newTitle: z.string(),
+  pathChanged: z.boolean(),
+  titleChanged: z.boolean(),
+  bodyChanged: z.boolean(),
+  currentBody: z.string().optional(),
+  newBody: z.string().optional(),
+  reasoning: z.string().optional().default(""),
+  confidence: z.number(),
+  skipped: z.string().optional(),
+});
+const ReorganizePlanSchema = z.object({
+  items: z.array(ReorganizeItemSchema),
+  scanned: z.number(),
+  generatedAt: z.string(),
+  hasMore: z.boolean().optional(),
+  nextOffset: z.number().optional(),
+});
 
 export const runtime = "nodejs";
 // Vercel Pro max: 900s. For classify-only (~2s/doc × ~100 docs = ~200s) this
@@ -73,10 +100,20 @@ export async function POST(req: Request) {
     }
 
     if (body.op === "apply") {
-      if (!body.plan || !Array.isArray(body.plan.items)) {
-        return NextResponse.json({ error: "missing plan" }, { status: 400 });
+      const parsed = ReorganizePlanSchema.safeParse(body.plan);
+      if (!parsed.success) {
+        return NextResponse.json(
+          {
+            error: "invalid plan",
+            detail: parsed.error.issues.slice(0, 5).map((i) => ({
+              path: i.path.join("."),
+              msg: i.message,
+            })),
+          },
+          { status: 400 },
+        );
       }
-      const result = applyReorganizePlan(body.plan);
+      const result = applyReorganizePlan(parsed.data as ReorganizePlan);
       await writeAudit({
         actorEmail: session.email,
         role: session.role,

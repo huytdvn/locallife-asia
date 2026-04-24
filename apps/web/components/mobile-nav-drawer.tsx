@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export interface NavLinkData {
   href: string;
@@ -18,12 +18,54 @@ export interface NavLinkData {
  */
 export function MobileNavDrawer({ links }: { links: NavLinkData[] }) {
   const [open, setOpen] = useState(false);
+  const openerRef = useRef<HTMLButtonElement | null>(null);
+  const drawerRef = useRef<HTMLDivElement | null>(null);
+
+  // Focus trap + Escape to close, plus restore focus to the opener
+  // button once the drawer closes. Standard modal-dialog a11y.
+  useEffect(() => {
+    if (!open) return;
+    const drawer = drawerRef.current;
+    if (!drawer) return;
+
+    const focusables = drawer.querySelectorAll<HTMLElement>(
+      'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])',
+    );
+    const first = focusables[0];
+    const last = focusables[focusables.length - 1];
+    first?.focus();
+
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        setOpen(false);
+        return;
+      }
+      if (e.key !== "Tab" || focusables.length === 0) return;
+      const active = document.activeElement as HTMLElement | null;
+      if (e.shiftKey && active === first) {
+        e.preventDefault();
+        last?.focus();
+      } else if (!e.shiftKey && active === last) {
+        e.preventDefault();
+        first?.focus();
+      }
+    };
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      // restore focus to the opener when drawer closes
+      openerRef.current?.focus();
+    };
+  }, [open]);
 
   return (
     <>
       <button
+        ref={openerRef}
         type="button"
         aria-label="Mở menu"
+        aria-expanded={open}
         onClick={() => setOpen(true)}
         className="ll-nav-mobile"
         style={{
@@ -75,6 +117,7 @@ export function MobileNavDrawer({ links }: { links: NavLinkData[] }) {
           }}
         >
           <div
+            ref={drawerRef}
             onClick={(e) => e.stopPropagation()}
             style={{
               width: "min(280px, 86vw)",

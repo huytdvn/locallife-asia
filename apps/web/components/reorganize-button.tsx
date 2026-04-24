@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 
 type Mode = "classify-only" | "rewrite-and-move";
 
@@ -13,6 +13,8 @@ interface PlanItem {
   pathChanged: boolean;
   titleChanged: boolean;
   bodyChanged: boolean;
+  currentBody?: string;
+  newBody?: string;
   reasoning: string;
   confidence: number;
   skipped?: string;
@@ -32,12 +34,13 @@ interface Plan {
 const REWRITE_PAGE_SIZE = 30;
 
 interface ApplyResult {
-  moved: number;
+  copied: number;
   rewrote: number;
   titleUpdated: number;
   skipped: number;
   failed: number;
   errors: Array<{ id: string; error: string }>;
+  createdIds: string[];
 }
 
 export function ReorganizeButton() {
@@ -308,6 +311,16 @@ function PlanReview({
 }) {
   const lowConf = changes.filter((c) => c.confidence <= 2);
   const skipped = plan.items.length - changes.length;
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
+
+  const toggle = (id: string) => {
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
@@ -339,6 +352,22 @@ function PlanReview({
             </span>
           </>
         )}
+      </div>
+
+      <div
+        style={{
+          padding: "8px 10px",
+          background: "var(--ll-green-soft)",
+          border: "1px solid var(--ll-green-bright)",
+          borderRadius: 8,
+          fontSize: 12,
+          color: "var(--ll-green-dark)",
+          lineHeight: 1.5,
+        }}
+      >
+        ℹ <strong>Non-destructive apply</strong>: file có path-change sẽ
+        được <strong>copy</strong> sang path mới (ULID mới), bản gốc giữ
+        nguyên. Review xong rồi deprecate bản thừa ở <code>/admin/docs</code>.
       </div>
 
       <div
@@ -380,68 +409,94 @@ function PlanReview({
               </tr>
             </thead>
             <tbody>
-              {changes.map((c) => (
-                <tr
-                  key={c.id}
-                  style={{ borderTop: "1px solid var(--ll-border)" }}
-                >
-                  <td style={tdStyle}>
-                    <div
-                      style={{
-                        fontFamily: "monospace",
-                        color: "var(--ll-muted)",
-                        fontSize: 11,
-                      }}
-                    >
-                      {c.currentPath}
-                    </div>
-                    <div style={{ color: "var(--ll-ink)" }}>
-                      {c.currentTitle}
-                    </div>
-                  </td>
-                  <td style={tdStyle}>
-                    {c.pathChanged && (
-                      <div
-                        style={{
-                          fontFamily: "monospace",
-                          color: "var(--ll-green-dark)",
-                          fontSize: 11,
-                          fontWeight: 600,
-                        }}
-                      >
-                        {c.newPath}
-                      </div>
+              {changes.map((c) => {
+                const isOpen = expanded.has(c.id);
+                return (
+                  <Fragment key={c.id}>
+                    <tr style={{ borderTop: "1px solid var(--ll-border)" }}>
+                      <td style={tdStyle}>
+                        <div
+                          style={{
+                            fontFamily: "monospace",
+                            color: "var(--ll-muted)",
+                            fontSize: 11,
+                          }}
+                        >
+                          {c.currentPath}
+                        </div>
+                        <div style={{ color: "var(--ll-ink)" }}>
+                          {c.currentTitle}
+                        </div>
+                      </td>
+                      <td style={tdStyle}>
+                        {c.pathChanged && (
+                          <div
+                            style={{
+                              fontFamily: "monospace",
+                              color: "var(--ll-green-dark)",
+                              fontSize: 11,
+                              fontWeight: 600,
+                            }}
+                          >
+                            {c.newPath}
+                          </div>
+                        )}
+                        {c.titleChanged && (
+                          <div style={{ color: "var(--ll-green-dark)" }}>
+                            {c.newTitle}
+                          </div>
+                        )}
+                      </td>
+                      <td style={tdStyle}>
+                        {c.pathChanged && (
+                          <span style={chip("green")}>copy</span>
+                        )}{" "}
+                        {c.titleChanged && (
+                          <span style={chip("blue")}>title</span>
+                        )}{" "}
+                        {c.bodyChanged && (
+                          <button
+                            type="button"
+                            onClick={() => toggle(c.id)}
+                            style={{
+                              ...chip("orange"),
+                              border: "none",
+                              cursor: "pointer",
+                            }}
+                          >
+                            rewrite {isOpen ? "▾" : "▸"}
+                          </button>
+                        )}
+                      </td>
+                      <td style={{ ...tdStyle, textAlign: "center" }}>
+                        <span
+                          style={{
+                            fontWeight: 700,
+                            color:
+                              c.confidence >= 4
+                                ? "var(--ll-green-dark)"
+                                : c.confidence >= 3
+                                  ? "var(--ll-orange)"
+                                  : "#b91c1c",
+                          }}
+                        >
+                          {c.confidence}/5
+                        </span>
+                      </td>
+                    </tr>
+                    {isOpen && c.bodyChanged && (
+                      <tr style={{ background: "var(--ll-surface-soft)" }}>
+                        <td colSpan={4} style={{ padding: 12 }}>
+                          <BodyDiff
+                            oldBody={c.currentBody ?? ""}
+                            newBody={c.newBody ?? ""}
+                          />
+                        </td>
+                      </tr>
                     )}
-                    {c.titleChanged && (
-                      <div style={{ color: "var(--ll-green-dark)" }}>
-                        {c.newTitle}
-                      </div>
-                    )}
-                  </td>
-                  <td style={tdStyle}>
-                    {c.pathChanged && <span style={chip("green")}>move</span>}{" "}
-                    {c.titleChanged && <span style={chip("blue")}>title</span>}{" "}
-                    {c.bodyChanged && (
-                      <span style={chip("orange")}>rewrite</span>
-                    )}
-                  </td>
-                  <td style={{ ...tdStyle, textAlign: "center" }}>
-                    <span
-                      style={{
-                        fontWeight: 700,
-                        color:
-                          c.confidence >= 4
-                            ? "var(--ll-green-dark)"
-                            : c.confidence >= 3
-                              ? "var(--ll-orange)"
-                              : "#b91c1c",
-                      }}
-                    >
-                      {c.confidence}/5
-                    </span>
-                  </td>
-                </tr>
-              ))}
+                  </Fragment>
+                );
+              })}
             </tbody>
           </table>
         )}
@@ -454,7 +509,9 @@ function PlanReview({
           disabled={busy || changes.length === 0}
           style={primaryBtn(busy || changes.length === 0)}
         >
-          {busy ? "Đang apply…" : `Apply ${changes.length} thay đổi`}
+          {busy
+            ? "Đang apply…"
+            : `Copy ${changes.filter((c) => c.pathChanged).length} file + update ${changes.filter((c) => !c.pathChanged && (c.titleChanged || c.bodyChanged)).length} in-place`}
         </button>
         <button
           type="button"
@@ -489,11 +546,11 @@ function ResultView({
       }}
     >
       <strong style={{ color: "var(--ll-green-dark)" }}>
-        ✓ Đã apply xong
+        ✓ Đã apply xong (non-destructive)
       </strong>
       <div style={{ display: "flex", gap: 10, flexWrap: "wrap", fontSize: 13 }}>
         <span>
-          <strong>{result.moved}</strong> file moved
+          <strong>{result.copied}</strong> file copied
         </span>
         <span>
           <strong>{result.titleUpdated}</strong> title updated
@@ -505,11 +562,28 @@ function ResultView({
           {result.skipped} skipped
         </span>
         {result.failed > 0 && (
-          <span style={{ color: "#b91c1c" }}>
-            {result.failed} failed
-          </span>
+          <span style={{ color: "#b91c1c" }}>{result.failed} failed</span>
         )}
       </div>
+      {result.copied > 0 && (
+        <div
+          style={{
+            padding: 10,
+            background: "var(--ll-orange-soft)",
+            border: "1px solid var(--ll-orange)",
+            borderRadius: 8,
+            fontSize: 12,
+            color: "#c07600",
+            lineHeight: 1.6,
+          }}
+        >
+          <strong>{result.copied} bản gốc vẫn còn trên disk.</strong> Vào{" "}
+          <a href="/admin/docs" style={{ color: "inherit", fontWeight: 600 }}>
+            Quản lý tài liệu
+          </a>{" "}
+          để so sánh copy mới với bản cũ, xong rồi deprecate bản không dùng.
+        </div>
+      )}
       {result.errors.length > 0 && (
         <details
           style={{ fontSize: 12, color: "#b91c1c", fontFamily: "monospace" }}
@@ -539,6 +613,148 @@ function ResultView({
       >
         Đóng
       </button>
+    </div>
+  );
+}
+
+/**
+ * Naive line-level diff. Đủ để admin biết AI đã thêm/bớt gì — không cần
+ * Myers's LCS cho MVP (và thêm dependency). Trim common prefix + suffix,
+ * show phần middle như two-panel diff.
+ */
+function BodyDiff({
+  oldBody,
+  newBody,
+}: {
+  oldBody: string;
+  newBody: string;
+}) {
+  const { removed, added, sameHead, sameTail } = useMemo(() => {
+    const oldLines = oldBody.split("\n");
+    const newLines = newBody.split("\n");
+    let head = 0;
+    while (
+      head < oldLines.length &&
+      head < newLines.length &&
+      oldLines[head] === newLines[head]
+    ) {
+      head++;
+    }
+    let tail = 0;
+    while (
+      tail < oldLines.length - head &&
+      tail < newLines.length - head &&
+      oldLines[oldLines.length - 1 - tail] ===
+        newLines[newLines.length - 1 - tail]
+    ) {
+      tail++;
+    }
+    const removed = oldLines.slice(head, oldLines.length - tail);
+    const added = newLines.slice(head, newLines.length - tail);
+    return { removed, added, sameHead: head, sameTail: tail };
+  }, [oldBody, newBody]);
+
+  const oldLen = oldBody.split("\n").length;
+  const newLen = newBody.split("\n").length;
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+      <div
+        style={{
+          display: "flex",
+          gap: 10,
+          fontSize: 11,
+          color: "var(--ll-muted)",
+          fontFamily: "ui-monospace, monospace",
+        }}
+      >
+        <span>- {oldLen} dòng cũ</span>
+        <span>+ {newLen} dòng mới</span>
+        <span>
+          · giữ nguyên {sameHead} dòng đầu, {sameTail} dòng cuối
+        </span>
+        <span style={{ color: "#b91c1c" }}>
+          · bỏ {removed.length} dòng
+        </span>
+        <span style={{ color: "var(--ll-green-dark)" }}>
+          · thêm {added.length} dòng
+        </span>
+      </div>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
+          gap: 8,
+          fontSize: 12,
+          fontFamily: "ui-monospace, monospace",
+        }}
+      >
+        <DiffPanel
+          label="Bản cũ (khối thay đổi)"
+          lines={removed}
+          tone="remove"
+        />
+        <DiffPanel label="AI rewrite (khối mới)" lines={added} tone="add" />
+      </div>
+    </div>
+  );
+}
+
+function DiffPanel({
+  label,
+  lines,
+  tone,
+}: {
+  label: string;
+  lines: string[];
+  tone: "add" | "remove";
+}) {
+  const bg = tone === "add" ? "rgba(29, 155, 95, 0.08)" : "rgba(185, 28, 28, 0.06)";
+  const border =
+    tone === "add" ? "1px solid rgba(29, 155, 95, 0.3)" : "1px solid rgba(185, 28, 28, 0.3)";
+  const prefix = tone === "add" ? "+" : "−";
+  const prefixColor = tone === "add" ? "var(--ll-green-bright)" : "#b91c1c";
+  return (
+    <div
+      style={{
+        background: bg,
+        border,
+        borderRadius: 6,
+        padding: 8,
+        minHeight: 80,
+        maxHeight: 260,
+        overflow: "auto",
+      }}
+    >
+      <div
+        style={{
+          fontSize: 10,
+          fontWeight: 700,
+          color: "var(--ll-muted)",
+          textTransform: "uppercase",
+          letterSpacing: "0.05em",
+          marginBottom: 4,
+        }}
+      >
+        {label}
+      </div>
+      {lines.length === 0 ? (
+        <div style={{ color: "var(--ll-muted)", fontStyle: "italic" }}>
+          (trống)
+        </div>
+      ) : (
+        lines.map((l, i) => (
+          <div
+            key={i}
+            style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}
+          >
+            <span style={{ color: prefixColor, userSelect: "none" }}>
+              {prefix}{" "}
+            </span>
+            {l || " "}
+          </div>
+        ))
+      )}
     </div>
   );
 }
