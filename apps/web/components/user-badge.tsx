@@ -1,9 +1,14 @@
-import { auth, signOut } from "@/lib/auth";
+import { auth } from "@/lib/auth";
+import { signOutAction } from "@/lib/auth-actions";
 import Link from "next/link";
 
 /**
  * Thanh user nhỏ ở góc header — email + role + logout (+ switch account khi
  * không có đủ quyền).
+ *
+ * Server action được import từ module riêng (`lib/auth-actions.ts`) thay vì
+ * inline, để Next.js có thể serialize cho các client-component ancestor mà
+ * không vi phạm rule "inline server action trong client component".
  */
 export async function UserBadge() {
   const session = await auth();
@@ -52,12 +57,7 @@ export async function UserBadge() {
           {role}
         </span>
       </span>
-      <form
-        action={async () => {
-          "use server";
-          await signOut({ redirectTo: "/login" });
-        }}
-      >
+      <form action={signOutAction.bind(null, "/login")}>
         <button
           type="submit"
           style={{

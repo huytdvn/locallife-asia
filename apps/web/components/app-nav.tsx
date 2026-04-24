@@ -1,8 +1,6 @@
-"use client";
-
 import Link from "next/link";
-import { useState } from "react";
 import { UserBadge } from "@/components/user-badge";
+import { MobileNavDrawer, type NavLinkData } from "@/components/mobile-nav-drawer";
 import type { Role } from "@/lib/rbac";
 
 type NavKey =
@@ -22,45 +20,44 @@ interface Props {
 }
 
 /**
- * Shared top nav. Role-aware + mobile hamburger drawer.
+ * Shared top nav (server component). Role-aware + mobile drawer.
+ * Links được compute server-side rồi pass cho MobileNavDrawer client.
  */
 export function AppNav({ role, active }: Props) {
-  const [open, setOpen] = useState(false);
   const isInternal = ["employee", "lead", "admin"].includes(role);
   const isStaff = role === "admin" || role === "lead";
   const isAdmin = role === "admin";
 
-  const links: { href: string; label: string; key: NavKey; subtle?: boolean }[] =
-    [];
-
+  type LinkSpec = { href: string; label: string; key: NavKey; subtle?: boolean };
+  const specs: LinkSpec[] = [];
   if (isInternal) {
-    links.push(
+    specs.push(
       { href: "/dashboard", label: "Tổng quan", key: "dashboard" },
       { href: "/", label: "Trợ lý AI", key: "home" },
       { href: "/training", label: "Training", key: "training" },
     );
   }
   if (role === "host") {
-    links.push({ href: "/host", label: "Cổng Host", key: "host" });
+    specs.push({ href: "/host", label: "Cổng Host", key: "host" });
   }
   if (role === "lok") {
-    links.push({ href: "/lok", label: "Cổng LOK", key: "lok" });
+    specs.push({ href: "/lok", label: "Cổng LOK", key: "lok" });
   }
   if (role === "guest") {
-    links.push({ href: "/public", label: "Trang công khai", key: "public" });
+    specs.push({ href: "/public", label: "Trang công khai", key: "public" });
   }
   if (role === "host" || role === "lok" || role === "guest") {
-    links.push({ href: "/training", label: "Training", key: "training" });
+    specs.push({ href: "/training", label: "Training", key: "training" });
   }
   if (isStaff) {
-    links.push({ href: "/admin", label: "Admin", key: "admin" });
-    links.push({
+    specs.push({ href: "/admin", label: "Admin", key: "admin" });
+    specs.push({
       href: "/admin/docs",
       label: "Tài liệu",
       key: "admin-docs",
       subtle: true,
     });
-    links.push({
+    specs.push({
       href: "/admin/training-report",
       label: "Training report",
       key: "admin-report",
@@ -68,201 +65,101 @@ export function AppNav({ role, active }: Props) {
     });
   }
   if (isAdmin) {
-    links.push({ href: "/host", label: "Host", key: "host", subtle: true });
-    links.push({ href: "/lok", label: "LOK", key: "lok", subtle: true });
+    specs.push({ href: "/host", label: "Host", key: "host", subtle: true });
+    specs.push({ href: "/lok", label: "LOK", key: "lok", subtle: true });
   }
 
+  const navLinks: NavLinkData[] = specs.map((s) => ({
+    href: s.href,
+    label: s.label,
+    key: s.key,
+    subtle: s.subtle,
+    active: active === s.key,
+  }));
+
   return (
-    <>
-      <nav
+    <nav
+      style={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        marginBottom: 20,
+        gap: 12,
+        paddingBottom: 12,
+        borderBottom: "1px solid var(--ll-border)",
+      }}
+    >
+      <div
         style={{
           display: "flex",
-          justifyContent: "space-between",
           alignItems: "center",
-          marginBottom: 20,
           gap: 12,
-          paddingBottom: 12,
-          borderBottom: "1px solid var(--ll-border)",
+          flex: 1,
+          minWidth: 0,
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: 12, flex: 1, minWidth: 0 }}>
-          <Link
-            href="/"
-            style={{
-              fontWeight: 700,
-              color: "var(--ll-green-dark)",
-              fontSize: 17,
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-              textDecoration: "none",
-              flexShrink: 0,
-            }}
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/mascot.webp"
-              alt="Bé Tre"
-              width={30}
-              height={30}
-              style={{ borderRadius: 8 }}
-            />
-            Bé Tre
-          </Link>
-
-          {/* Desktop nav — hidden on mobile via CSS */}
-          <div
-            className="ll-nav-desktop"
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 14,
-              flexWrap: "wrap",
-              minWidth: 0,
-            }}
-          >
-            <span style={{ color: "var(--ll-border)" }} aria-hidden>
-              ·
-            </span>
-            {links.map((l) => (
-              <NavLink
-                key={`${l.key}-${l.href}`}
-                href={l.href}
-                active={active === l.key}
-                subtle={l.subtle}
-              >
-                {l.label}
-              </NavLink>
-            ))}
-          </div>
-        </div>
-
-        <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
-          <UserBadge />
-          {/* Mobile hamburger */}
-          <button
-            type="button"
-            aria-label="Mở menu"
-            onClick={() => setOpen(true)}
-            className="ll-nav-mobile"
-            style={{
-              display: "none",
-              width: 40,
-              height: 40,
-              border: "1px solid var(--ll-border)",
-              borderRadius: 8,
-              background: "white",
-              alignItems: "center",
-              justifyContent: "center",
-              cursor: "pointer",
-              padding: 0,
-            }}
-          >
-            <span
-              style={{
-                width: 18,
-                height: 12,
-                display: "inline-flex",
-                flexDirection: "column",
-                justifyContent: "space-between",
-              }}
-              aria-hidden
-            >
-              <span style={{ height: 2, background: "var(--ll-ink)", borderRadius: 2 }} />
-              <span style={{ height: 2, background: "var(--ll-ink)", borderRadius: 2 }} />
-              <span style={{ height: 2, background: "var(--ll-ink)", borderRadius: 2 }} />
-            </span>
-          </button>
-        </div>
-      </nav>
-
-      {/* Mobile drawer */}
-      {open && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          onClick={() => setOpen(false)}
+        <Link
+          href="/"
           style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(6,45,26,0.4)",
-            zIndex: 100,
+            fontWeight: 700,
+            color: "var(--ll-green-dark)",
+            fontSize: 17,
             display: "flex",
-            justifyContent: "flex-end",
+            alignItems: "center",
+            gap: 8,
+            textDecoration: "none",
+            flexShrink: 0,
           }}
         >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              width: "min(280px, 86vw)",
-              background: "var(--ll-surface)",
-              padding: "20px 18px",
-              display: "flex",
-              flexDirection: "column",
-              gap: 6,
-              boxShadow: "var(--ll-shadow-lg)",
-              animation: "ll-fade-up 220ms var(--ll-ease) both",
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                marginBottom: 10,
-              }}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/mascot.webp"
+            alt="Bé Tre"
+            width={30}
+            height={30}
+            style={{ borderRadius: 8 }}
+          />
+          Bé Tre
+        </Link>
+
+        <div
+          className="ll-nav-desktop"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 14,
+            flexWrap: "wrap",
+            minWidth: 0,
+          }}
+        >
+          <span style={{ color: "var(--ll-border)" }} aria-hidden>
+            ·
+          </span>
+          {navLinks.map((l) => (
+            <NavLink
+              key={`${l.key}-${l.href}`}
+              href={l.href}
+              active={l.active}
+              subtle={l.subtle}
             >
-              <span
-                style={{
-                  fontWeight: 700,
-                  color: "var(--ll-green-dark)",
-                  fontSize: 15,
-                }}
-              >
-                Menu
-              </span>
-              <button
-                type="button"
-                aria-label="Đóng"
-                onClick={() => setOpen(false)}
-                style={{
-                  border: "none",
-                  background: "transparent",
-                  fontSize: 22,
-                  color: "var(--ll-muted)",
-                  cursor: "pointer",
-                  lineHeight: 1,
-                }}
-              >
-                ×
-              </button>
-            </div>
-            {links.map((l) => (
-              <Link
-                key={`mobile-${l.key}-${l.href}`}
-                href={l.href}
-                onClick={() => setOpen(false)}
-                style={{
-                  padding: "10px 12px",
-                  borderRadius: 8,
-                  background:
-                    active === l.key ? "var(--ll-green-soft)" : "transparent",
-                  color:
-                    active === l.key
-                      ? "var(--ll-green-dark)"
-                      : "var(--ll-ink)",
-                  fontWeight: active === l.key ? 600 : 500,
-                  fontSize: 14,
-                  textDecoration: "none",
-                }}
-              >
-                {l.label}
-              </Link>
-            ))}
-          </div>
+              {l.label}
+            </NavLink>
+          ))}
         </div>
-      )}
-    </>
+      </div>
+
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+          flexShrink: 0,
+        }}
+      >
+        <UserBadge />
+        <MobileNavDrawer links={navLinks} />
+      </div>
+    </nav>
   );
 }
 

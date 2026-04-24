@@ -1,4 +1,5 @@
-import { auth, signOut } from "@/lib/auth";
+import { auth } from "@/lib/auth";
+import { signOutAction } from "@/lib/auth-actions";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { AdminUpload } from "@/components/admin-upload";
@@ -32,12 +33,7 @@ export default async function AdminPage() {
             gửi email tới{" "}
             <a href="mailto:ops@locallife.asia">ops@locallife.asia</a>.
           </p>
-          <form
-            action={async () => {
-              "use server";
-              await signOut({ redirectTo: "/login?next=/admin" });
-            }}
-          >
+          <form action={signOutAction.bind(null, "/login?next=/admin")}>
             <button
               type="submit"
               style={{
