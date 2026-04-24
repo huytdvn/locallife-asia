@@ -65,8 +65,15 @@ export function ReorganizeButton() {
       let offset = 0;
       let totalScanned = 0;
       let hasMore = true;
+      // Safety: cap iterations so a server bug that never advances offset
+      // can't spin the client. 200 pages × 30/page = 6000 docs — well
+      // above any plausible KB size.
+      const MAX_ITER = 200;
+      let iter = 0;
 
-      while (hasMore) {
+      while (hasMore && iter < MAX_ITER) {
+        iter++;
+        const prevOffset = offset;
         const res = await fetch("/api/admin/reorganize", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -88,6 +95,14 @@ export function ReorganizeButton() {
         hasMore = !!data.hasMore;
         offset = data.nextOffset ?? offset + (data.scanned ?? 0);
         if (!pageSize) break; // single-shot mode
+        if (offset <= prevOffset) {
+          setError("Server returned non-advancing offset — aborting");
+          return;
+        }
+      }
+      if (iter >= MAX_ITER) {
+        setError("Pagination iteration cap reached — aborting");
+        return;
       }
 
       setPlan({

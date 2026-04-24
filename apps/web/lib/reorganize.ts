@@ -211,22 +211,23 @@ export function applyReorganizePlan(plan: ReorganizePlan): ApplyResult {
         throw new Error("file missing");
       }
 
-      const raw = fs.readFileSync(currentAbs, "utf8");
-      const parsed = matter(raw);
-      const fm = { ...parsed.data };
-      if (item.titleChanged) {
-        fm.title = item.newTitle;
-        result.titleUpdated++;
-      }
-      const bodyToWrite =
-        item.bodyChanged && item.newBody ? item.newBody : parsed.content;
-      const output = matter.stringify(bodyToWrite.trimEnd() + "\n", fm);
+      const needsRewrite = item.titleChanged || item.bodyChanged;
 
-      // Strategy: always write content in-place first, then rename to new
-      // location if path changed. renameSync is atomic on the same FS —
-      // avoids the write/delete race that could leave two files sharing
-      // a ULID when the delete half fails.
-      fs.writeFileSync(currentAbs, output, "utf8");
+      // Only re-serialize + write when content actually changed. Skipping
+      // the write on pure-rename avoids spurious YAML reformatting drift
+      // (e.g., list style changing from `- foo` flow to `  - foo` block).
+      if (needsRewrite) {
+        const raw = fs.readFileSync(currentAbs, "utf8");
+        const parsed = matter(raw);
+        const fm = { ...parsed.data };
+        if (item.titleChanged) {
+          fm.title = item.newTitle;
+        }
+        const bodyToWrite =
+          item.bodyChanged && item.newBody ? item.newBody : parsed.content;
+        const output = matter.stringify(bodyToWrite.trimEnd() + "\n", fm);
+        fs.writeFileSync(currentAbs, output, "utf8");
+      }
 
       if (item.pathChanged) {
         if (
@@ -236,10 +237,17 @@ export function applyReorganizePlan(plan: ReorganizePlan): ApplyResult {
           throw new Error(`target already exists: ${item.newPath}`);
         }
         fs.mkdirSync(path.dirname(targetAbs), { recursive: true });
+        // renameSync is atomic on POSIX same-FS moves — avoids the
+        // write/delete race where a failed delete could leave two files
+        // sharing a ULID.
         fs.renameSync(currentAbs, targetAbs);
-        result.moved++;
       }
+
+      // Bump counters only after all the FS ops have succeeded, so stats
+      // never double-count a failed item.
+      if (item.titleChanged) result.titleUpdated++;
       if (item.bodyChanged) result.rewrote++;
+      if (item.pathChanged) result.moved++;
     } catch (err) {
       result.failed++;
       result.errors.push({

@@ -86,15 +86,39 @@ export function AdminUpload() {
     setAudience(next);
   }
 
+  // Cap to protect Gemini quota + avoid a 10k-file folder drop tying up
+  // the server for hours. Admin can run multiple smaller batches if
+  // they genuinely have more.
+  const MAX_BATCH = 500;
+
   function acceptFiles(fl: FileList | null) {
     if (!fl) return;
     const arr: QueuedFile[] = [];
+    let skippedSystem = 0;
     for (const f of Array.from(fl)) {
-      // Skip tệp hệ thống macOS / hidden
-      if (f.name.startsWith(".")) continue;
+      // Skip macOS / hidden noise
+      if (f.name.startsWith(".")) {
+        skippedSystem++;
+        continue;
+      }
       const anyF = f as unknown as { webkitRelativePath?: string };
       const rel = anyF.webkitRelativePath || f.name;
       arr.push({ file: f, relativePath: rel, state: "pending" });
+    }
+    if (arr.length > MAX_BATCH) {
+      const trimmed = arr.slice(0, MAX_BATCH);
+      setToast({
+        kind: "warn",
+        msg: `Giới hạn ${MAX_BATCH} file/lần. Đã lấy ${MAX_BATCH} đầu, bỏ ${arr.length - MAX_BATCH} còn lại. Chạy lại sau để xử lý phần còn lại.`,
+      });
+      setQueue(trimmed);
+      return;
+    }
+    if (skippedSystem > 0) {
+      setToast({
+        kind: "warn",
+        msg: `Bỏ qua ${skippedSystem} file hệ thống (.DS_Store, v.v.).`,
+      });
     }
     setQueue(arr);
   }
