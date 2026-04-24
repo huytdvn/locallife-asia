@@ -22,7 +22,14 @@ interface Plan {
   items: PlanItem[];
   scanned: number;
   generatedAt: string;
+  hasMore?: boolean;
+  nextOffset?: number;
 }
+
+// Rewrite mode takes ~10s/doc via Gemini; 30/page keeps each request well
+// under the 800s route limit. Classify-only is fast enough we can skip
+// paging by requesting the whole KB at once.
+const REWRITE_PAGE_SIZE = 30;
 
 interface ApplyResult {
   moved: number;
@@ -41,27 +48,58 @@ export function ReorganizeButton() {
   const [result, setResult] = useState<ApplyResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  const [progress, setProgress] = useState<{ done: number } | null>(null);
+
   async function buildPlan() {
     setBusy(true);
     setError(null);
     setPlan(null);
     setResult(null);
+    setProgress({ done: 0 });
     try {
-      const res = await fetch("/api/admin/reorganize", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ op: "plan", mode }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error ?? `HTTP ${res.status}`);
-        return;
+      // Classify-only: single request (fast). Rewrite: chunked pagination.
+      const pageSize =
+        mode === "rewrite-and-move" ? REWRITE_PAGE_SIZE : undefined;
+
+      const aggregated: PlanItem[] = [];
+      let offset = 0;
+      let totalScanned = 0;
+      let hasMore = true;
+
+      while (hasMore) {
+        const res = await fetch("/api/admin/reorganize", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            op: "plan",
+            mode,
+            limit: pageSize,
+            offset,
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          setError(data.error ?? `HTTP ${res.status}`);
+          return;
+        }
+        aggregated.push(...(data.items ?? []));
+        totalScanned += data.scanned ?? 0;
+        setProgress({ done: totalScanned });
+        hasMore = !!data.hasMore;
+        offset = data.nextOffset ?? offset + (data.scanned ?? 0);
+        if (!pageSize) break; // single-shot mode
       }
-      setPlan(data);
+
+      setPlan({
+        items: aggregated,
+        scanned: totalScanned,
+        generatedAt: new Date().toISOString(),
+      });
     } catch (err) {
       setError(String(err));
     } finally {
       setBusy(false);
+      setProgress(null);
     }
   }
 
@@ -188,7 +226,11 @@ export function ReorganizeButton() {
                 disabled={busy}
                 style={primaryBtn(busy)}
               >
-                {busy ? "AI đang đọc KB… (có thể mất vài phút)" : "Tạo plan"}
+                {busy
+                  ? progress
+                    ? `AI đang đọc KB… (${progress.done} docs scanned)`
+                    : "AI đang đọc KB…"
+                  : "Tạo plan"}
               </button>
             </div>
           )}

@@ -436,6 +436,15 @@ a.ll-card:hover,
   display: none !important;
 }
 
+/* Nav horizontal scroll — hide scrollbar when the row fits (most
+   desktops). Only shows when actual overflow at narrow widths. */
+.ll-nav-desktop {
+  scrollbar-width: none;
+}
+.ll-nav-desktop::-webkit-scrollbar {
+  display: none;
+}
+
 /* Docs manager: mobile tree toggle button — only visible on mobile. */
 .ll-docs-tree-toggle {
   position: absolute;

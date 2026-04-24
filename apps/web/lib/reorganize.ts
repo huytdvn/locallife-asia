@@ -116,16 +116,23 @@ async function planOne(
 }
 
 /**
- * Build plan cho toàn KB (hoặc 1 slice).
- * `onProgress` callback để stream SSE.
+ * Build plan cho toàn KB (hoặc 1 slice qua offset + limit).
+ * `onProgress` callback để stream SSE (reserved cho future).
+ *
+ * Pagination dùng khi rewrite-mode vì mỗi doc mất ~10s qua Gemini —
+ * 100 docs chạy 1 phát sẽ vượt route maxDuration. Client chunk theo
+ * limit=30 là safe.
  */
 export async function buildReorganizePlan(
   mode: ReorganizeMode,
   onProgress?: (done: number, total: number, currentPath: string) => void,
-  limit?: number
-): Promise<ReorganizePlan> {
+  limit?: number,
+  offset: number = 0,
+): Promise<ReorganizePlan & { hasMore: boolean; nextOffset: number }> {
   const docs = loadKnowledge();
-  const slice = limit ? docs.slice(0, limit) : docs;
+  const start = Math.max(0, offset);
+  const end = limit ? Math.min(docs.length, start + limit) : docs.length;
+  const slice = docs.slice(start, end);
   const items: ReorganizeItem[] = [];
   for (let i = 0; i < slice.length; i++) {
     const d = slice[i];
@@ -154,6 +161,8 @@ export async function buildReorganizePlan(
     items,
     scanned: slice.length,
     generatedAt: new Date().toISOString(),
+    hasMore: end < docs.length,
+    nextOffset: end,
   };
 }
 
@@ -209,21 +218,26 @@ export function applyReorganizePlan(plan: ReorganizePlan): ApplyResult {
         fm.title = item.newTitle;
         result.titleUpdated++;
       }
-      const bodyToWrite = item.bodyChanged && item.newBody ? item.newBody : parsed.content;
+      const bodyToWrite =
+        item.bodyChanged && item.newBody ? item.newBody : parsed.content;
       const output = matter.stringify(bodyToWrite.trimEnd() + "\n", fm);
 
+      // Strategy: always write content in-place first, then rename to new
+      // location if path changed. renameSync is atomic on the same FS —
+      // avoids the write/delete race that could leave two files sharing
+      // a ULID when the delete half fails.
+      fs.writeFileSync(currentAbs, output, "utf8");
+
       if (item.pathChanged) {
-        fs.mkdirSync(path.dirname(targetAbs), { recursive: true });
-        if (fs.existsSync(targetAbs) && path.resolve(targetAbs) !== path.resolve(currentAbs)) {
+        if (
+          fs.existsSync(targetAbs) &&
+          path.resolve(targetAbs) !== path.resolve(currentAbs)
+        ) {
           throw new Error(`target already exists: ${item.newPath}`);
         }
-        fs.writeFileSync(targetAbs, output, "utf8");
-        if (path.resolve(targetAbs) !== path.resolve(currentAbs)) {
-          fs.unlinkSync(currentAbs);
-        }
+        fs.mkdirSync(path.dirname(targetAbs), { recursive: true });
+        fs.renameSync(currentAbs, targetAbs);
         result.moved++;
-      } else {
-        fs.writeFileSync(currentAbs, output, "utf8");
       }
       if (item.bodyChanged) result.rewrote++;
     } catch (err) {

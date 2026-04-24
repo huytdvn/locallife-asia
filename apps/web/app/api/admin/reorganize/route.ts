@@ -9,7 +9,11 @@ import {
 } from "@/lib/reorganize";
 
 export const runtime = "nodejs";
-export const maxDuration = 300;
+// Vercel Pro max: 900s. For classify-only (~2s/doc × ~100 docs = ~200s) this
+// is plenty. For rewrite mode (~10s/doc × ~100 docs = ~17min) the client
+// must page via `limit` + `offset`; a single request will still fit inside
+// maxDuration if the KB stays under ~80 docs per page.
+export const maxDuration = 800;
 
 /**
  * POST /api/admin/reorganize
@@ -34,6 +38,7 @@ export async function POST(req: Request) {
     mode?: ReorganizeMode;
     plan?: ReorganizePlan;
     limit?: number;
+    offset?: number;
   };
   try {
     body = await req.json();
@@ -44,7 +49,12 @@ export async function POST(req: Request) {
   try {
     if (body.op === "plan") {
       const mode: ReorganizeMode = body.mode ?? "classify-only";
-      const plan = await buildReorganizePlan(mode, undefined, body.limit);
+      const plan = await buildReorganizePlan(
+        mode,
+        undefined,
+        body.limit,
+        body.offset ?? 0,
+      );
       await writeAudit({
         actorEmail: session.email,
         role: session.role,
@@ -53,6 +63,8 @@ export async function POST(req: Request) {
           reorganize_op: "plan",
           mode,
           scanned: plan.scanned,
+          offset: body.offset ?? 0,
+          has_more: plan.hasMore,
           to_move: plan.items.filter((i) => i.pathChanged).length,
           to_rewrite: plan.items.filter((i) => i.bodyChanged).length,
         },

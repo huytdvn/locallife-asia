@@ -131,7 +131,6 @@ export function AppNav({ role, active }: Props) {
             minWidth: 0,
             overflowX: "auto",
             overflowY: "hidden",
-            scrollbarWidth: "thin",
           }}
         >
           <span
