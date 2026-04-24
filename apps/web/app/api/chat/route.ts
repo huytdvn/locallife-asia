@@ -73,6 +73,12 @@ async function runAgentLoop(params: {
 }) {
   const { session, systemInstruction, initialMessages, emit } = params;
   const citations: string[] = [];
+  const citationRefs: Array<{
+    docId: string;
+    path: string;
+    heading: string;
+    title: string;
+  }> = [];
   const toolTrace: Array<{ name: string; input: unknown; resultLength: number }> = [];
   const finalText: string[] = [];
 
@@ -116,7 +122,18 @@ async function runAgentLoop(params: {
     contents.push({ role: "model", parts: accumulatedParts });
 
     if (functionCalls.length === 0) {
-      emit("citations", { citations: Array.from(new Set(citations)) });
+      // Dedup refs by docId
+      const seen = new Set<string>();
+      const uniqueRefs = citationRefs.filter((r) => {
+        const key = `${r.docId}#${r.heading}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+      emit("citations", {
+        citations: Array.from(new Set(citations)),
+        refs: uniqueRefs,
+      });
       await writeAudit({
         actorEmail: session.email,
         role: session.role,
@@ -138,6 +155,7 @@ async function runAgentLoop(params: {
       emit("tool_start", { name, input: fc.args });
       const out = await runTool(name, fc.args ?? {}, session);
       if (out.citations) citations.push(...out.citations);
+      if (out.citationRefs) citationRefs.push(...out.citationRefs);
       toolTrace.push({ name, input: fc.args, resultLength: out.content.length });
       emit("tool_result", { name, citations: out.citations ?? [] });
       responseParts.push({

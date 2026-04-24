@@ -32,9 +32,10 @@ class Sensitivity(StrEnum):
 
 
 class SourceRef(BaseModel):
-    type: Literal["manual", "pdf", "drive", "scan", "docx", "xlsx", "image"]
+    type: Literal["manual", "pdf", "drive", "scan", "docx", "xlsx", "csv", "image"]
     path: str
     captured_at: date
+    sha256: str | None = None
 
 
 class FrontMatter(BaseModel):

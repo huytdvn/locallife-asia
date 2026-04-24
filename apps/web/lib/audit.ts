@@ -17,6 +17,8 @@ export interface AuditEntry {
   metadata?: Record<string, unknown>;
 }
 
+let auditWarned = false;
+
 export async function writeAudit(entry: AuditEntry): Promise<void> {
   if (!isEnabled()) return;
   try {
@@ -37,8 +39,10 @@ export async function writeAudit(entry: AuditEntry): Promise<void> {
       ]
     );
   } catch (err) {
-    // Never fail a request because audit logging failed.
-    console.error("[audit] write failed:", err);
+    if (!auditWarned) {
+      console.warn("[audit] write failed (suppressing repeats):", err instanceof Error ? err.message : err);
+      auditWarned = true;
+    }
   }
 }
 

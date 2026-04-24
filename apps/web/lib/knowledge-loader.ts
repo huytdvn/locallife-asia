@@ -20,8 +20,15 @@ let cache: { docs: LoadedDoc[]; mtime: number } | null = null;
 
 export function knowledgeRoot(): string {
   const envPath = process.env.KNOWLEDGE_DIR;
-  if (envPath) return path.resolve(envPath);
-  return path.resolve(process.cwd(), "..", "..", "knowledge");
+  const candidates: string[] = [];
+  if (envPath) candidates.push(path.resolve(envPath));
+  candidates.push(path.resolve(process.cwd(), "knowledge"));
+  candidates.push(path.resolve(process.cwd(), "..", "..", "knowledge"));
+  candidates.push(path.resolve(process.cwd(), "..", "knowledge"));
+  for (const c of candidates) {
+    if (fs.existsSync(c)) return c;
+  }
+  return candidates[0];
 }
 
 export function loadKnowledge(force = false): LoadedDoc[] {
