@@ -62,12 +62,18 @@
     #f5c24b 140%
   );
   --ll-grad-calm: linear-gradient(135deg, #ebf7f0 0%, #fdfaf2 100%);
+  /* Hero: less saturated, smoother — xanh rừng sâu chuyển sang lá non,
+     accent cam chỉ chạm nhẹ ở góc phải cho ấm. */
   --ll-grad-hero: linear-gradient(
-    135deg,
+    120deg,
     #062d1a 0%,
-    #0d5430 40%,
-    #1d9b5f 80%,
-    #e67e22 130%
+    #0d5430 45%,
+    #1d9b5f 100%
+  );
+  --ll-grad-hero-accent: radial-gradient(
+    circle at 95% 15%,
+    rgba(245, 194, 75, 0.22) 0%,
+    transparent 55%
   );
   --ll-grad-canopy: linear-gradient(
     180deg,
@@ -144,6 +150,14 @@ button:active:not(:disabled) {
   border-radius: var(--ll-radius-lg);
   box-shadow: var(--ll-shadow-sm);
   padding: 20px;
+  transition:
+    box-shadow 160ms var(--ll-ease),
+    border-color 160ms var(--ll-ease);
+}
+a.ll-card:hover,
+.ll-card.is-interactive:hover {
+  box-shadow: var(--ll-shadow-md);
+  border-color: rgba(13, 84, 48, 0.25);
 }
 
 .ll-card-warm {
@@ -394,7 +408,7 @@ button:active:not(:disabled) {
   text-decoration: none;
 }
 
-/* ─── Responsive grid helpers (mobile-first-ish). ───
+/* ─── Responsive helpers ─────────────────────────────────────────────
    Pages hand-style grids for desktop; these helpers collapse them on
    narrow viewports so we don't have to rewrite every inline layout. */
 .ll-grid-stats {
@@ -404,60 +418,98 @@ button:active:not(:disabled) {
 }
 .ll-grid-2col {
   display: grid;
-  grid-template-columns: minmax(0, 2fr) minmax(260px, 1fr);
+  grid-template-columns: minmax(0, 1fr) 320px;
 }
 .ll-grid-1col {
   display: grid;
   grid-template-columns: 1fr;
 }
 
-/* Hide + drawer helpers */
-.ll-mobile-only {
-  display: none;
+/* Mobile/desktop visibility toggles. `!important` để không bị inline
+   style ghi đè ngược. */
+.ll-mobile-only,
+.ll-mobile-only-inline,
+.ll-docs-tree-toggle {
+  display: none !important;
 }
-.ll-desktop-only {
-  display: initial;
+.ll-nav-mobile {
+  display: none !important;
 }
 
-/* Small screens: collapse nav + grids + hide decorative bits. */
+/* Docs manager: mobile tree toggle button — only visible on mobile. */
+.ll-docs-tree-toggle {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 30;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--ll-green);
+  background: white;
+  color: var(--ll-green-dark);
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  box-shadow: var(--ll-shadow-md);
+  gap: 6px;
+  align-items: center;
+}
+
+/* Docs tree backdrop — only shows when open on mobile. */
+.ll-docs-tree-backdrop {
+  display: none;
+}
+
+/* ── 900px: medium screens — 2-col grid collapses ── */
 @media (max-width: 900px) {
   .ll-grid-2col {
     grid-template-columns: 1fr !important;
   }
 }
 
+/* ── 768px: full mobile layout ── */
 @media (max-width: 768px) {
   html,
   body {
     font-size: 15px;
   }
+
   .ll-grid-stats {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
   .ll-card {
     padding: 14px;
     border-radius: var(--ll-radius-md);
   }
+
   main {
     padding-left: 14px !important;
     padding-right: 14px !important;
   }
-  /* Nav becomes a drawer-ish bar */
+
+  /* Nav: hide desktop links, show hamburger */
   .ll-nav-desktop {
     display: none !important;
   }
   .ll-nav-mobile {
-    display: flex !important;
+    display: inline-flex !important;
   }
+
+  /* Generic mobile/desktop toggles */
   .ll-mobile-only {
-    display: initial;
+    display: block !important;
+  }
+  .ll-mobile-only-inline {
+    display: inline-flex !important;
   }
   .ll-desktop-only {
     display: none !important;
   }
+
   /* Hero shrinks */
   .ll-hero {
-    padding: 20px 18px !important;
+    padding: 22px 18px !important;
     gap: 14px !important;
   }
   .ll-hero-mascot {
@@ -468,16 +520,20 @@ button:active:not(:disabled) {
   .ll-hero-title {
     font-size: 22px !important;
   }
-  /* Docs manager tree/preview collapse */
-  .ll-docs-split {
+
+  /* Docs manager — single column with slide-in tree */
+  .ll-docs-shell {
     grid-template-columns: 1fr !important;
+    height: calc(100vh - 140px) !important;
+  }
+  .ll-docs-tree-toggle {
+    display: inline-flex !important;
   }
   .ll-docs-tree {
     position: fixed !important;
     inset: 0 !important;
     z-index: 80;
-    background: var(--ll-surface);
-    padding: 16px;
+    background: var(--ll-surface) !important;
     overflow: auto;
     transform: translateX(-100%);
     transition: transform 220ms var(--ll-ease);
@@ -486,28 +542,33 @@ button:active:not(:disabled) {
     transform: translateX(0);
   }
   .ll-docs-tree-backdrop {
-    display: none;
     position: fixed;
     inset: 0;
-    background: rgba(6, 45, 26, 0.35);
+    background: rgba(6, 45, 26, 0.4);
     z-index: 79;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 180ms var(--ll-ease);
   }
   .ll-docs-tree-backdrop.is-open {
     display: block;
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .ll-docs-empty {
+    padding: 20px 16px !important;
+  }
+
+  /* Touch-friendly */
+  button,
+  .ll-pill,
+  a.ll-file-link {
+    min-height: 40px;
   }
 }
 
 @media (max-width: 480px) {
   .ll-grid-stats {
     grid-template-columns: 1fr;
-  }
-}
-
-/* Touch-friendly tap targets on mobile */
-@media (max-width: 768px) {
-  button,
-  .ll-pill,
-  a.ll-file-link {
-    min-height: 40px;
   }
 }

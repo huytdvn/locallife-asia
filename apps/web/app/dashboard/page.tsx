@@ -125,17 +125,14 @@ export default async function DashboardPage() {
                   <Link
                     key={p.slug}
                     href={`/training/${p.slug}`}
+                    className="ll-card"
                     style={{
                       display: "flex",
                       flexDirection: "column",
                       gap: 8,
                       padding: 16,
-                      borderRadius: 10,
-                      background: "white",
-                      border: "1px solid var(--ll-border)",
                       textDecoration: "none",
                       color: "inherit",
-                      boxShadow: "var(--ll-shadow-sm)",
                     }}
                   >
                     <div

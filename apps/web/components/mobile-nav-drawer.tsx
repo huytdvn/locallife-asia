@@ -27,7 +27,6 @@ export function MobileNavDrawer({ links }: { links: NavLinkData[] }) {
         onClick={() => setOpen(true)}
         className="ll-nav-mobile"
         style={{
-          display: "none",
           width: 40,
           height: 40,
           border: "1px solid var(--ll-border)",

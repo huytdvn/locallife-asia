@@ -127,12 +127,17 @@ export function AppNav({ role, active }: Props) {
           style={{
             display: "flex",
             alignItems: "center",
-            gap: 14,
-            flexWrap: "wrap",
+            gap: 16,
             minWidth: 0,
+            overflowX: "auto",
+            overflowY: "hidden",
+            scrollbarWidth: "thin",
           }}
         >
-          <span style={{ color: "var(--ll-border)" }} aria-hidden>
+          <span
+            style={{ color: "var(--ll-border)", flexShrink: 0 }}
+            aria-hidden
+          >
             ·
           </span>
           {navLinks.map((l) => (
@@ -191,6 +196,8 @@ function NavLink({
           ? "2px solid var(--ll-green-bright)"
           : "2px solid transparent",
         transition: "color 120ms var(--ll-ease)",
+        whiteSpace: "nowrap",
+        flexShrink: 0,
       }}
     >
       {children}

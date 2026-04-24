@@ -172,13 +172,14 @@ export function Hero({
     <section
       className="ll-anim-in ll-hero"
       style={{
-        background: "var(--ll-grad-hero)",
+        background:
+          "var(--ll-grad-hero-accent), var(--ll-grad-hero)",
         color: "white",
         borderRadius: "var(--ll-radius-lg)",
-        padding: "28px 32px",
+        padding: "26px 30px",
         boxShadow: "var(--ll-shadow-md)",
         display: "flex",
-        gap: 24,
+        gap: 22,
         alignItems: "center",
         flexWrap: "wrap",
         position: "relative",
@@ -285,9 +286,9 @@ export function Hero({
         viewBox="0 0 200 200"
         style={{
           position: "absolute",
-          right: -80,
-          top: -80,
-          opacity: 0.12,
+          right: -100,
+          top: -100,
+          opacity: 0.08,
           zIndex: 1,
         }}
       >

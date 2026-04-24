@@ -30,8 +30,7 @@ export function DocsManager({ canEdit }: Props) {
   const [search, setSearch] = useState("");
   const [selected, setSelectedRaw] = useState<string | null>(null);
   const [showDeprecated, setShowDeprecated] = useState(false);
-  const [treeOpen, setTreeOpen] = useState(false); // mobile drawer
-  // Navigation history (undo/redo giữa các doc đã chọn)
+  const [treeOpen, setTreeOpen] = useState(false);
   const [history, setHistory] = useState<string[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
 
@@ -42,19 +41,17 @@ export function DocsManager({ canEdit }: Props) {
       .catch((e) => setError(String(e)));
   }, []);
 
-  // Khi user chọn doc: push vào history (xoá phần forward nếu đang ở giữa)
   const navigate = (id: string | null) => {
     setSelectedRaw(id);
-    setTreeOpen(false); // mobile: đóng drawer sau khi chọn
+    setTreeOpen(false);
     if (!id) return;
     setHistory((h) => {
       const trimmed = h.slice(0, historyIndex + 1);
-      if (trimmed[trimmed.length - 1] === id) return trimmed; // dedup liên tiếp
-      const next = [...trimmed, id].slice(-50); // max 50
+      if (trimmed[trimmed.length - 1] === id) return trimmed;
+      const next = [...trimmed, id].slice(-50);
       setHistoryIndex(next.length - 1);
       return next;
     });
-    // Sync URL để browser back/forward + share link hoạt động
     if (typeof window !== "undefined") {
       const url = new URL(window.location.href);
       url.searchParams.set("doc", id);
@@ -78,7 +75,6 @@ export function DocsManager({ canEdit }: Props) {
   const canBack = historyIndex > 0;
   const canForward = historyIndex < history.length - 1;
 
-  // Handle ?doc=<id> or ?path=<path> query param to open directly + lắng nghe popstate
   useEffect(() => {
     if (!docs) return;
     if (typeof window === "undefined") return;
@@ -125,7 +121,13 @@ export function DocsManager({ canEdit }: Props) {
 
   const stats = useMemo(() => {
     if (!docs) return null;
-    const byZone: Record<string, number> = { internal: 0, host: 0, lok: 0, public: 0, inbox: 0 };
+    const byZone: Record<string, number> = {
+      internal: 0,
+      host: 0,
+      lok: 0,
+      public: 0,
+      inbox: 0,
+    };
     let draft = 0;
     let restricted = 0;
     for (const d of docs) {
@@ -139,43 +141,33 @@ export function DocsManager({ canEdit }: Props) {
 
   return (
     <div
-      className="ll-docs-split"
+      className="ll-docs-shell"
       style={{
         display: "grid",
-        gridTemplateColumns: "320px 1fr",
+        gridTemplateColumns: "300px minmax(0, 1fr)",
         gap: 0,
-        height: "calc(100vh - 200px)",
-        minHeight: 600,
+        height: "calc(100vh - 180px)",
+        minHeight: 560,
         border: "1px solid var(--ll-border)",
         borderRadius: "var(--ll-radius-lg)",
         overflow: "hidden",
         background: "white",
-        boxShadow: "var(--ll-shadow-sm)",
+        boxShadow: "var(--ll-shadow-md)",
         position: "relative",
       }}
     >
-      {/* Mobile tree toggle */}
+      {/* Mobile tree toggle — chỉ hiện <=768px */}
       <button
         type="button"
-        className="ll-mobile-only"
+        className="ll-docs-tree-toggle"
         onClick={() => setTreeOpen(true)}
-        style={{
-          position: "absolute",
-          top: 10,
-          left: 10,
-          zIndex: 30,
-          padding: "8px 14px",
-          borderRadius: 8,
-          border: "1px solid var(--ll-border)",
-          background: "white",
-          fontSize: 13,
-          fontWeight: 500,
-          cursor: "pointer",
-          boxShadow: "var(--ll-shadow-sm)",
-        }}
+        aria-label="Mở cây tài liệu"
       >
-        ☰ Cây tài liệu
+        <span aria-hidden>☰</span>
+        <span>Cây tài liệu</span>
       </button>
+
+      {/* Backdrop mobile */}
       <div
         className={`ll-docs-tree-backdrop${treeOpen ? " is-open" : ""}`}
         onClick={() => setTreeOpen(false)}
@@ -192,82 +184,105 @@ export function DocsManager({ canEdit }: Props) {
           minHeight: 0,
         }}
       >
-        <div
+        <header
           style={{
-            padding: "12px 12px 8px",
+            padding: "14px 14px 10px",
             borderBottom: "1px solid var(--ll-border)",
             display: "flex",
             flexDirection: "column",
-            gap: 8,
+            gap: 10,
             flexShrink: 0,
+            background: "white",
           }}
         >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 8,
+            }}
+          >
+            <strong
+              style={{
+                fontSize: 13,
+                color: "var(--ll-green-dark)",
+                textTransform: "uppercase",
+                letterSpacing: "0.04em",
+              }}
+            >
+              Knowledge tree
+            </strong>
+            {stats && (
+              <span
+                style={{
+                  fontSize: 11,
+                  color: "var(--ll-muted)",
+                  background: "var(--ll-surface-soft)",
+                  padding: "2px 8px",
+                  borderRadius: 999,
+                }}
+              >
+                {stats.total} docs
+              </span>
+            )}
+          </div>
           <input
-            placeholder="Tìm tài liệu…"
+            placeholder="Tìm tên / nội dung / path…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             style={{
-              padding: "8px 12px",
+              padding: "9px 12px",
               borderRadius: 8,
               border: "1px solid var(--ll-border)",
               fontSize: 13,
               fontFamily: "inherit",
               width: "100%",
-              background: "white",
+              background: "var(--ll-surface-soft)",
             }}
           />
           {stats && (
             <div
               style={{
                 display: "flex",
-                gap: 8,
+                gap: 10,
                 flexWrap: "wrap",
                 fontSize: 11,
                 color: "var(--ll-muted)",
               }}
             >
-              <span>{stats.total} docs</span>
-              <span>·</span>
-              <span style={{ color: "#c07600" }}>{stats.draft} draft</span>
-              <span>·</span>
-              <span style={{ color: "#b91c1c" }}>
-                {stats.restricted} restricted
-              </span>
+              <StatChip
+                count={stats.draft}
+                label="draft"
+                tone={stats.draft > 0 ? "orange" : "muted"}
+              />
+              <StatChip
+                count={stats.restricted}
+                label="restricted"
+                tone={stats.restricted > 0 ? "red" : "muted"}
+              />
+              <label
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 4,
+                  cursor: "pointer",
+                  marginLeft: "auto",
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={showDeprecated}
+                  onChange={(e) => setShowDeprecated(e.target.checked)}
+                />
+                + deprecated
+              </label>
             </div>
           )}
-          <label
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 6,
-              fontSize: 12,
-              color: "var(--ll-muted)",
-              cursor: "pointer",
-            }}
-          >
-            <input
-              type="checkbox"
-              checked={showDeprecated}
-              onChange={(e) => setShowDeprecated(e.target.checked)}
-            />
-            Hiện cả deprecated
-          </label>
-        </div>
-        <div
-          style={{
-            flex: 1,
-            overflowY: "auto",
-            padding: "6px 0",
-          }}
-        >
+        </header>
+        <div style={{ flex: 1, overflowY: "auto", padding: "6px 0" }}>
           {error ? (
-            <div
-              style={{
-                padding: 12,
-                color: "#b91c1c",
-                fontSize: 13,
-              }}
-            >
+            <div style={{ padding: 12, color: "#b91c1c", fontSize: 13 }}>
               Lỗi: {error}
             </div>
           ) : docs === null ? (
@@ -315,28 +330,70 @@ export function DocsManager({ canEdit }: Props) {
             onSaved={(meta) => {
               setDocs(
                 (list) =>
-                  list?.map((d) => (d.id === meta.id ? meta : d)) ?? list
+                  list?.map((d) => (d.id === meta.id ? meta : d)) ?? list,
               );
             }}
             onDeprecated={(meta) => {
               setDocs(
                 (list) =>
-                  list?.map((d) => (d.id === meta.id ? meta : d)) ?? list
+                  list?.map((d) => (d.id === meta.id ? meta : d)) ?? list,
               );
             }}
           />
         ) : (
-          <EmptyState stats={stats} />
+          <EmptyState stats={stats} onOpenTree={() => setTreeOpen(true)} />
         )}
       </main>
     </div>
   );
 }
 
+function StatChip({
+  count,
+  label,
+  tone,
+}: {
+  count: number;
+  label: string;
+  tone: "orange" | "red" | "muted";
+}) {
+  const fg = {
+    orange: "#c07600",
+    red: "#b91c1c",
+    muted: "var(--ll-muted)",
+  }[tone];
+  const bg = {
+    orange: "var(--ll-orange-soft)",
+    red: "#fef2f2",
+    muted: "transparent",
+  }[tone];
+  return (
+    <span
+      style={{
+        padding: "2px 8px",
+        borderRadius: 999,
+        color: fg,
+        background: bg,
+        fontSize: 11,
+        fontWeight: 600,
+      }}
+    >
+      {count} {label}
+    </span>
+  );
+}
+
 function EmptyState({
   stats,
+  onOpenTree,
 }: {
-  stats: { total: number; byZone: Record<string, number>; draft: number; restricted: number } | null;
+  stats: {
+    total: number;
+    byZone: Record<string, number>;
+    draft: number;
+    restricted: number;
+  } | null;
+  onOpenTree: () => void;
 }) {
   if (!stats) {
     return (
@@ -348,108 +405,152 @@ function EmptyState({
           color: "var(--ll-muted)",
         }}
       >
-        Đang tải…
+        <span className="ll-typing">
+          <span />
+          <span />
+          <span />
+        </span>
       </div>
     );
   }
   return (
     <div
       style={{
-        padding: 40,
+        padding: "32px 36px",
         display: "flex",
         flexDirection: "column",
-        gap: 20,
+        gap: 22,
         height: "100%",
         overflowY: "auto",
       }}
+      className="ll-docs-empty"
     >
-      <header>
-        <h2 style={{ margin: 0, color: "var(--ll-green-dark)", fontSize: 22 }}>
-          Kho tài liệu nội bộ
-        </h2>
-        <p style={{ color: "var(--ll-muted)", fontSize: 14, marginTop: 4 }}>
-          Chọn 1 tài liệu từ cây folder bên trái để xem / sửa. Lưu xong tự
-          ghi lại file <code>.md</code>.
-        </p>
+      <header
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 16,
+          flexWrap: "wrap",
+        }}
+      >
+        <div
+          style={{
+            width: 56,
+            height: 56,
+            borderRadius: 16,
+            background: "var(--ll-grad-calm)",
+            display: "grid",
+            placeItems: "center",
+            fontSize: 26,
+            flexShrink: 0,
+          }}
+          aria-hidden
+        >
+          📚
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <h2
+            style={{
+              margin: 0,
+              color: "var(--ll-green-dark)",
+              fontSize: 22,
+              fontWeight: 700,
+            }}
+          >
+            Kho tài liệu Local Life Asia
+          </h2>
+          <p
+            style={{
+              color: "var(--ll-muted)",
+              fontSize: 13,
+              margin: "4px 0 0",
+              maxWidth: 560,
+              lineHeight: 1.6,
+            }}
+          >
+            Chọn tài liệu từ cây bên trái để xem hoặc sửa. Lưu xong tự ghi lại
+            file Markdown — không cần commit tay.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={onOpenTree}
+          className="ll-mobile-only-inline"
+          style={{
+            padding: "10px 14px",
+            borderRadius: 8,
+            border: "1px solid var(--ll-green)",
+            background: "white",
+            color: "var(--ll-green-dark)",
+            fontWeight: 600,
+            fontSize: 13,
+            cursor: "pointer",
+          }}
+        >
+          ☰ Mở cây
+        </button>
       </header>
 
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
-          gap: 12,
+          gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
+          gap: 10,
         }}
       >
         {Object.entries(stats.byZone)
           .filter(([, v]) => v > 0)
           .map(([zone, count]) => (
-            <div
-              key={zone}
-              className="ll-card"
-              style={{
-                padding: 16,
-                borderLeft: `4px solid var(--ll-zone-${zone}, var(--ll-orange))`,
-              }}
-            >
-              <div
-                style={{
-                  fontSize: 11,
-                  color: "var(--ll-muted)",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.05em",
-                  fontWeight: 600,
-                }}
-              >
-                {ZONE_LABEL[zone] ?? zone}
-              </div>
-              <div
-                style={{
-                  fontSize: 28,
-                  fontWeight: 700,
-                  color: "var(--ll-ink)",
-                  lineHeight: 1,
-                  marginTop: 4,
-                }}
-              >
-                {count}
-              </div>
-              <div style={{ fontSize: 12, color: "var(--ll-muted)" }}>
-                tài liệu
-              </div>
-            </div>
+            <ZoneCard key={zone} zone={zone} count={count} />
           ))}
       </div>
 
-      <section className="ll-card">
+      <section
+        style={{
+          padding: 16,
+          background: "var(--ll-surface-soft)",
+          border: "1px solid var(--ll-border)",
+          borderRadius: "var(--ll-radius-md)",
+        }}
+      >
         <h3
           style={{
-            margin: "0 0 12px",
-            fontSize: 14,
+            margin: "0 0 10px",
+            fontSize: 13,
             color: "var(--ll-green-dark)",
             display: "flex",
             alignItems: "center",
-            gap: 6,
+            gap: 8,
+            textTransform: "uppercase",
+            letterSpacing: "0.04em",
+            fontWeight: 700,
           }}
         >
-          🕐 Hoạt động gần đây trong KB
+          <span aria-hidden>🕐</span>
+          Hoạt động gần đây
         </h3>
-        <AuditLog compact limit={12} />
+        <AuditLog compact limit={10} />
       </section>
 
       <section
-        className="ll-card"
-        style={{ background: "var(--ll-grad-calm)" }}
+        style={{
+          padding: 16,
+          background: "var(--ll-grad-calm)",
+          border: "1px solid var(--ll-border)",
+          borderRadius: "var(--ll-radius-md)",
+        }}
       >
         <h3
           style={{
             margin: "0 0 8px",
-            fontSize: 13,
+            fontSize: 12,
             color: "var(--ll-green-dark)",
             textTransform: "uppercase",
             letterSpacing: "0.05em",
+            fontWeight: 700,
           }}
         >
-          Mẹo dùng tree
+          Mẹo dùng
         </h3>
         <ul
           style={{
@@ -457,30 +558,91 @@ function EmptyState({
             paddingLeft: 18,
             fontSize: 13,
             lineHeight: 1.8,
+            color: "var(--ll-ink)",
           }}
         >
-          <li>Click chevron ▶ để mở/đóng folder</li>
+          <li>Gõ vào ô search sẽ auto-expand folder chứa kết quả.</li>
           <li>
-            Gõ vào ô search sẽ auto-expand folder chứa kết quả
+            Icon file màu cam = <strong>draft</strong>, 🔒 = restricted.
           </li>
-          <li>
-            Icon file màu cam = <strong>draft</strong>, 🔒 = restricted
-          </li>
-          <li>Click 1 file → preview bên phải; click "Sửa" để edit</li>
-          <li>Admin có nút Deprecate ở footer file đang preview</li>
+          <li>Click 1 file → preview bên phải; "Sửa" để edit inline.</li>
+          <li>Admin có nút Deprecate ở footer file đang xem.</li>
         </ul>
       </section>
     </div>
   );
 }
 
-const ZONE_LABEL: Record<string, string> = {
-  internal: "Nội bộ",
-  host: "Host Portal",
-  lok: "LOK Portal",
-  public: "Công khai",
-  inbox: "Inbox (chưa classify)",
+const ZONE_META: Record<
+  string,
+  { label: string; accent: string; emoji: string }
+> = {
+  internal: {
+    label: "Nội bộ",
+    accent: "var(--ll-zone-internal)",
+    emoji: "🏢",
+  },
+  host: { label: "Host Portal", accent: "var(--ll-zone-host)", emoji: "🏡" },
+  lok: { label: "LOK Portal", accent: "var(--ll-zone-lok)", emoji: "🎤" },
+  public: { label: "Công khai", accent: "var(--ll-zone-public)", emoji: "🌐" },
+  inbox: { label: "Inbox", accent: "var(--ll-orange)", emoji: "📥" },
 };
+
+function ZoneCard({ zone, count }: { zone: string; count: number }) {
+  const meta = ZONE_META[zone] ?? {
+    label: zone,
+    accent: "var(--ll-muted)",
+    emoji: "📄",
+  };
+  return (
+    <div
+      style={{
+        padding: 14,
+        background: "white",
+        border: "1px solid var(--ll-border)",
+        borderRadius: "var(--ll-radius-md)",
+        borderLeft: `4px solid ${meta.accent}`,
+        display: "flex",
+        flexDirection: "column",
+        gap: 4,
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
+        <span
+          style={{
+            fontSize: 11,
+            color: "var(--ll-muted)",
+            textTransform: "uppercase",
+            letterSpacing: "0.05em",
+            fontWeight: 600,
+          }}
+        >
+          {meta.label}
+        </span>
+        <span style={{ fontSize: 18 }} aria-hidden>
+          {meta.emoji}
+        </span>
+      </div>
+      <div
+        style={{
+          fontSize: 26,
+          fontWeight: 700,
+          color: "var(--ll-ink)",
+          lineHeight: 1,
+        }}
+      >
+        {count}
+      </div>
+      <div style={{ fontSize: 11, color: "var(--ll-muted)" }}>tài liệu</div>
+    </div>
+  );
+}
 
 function zoneOf(path: string): string {
   const p = path.split("/")[0];
