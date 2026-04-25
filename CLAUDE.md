@@ -82,6 +82,12 @@ Lộ trình 8 tuần, 5 phase:
 - [ ] Không có secret trong diff (dùng `.env.local`).
 - [ ] Nếu thêm tool mới: định nghĩa rõ schema, có guard, có audit.
 
+## Khi user yêu cầu setup local
+
+Đọc [`docs/local-setup.md`](docs/local-setup.md) trước. File đó có prompt mẫu
+mode A/B + checklist prerequisites + troubleshoot. Đừng tự bịa lệnh setup —
+follow doc.
+
 ## Các file hay đụng
 
 - `apps/web/lib/llm.ts` — Gemini client (model: gemini-2.5-flash)
