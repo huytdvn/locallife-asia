@@ -8,7 +8,15 @@ import { isEnabled, query } from "@/lib/db";
 export interface AuditEntry {
   actorEmail: string;
   role: string;
-  action: "chat" | "draft_update" | "commit_update" | "upload" | "webhook";
+  action:
+    | "chat"
+    | "widget_chat"
+    | "draft_update"
+    | "commit_update"
+    | "upload"
+    | "webhook"
+    | "role_upsert"
+    | "role_disable";
   docId?: string;
   query?: string;
   answerExcerpt?: string;

@@ -2,6 +2,7 @@ import NextAuth, { type DefaultSession } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
 import { audienceFor, type Role, type Session as LLSession } from "@/lib/rbac";
+import { getRoleFromDb } from "@/lib/roles";
 
 const ALLOWED_DOMAIN =
   process.env.ALLOWED_EMAIL_DOMAIN ?? "locallife.asia";
@@ -37,14 +38,15 @@ function devCredentialsProvider() {
 }
 
 /**
- * Role assignment:
- *   - Dev (NODE_ENV != production): header `x-dev-role` trong request (requireSession path).
- *   - Production: mặc định "employee" cho mọi user SSO hợp lệ; admin/lead
- *     được nâng quyền bởi `scripts/sync-roles.ts` (đọc Google Group →
- *     ghi vào bảng `roles` Postgres, đọc từ JWT callback).
+ * Role resolution order:
+ *   1. Dev credentials provider (NODE_ENV != production)
+ *   2. DB `roles` table (admin-managed via /admin/users)
+ *   3. Env override (`ADMIN_EMAILS` / `LEAD_EMAILS`) — bootstrap-only
+ *   4. Default: `guest` (read-only public docs — fail closed)
  *
- * Để MVP chạy được không cần Postgres, env `ADMIN_EMAILS` và `LEAD_EMAILS`
- * (comma-separated) override — dành cho seed/dev.
+ * The default is intentionally `guest` (not `employee`) so a brand-new
+ * Workspace user that signs in but isn't yet provisioned by an admin
+ * cannot read internal documents.
  */
 function staticRoleOverride(email: string | null | undefined): Role | null {
   if (!email) return null;
@@ -53,6 +55,13 @@ function staticRoleOverride(email: string | null | undefined): Role | null {
   if (admins.includes(email)) return "admin";
   if (leads.includes(email)) return "lead";
   return null;
+}
+
+async function resolveRole(email: string | null | undefined): Promise<Role> {
+  if (!email) return "guest";
+  const fromDb = await getRoleFromDb(email);
+  if (fromDb) return fromDb;
+  return staticRoleOverride(email) ?? "guest";
 }
 
 declare module "next-auth" {
@@ -87,14 +96,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     async jwt({ token, user }) {
       if (user) {
         const devRole = (user as { role?: Role }).role;
-        token.role = devRole ?? staticRoleOverride(user.email ?? null) ?? "employee";
+        token.role = devRole ?? (await resolveRole(user.email ?? null));
       } else if (!token.role) {
-        token.role = staticRoleOverride(token.email ?? null) ?? "employee";
+        token.role = await resolveRole(token.email ?? null);
       }
       return token;
     },
     async session({ session, token }) {
-      session.role = (token.role as Role | undefined) ?? "employee";
+      session.role = (token.role as Role | undefined) ?? "guest";
       return session as DefaultSession & { role: Role };
     },
   },
@@ -136,7 +145,7 @@ export async function requireSession(req: Request): Promise<LLSession> {
   if (!email.endsWith(`@${ALLOWED_DOMAIN}`)) {
     throw new UnauthorizedError("Email không thuộc domain cho phép");
   }
-  const role: Role = session.role ?? "employee";
+  const role: Role = session.role ?? "guest";
   return { email, role, audience: audienceFor(role) };
 }
 
