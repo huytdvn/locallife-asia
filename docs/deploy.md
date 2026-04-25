@@ -34,8 +34,11 @@ cp .env.example .env.local
 pnpm install
 docker compose -f infra/docker-compose.yml up -d   # Postgres + Qdrant + Redis
 
-# 3. Apply schema
+# 3. Apply schema + migrations + seeds (deploy-bootstrap.sh tự động làm hết).
+#    Manual nếu chỉ muốn DB:
 psql $DATABASE_URL -f apps/web/db/schema.sql
+for m in apps/web/db/migrations/*.sql; do psql $DATABASE_URL -f "$m"; done
+for s in apps/web/db/seed/*.sql;       do psql $DATABASE_URL -f "$s"; done
 
 # 4. Web dev
 pnpm --filter web dev   # http://localhost:3000
@@ -131,6 +134,59 @@ python3 scripts/sync-to-r2.py --apply    # 1 lần để seed
 ```
 
 Sau đó webhook `knowledge-merged` tự trigger mỗi lần merge.
+
+### 3.6 Data sync dev → prod (DB rows qua git)
+
+Knowledge và raw files đã có đường đồng bộ riêng. **DB rows** (như `roles`
+table) đi qua git như sau:
+
+```
+┌─────────────────┐                                ┌─────────────────┐
+│ Dev: /admin/    │                                │ Server: deploy- │
+│ users thay đổi  │                                │ bootstrap.sh    │
+│   role          │                                │                 │
+│   ↓             │                                │ 1. git pull     │
+│ pnpm db:snapshot│ → apps/web/db/seed/roles.sql → │ 2. schema.sql   │
+│   ↓             │   (committed to git, in PR)    │ 3. migrations/  │
+│ git commit+push │                                │ 4. seed/*.sql   │
+│   ↓             │                                │   ON CONFLICT   │
+│ PR review/merge │                                │   DO NOTHING    │
+└─────────────────┘                                └─────────────────┘
+```
+
+**Workflow điển hình** khi admin dev thêm 1 user mới:
+
+```bash
+# 1. Add user qua UI hoặc SQL
+# (UI: /admin/users → form → submit, hoặc psql INSERT)
+
+# 2. Snapshot DB → seed file
+pnpm db:snapshot                  # = ./scripts/db-export-seed.sh
+# Mặc định bỏ qua *-dev@locallife.asia (synthetic NextAuth dev users)
+# --include-dev nếu muốn include hết
+
+# 3. Review file thay đổi
+git diff apps/web/db/seed/roles.sql
+
+# 4. Commit + push qua PR như code
+git add apps/web/db/seed/roles.sql
+git commit -m "data(roles): add new admin nguyen.van.a@locallife.asia"
+git push
+
+# 5. PR merge → server deploy → seed tự apply
+#    ON CONFLICT DO NOTHING: rows đã có trên prod KHÔNG bị overwrite.
+```
+
+**Rule of thumb**: chỉ commit role changes mà bạn THỰC SỰ muốn cấp quyền
+trên prod. `pnpm db:snapshot` mặc định loại bỏ user dev synthetic; rows
+khác được expose nguyên si.
+
+**Disable user trên prod sau khi đã seed**: vì seed chỉ INSERT, disable
+một user qua admin UI prod sẽ ghi vào DB prod (`disabled=true`). Lần
+deploy sau, INSERT bị NO-OP do conflict, row disabled vẫn giữ nguyên.
+
+**Audit log + unmatched_queries** không sync — telemetry per-environment.
+Khi cần backup, chạy `pg_dump` riêng (xem mục 7).
 
 ## 4. CI/CD
 

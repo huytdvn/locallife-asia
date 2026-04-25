@@ -15,6 +15,7 @@
     "typecheck": "pnpm --filter web typecheck",
     "ingest:dev": "cd apps/ingest && uvicorn app.main:app --reload --port 8001",
     "infra:up": "docker compose -f infra/docker-compose.yml up -d",
-    "infra:down": "docker compose -f infra/docker-compose.yml down"
+    "infra:down": "docker compose -f infra/docker-compose.yml down",
+    "db:snapshot": "./scripts/db-export-seed.sh"
   }
 }
