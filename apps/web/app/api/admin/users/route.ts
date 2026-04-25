@@ -2,9 +2,9 @@ import { z } from "zod";
 import { requireSession, UnauthorizedError } from "@/lib/auth";
 import { writeAudit } from "@/lib/audit";
 import {
-  ALL_ROLES,
+  INTERNAL_ROLES,
   disableRole,
-  isValidRole,
+  isAssignableRole,
   listRoles,
   upsertRole,
 } from "@/lib/roles";
@@ -39,14 +39,22 @@ function adminOnly<T>(fn: () => Promise<T>) {
 
 export async function GET(req: Request) {
   return adminOnly(async () => {
-    const rows = await listRoles();
-    return { rows, validRoles: ALL_ROLES };
+    const result = await listRoles();
+    return {
+      rows: result.rows,
+      status: result.status,
+      errorMessage: result.errorMessage,
+      validRoles: INTERNAL_ROLES,
+    };
   })(req);
 }
 
 const upsertSchema = z.object({
   email: z.string().email().toLowerCase(),
-  role: z.string().refine(isValidRole, "Role không hợp lệ"),
+  role: z.string().refine(
+    isAssignableRole,
+    "Chỉ assign được admin / lead / employee. host & lok dùng widget token, không qua admin UI."
+  ),
 });
 
 export async function POST(req: Request) {

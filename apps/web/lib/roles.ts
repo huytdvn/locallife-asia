@@ -33,8 +33,22 @@ export const ALL_ROLES: Role[] = [
   "guest",
 ];
 
+/**
+ * Roles an admin can assign through `/admin/users`.
+ * - host & lok: NOT here. Those identities live in back-office; the widget
+ *   synthesises a Session at request time from an HMAC token. Storing them
+ *   in our DB would just be a stale mirror.
+ * - guest: NOT here. It's the implicit default for any signed-in Workspace
+ *   user not in the table — used as a "denied" state, not assigned.
+ */
+export const INTERNAL_ROLES: Role[] = ["employee", "lead", "admin"];
+
 export function isValidRole(s: string): s is Role {
   return (ALL_ROLES as string[]).includes(s);
+}
+
+export function isAssignableRole(s: string): s is Role {
+  return (INTERNAL_ROLES as string[]).includes(s);
 }
 
 /** Lookup a single user's active role. Returns null if disabled or missing. */
@@ -54,16 +68,32 @@ export async function getRoleFromDb(email: string): Promise<Role | null> {
   }
 }
 
-/** Admin UI: list every user. */
-export async function listRoles(): Promise<RoleRow[]> {
-  if (!isEnabled()) return [];
-  return query<RoleRow>(
-    `SELECT email, role, disabled, created_by,
-            created_at::text AS created_at,
-            updated_at::text AS updated_at
-       FROM roles
-       ORDER BY disabled ASC, role, email`
-  );
+export interface ListRolesResult {
+  rows: RoleRow[];
+  /** Reason rows is empty: 'no-db' | 'db-error' | 'empty' | 'ok'. */
+  status: "no-db" | "db-error" | "empty" | "ok";
+  errorMessage?: string;
+}
+
+/** Admin UI: list every user. Never throws — returns status flag instead. */
+export async function listRoles(): Promise<ListRolesResult> {
+  if (!isEnabled()) return { rows: [], status: "no-db" };
+  try {
+    const rows = await query<RoleRow>(
+      `SELECT email, role, disabled, created_by,
+              created_at::text AS created_at,
+              updated_at::text AS updated_at
+         FROM roles
+         ORDER BY disabled ASC, role, email`
+    );
+    return { rows, status: rows.length === 0 ? "empty" : "ok" };
+  } catch (err) {
+    return {
+      rows: [],
+      status: "db-error",
+      errorMessage: err instanceof Error ? err.message : String(err),
+    };
+  }
 }
 
 /** Admin UI: provision or re-activate a user. */

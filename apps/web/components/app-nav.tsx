@@ -10,6 +10,7 @@ type NavKey =
   | "admin"
   | "admin-docs"
   | "admin-report"
+  | "admin-users"
   | "host"
   | "lok"
   | "public";
@@ -61,6 +62,14 @@ export function AppNav({ role, active }: Props) {
       href: "/admin/training-report",
       label: "Training report",
       key: "admin-report",
+      subtle: true,
+    });
+  }
+  if (isAdmin) {
+    specs.push({
+      href: "/admin/users",
+      label: "Quản lý user",
+      key: "admin-users",
       subtle: true,
     });
   }
