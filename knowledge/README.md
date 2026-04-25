@@ -8,26 +8,46 @@ index phục vụ retrieval.
 > **Nguyên tắc vàng:** nếu nó không nằm trong `knowledge/*.md`, AI không biết.
 > Muốn AI trả lời được → viết doc.
 
-## Cây thư mục
+## Cây thư mục (taxonomy 2 cấp: zone → dept)
+
+Top-level folder = **plugin zone** — ai được truy cập content đó:
 
 ```
-00-company/       Tầm nhìn, sứ mệnh, giá trị, org chart
-10-hr/
-  onboarding/     Lộ trình 30-60-90, checklist nhân sự mới
-  policies/       Nghỉ phép, chấm công, đánh giá, phúc lợi
-  forms/          Biểu mẫu (markdown mô tả + link PDF gốc ở R2)
-20-operations/
-  processes/      SOP: booking, hoàn tiền, escalation, chăm sóc khách
-  playbooks/      Xử lý khủng hoảng, khách phàn nàn, incident
-30-product/
-  homestay/       Tiêu chuẩn, checklist onboarding homestay
-  experiences/    Tour trải nghiệm, kịch bản dẫn tour
-  marketplace/    Sản phẩm OCOP, logistic, vận chuyển
-40-partners/
-  homestay-hosts/ 1-pager mỗi host (tên, địa chỉ, điểm mạnh, lịch sử)
-  artisans/       Nghệ nhân (nghề, sản phẩm, câu chuyện)
-  suppliers/      Nhà cung cấp dịch vụ, nguyên liệu
-50-finance/       [restricted] Hợp đồng, định giá, chi phí nội bộ
+internal/          chỉ staff Local Life (employee/lead/admin)
+  00-company/      Tầm nhìn, sứ mệnh, giá trị cốt lõi, org chart
+  10-hr/
+    onboarding/    Lộ trình 30-60-90, checklist nhân sự mới
+    policies/      Nghỉ phép, chấm công, đánh giá, phúc lợi
+    forms/         Biểu mẫu nội bộ
+  20-operations/
+    processes/     SOP: booking, hoàn tiền, escalation, tư vấn
+    playbooks/     Xử lý khủng hoảng, incident
+  30-product/
+    homestay/      Tiêu chuẩn chất lượng homestay (góc nội bộ)
+    experiences/   Tour trải nghiệm, kịch bản dẫn tour
+    marketplace/   Sản phẩm OCOP, logistic
+  40-partners/
+    homestay-hosts/  Hồ sơ meta mỗi host
+    artisans/      Hồ sơ nghệ nhân
+    suppliers/     Hồ sơ nhà cung cấp
+  50-finance/      [restricted] Pricing nội bộ, hợp đồng ký, tài khoản thanh toán
+
+host/              host homestay/trải nghiệm tra cứu được (qua portal /host)
+  onboarding/      Quy trình để host mới join platform
+  standards/       Tiêu chí chất lượng nhìn từ góc host
+  policies/        Hủy-hoàn-đổi, thưởng phạt áp dụng cho host
+  faq/             Câu hỏi thường gặp của host
+
+lok/               đối tác LOK tra cứu được (qua portal /lok)
+  program/         Giới thiệu, quyền lợi, cam kết
+  onboarding/      Đăng ký + xác nhận
+  training/        Tài liệu đào tạo vận hành
+  faq/             Câu hỏi thường gặp
+
+public/            mọi user đã login xem được
+  about/           Giới thiệu công ty public
+  terms/           ToS, privacy, điều khoản công khai
+  faq/             FAQ chung cho khách hàng
 90-archive/       Bản cũ — giữ lại để tham chiếu, không hiển thị mặc định
 ```
 

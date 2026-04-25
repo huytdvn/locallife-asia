@@ -11,7 +11,7 @@
     "smoke:retrieval": "node scripts/smoke-retrieval.mjs",
     "eval": "node scripts/run-eval.mjs",
     "build-index": "node scripts/build-index.mjs",
-    "test": "node --test scripts/test-units.mjs"
+    "test": "node --test scripts/test-units.mjs scripts/test-reorganize-apply.mjs"
   },
   "dependencies": {
     "@auth/core": "^0.38.0",
@@ -22,6 +22,8 @@
     "pg": "^8.20.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "react-markdown": "^10.1.0",
+    "remark-gfm": "^4.0.1",
     "zod": "^3.23.8"
   },
   "devDependencies": {

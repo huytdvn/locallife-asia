@@ -47,6 +47,10 @@ def enqueue_ingest(
     hint_sensitivity: str | None,
     hint_tags: list[str],
     note: str | None,
+    source_sha256: str | None = None,
+    target_zone: str | None = None,
+    target_dept: str | None = None,
+    target_subfolder: str | None = None,
 ) -> str:
     job = _queue().enqueue(
         ingest_job,
@@ -58,6 +62,10 @@ def enqueue_ingest(
         hint_sensitivity=hint_sensitivity,
         hint_tags=hint_tags,
         note=note,
+        source_sha256=source_sha256,
+        target_zone=target_zone,
+        target_dept=target_dept,
+        target_subfolder=target_subfolder,
         job_timeout=600,
         result_ttl=86400,
     )
@@ -90,12 +98,17 @@ def ingest_job(
     hint_sensitivity: str | None,
     hint_tags: list[str],
     note: str | None,
+    source_sha256: str | None = None,
+    target_zone: str | None = None,
+    target_dept: str | None = None,
+    target_subfolder: str | None = None,
 ) -> dict[str, Any]:
-    """Core pipeline. Raises nếu có bước fail — RQ sẽ mark job failed.
+    """Core pipeline.
 
-    Idempotent theo ulid: commit path = `raw-ulid/{ulid}/{slug}.md`.
+    Nếu target_zone + target_dept set → bỏ qua AI classify, ghi thẳng
+    vào nhánh đó với audience default của zone. AI chỉ gợi ý title + tags.
     """
-    del note  # reserved cho FM notes tương lai
+    del note
     path = Path(local_path)
     parsed = parse_file(path)
     body = normalize(parsed)
@@ -114,10 +127,25 @@ def ingest_job(
         audience = [Audience(a) for a in (hint_audience or ["employee"])]
         sensitivity = Sensitivity(hint_sensitivity or "internal")
 
+    # Nếu admin chỉ định nhánh cụ thể → override audience theo zone default
+    # nhưng giữ title + tags từ AI (đỡ phải tự điền).
+    if target_zone:
+        zone_defaults = {
+            "internal": ["employee", "lead", "admin"],
+            "host": ["host", "lead", "admin"],
+            "lok": ["lok", "lead", "admin"],
+            "public": ["employee", "lead", "admin", "host", "lok", "guest"],
+        }
+        if hint_audience:
+            audience = [Audience(a) for a in hint_audience if a in [e.value for e in Audience]]
+        elif target_zone in zone_defaults:
+            audience = [Audience(a) for a in zone_defaults[target_zone]]
+
     source = SourceRef(
         type=_source_type(path.suffix),
         path=f"raw-ulid/{ulid}{path.suffix.lower()}",
         captured_at=date.today(),
+        sha256=source_sha256,
     )
     fm = new_draft(
         title=title,
@@ -132,7 +160,46 @@ def ingest_job(
     settings = get_settings()
     subdir = settings.knowledge_repo_subdir
     slug = _slugify(title)
-    repo_path = f"{subdir}/inbox/{fm.id}-{slug}.md" if subdir else f"inbox/{fm.id}-{slug}.md"
+    # Nếu admin chỉ định target → đi thẳng vào đó. Ngược lại inbox (chờ AI classify qua re-organize).
+    if target_zone and target_dept:
+        sub_seg = f"/{target_subfolder}" if target_subfolder else ""
+        manual_path = f"{target_zone}/{target_dept}{sub_seg}/{slug}.md"
+        repo_path = f"{subdir}/{manual_path}" if subdir else manual_path
+    else:
+        repo_path = (
+            f"{subdir}/inbox/{fm.id}-{slug}.md" if subdir else f"inbox/{fm.id}-{slug}.md"
+        )
+
+    # Fallback không có GITHUB_TOKEN: ghi thẳng vào knowledge/ để chatbot
+    # + dedup thấy ngay. Dùng manual path nếu admin chỉ định, hoặc inbox.
+    if not settings.github_token:
+        kb_dir = _find_kb_dir()
+        if target_zone and target_dept:
+            sub_seg = f"/{target_subfolder}" if target_subfolder else ""
+            draft_path = kb_dir / f"{target_zone}/{target_dept}{sub_seg}/{slug}.md"
+        else:
+            draft_path = kb_dir / f"inbox/{fm.id}-{slug}.md"
+        draft_path.parent.mkdir(parents=True, exist_ok=True)
+        # Nếu file cùng slug đã tồn tại → suffix ULID suffix
+        if draft_path.exists():
+            draft_path = draft_path.with_name(f"{draft_path.stem}-{fm.id[-6:].lower()}.md")
+        draft_path.write_text(md, encoding="utf-8")
+        # Touch root để web loader invalidate cache
+        try:
+            Path(kb_dir).touch()
+        except OSError:
+            pass
+        log.warning(
+            "GITHUB_TOKEN chưa set — đã ghi vào knowledge/inbox/ ở %s (skip PR)",
+            draft_path,
+        )
+        return {
+            "doc_id": fm.id,
+            "repo_path": str(draft_path.relative_to(kb_dir)),
+            "draft_path": str(draft_path),
+            "status": "draft_local_only",
+            "hint": "Set GITHUB_TOKEN để tạo PR trên GitHub thay vì ghi local",
+        }
 
     pr = gh.commit_via_pr(
         repo_path=repo_path,
@@ -149,6 +216,19 @@ def ingest_job(
         "pr_number": pr["pr_number"],
         "branch": pr["branch"],
     }
+
+
+def _find_kb_dir() -> Path:
+    """Fallback chain để tìm knowledge/ — match logic web loader."""
+    candidates = [
+        Path("knowledge"),
+        Path("../knowledge"),
+        Path("../../knowledge"),
+    ]
+    for c in candidates:
+        if c.exists() and c.is_dir():
+            return c.resolve()
+    return candidates[-1].resolve()
 
 
 _SOURCE_TYPE_MAP = {

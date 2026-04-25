@@ -52,7 +52,11 @@ async def upload(
     suggested_sensitivity: Annotated[str | None, Form()] = None,
     tags: Annotated[str | None, Form()] = None,
     note: Annotated[str | None, Form()] = None,
-) -> dict[str, str | None]:
+    force: Annotated[str | None, Form()] = None,
+    target_zone: Annotated[str | None, Form()] = None,
+    target_dept: Annotated[str | None, Form()] = None,
+    target_subfolder: Annotated[str | None, Form()] = None,
+) -> dict[str, object]:
     import json
 
     data = await file.read()
@@ -74,11 +78,29 @@ async def upload(
             hint_sensitivity=suggested_sensitivity,
             hint_tags=tag_list,
             note=note,
+            force=(force or "").lower() in ("1", "true", "yes"),
+            target_zone=target_zone or None,
+            target_dept=target_dept or None,
+            target_subfolder=target_subfolder or None,
         )
     except ConfigError as e:
         raise HTTPException(status_code=400, detail=str(e)) from e
 
-    return {"status": "queued", **to_dict(result)}
+    if result.dedup_status == "review-needed":
+        # Trả 409 để UI biết cần admin review
+        from fastapi.responses import JSONResponse
+
+        return JSONResponse(
+            status_code=409,
+            content={
+                "status": "review-needed",
+                "error": "AI phát hiện tài liệu tương tự — admin review trước khi upload",
+                **to_dict(result),
+            },
+        )
+
+    status = "duplicate" if result.dedup_status in ("duplicate", "in-flight") else "queued"
+    return {"status": status, **to_dict(result)}
 
 
 @app.get("/jobs/{job_id}", dependencies=[Depends(require_token)])

@@ -35,6 +35,10 @@ def parse_file(path: Path) -> ParsedDoc:
         from app.pipeline.parsers import xlsx
 
         return xlsx.parse(path)
+    if ext == "csv":
+        from app.pipeline.parsers import csv
+
+        return csv.parse(path)
     if ext in ("png", "jpg", "jpeg", "webp", "tif", "tiff"):
         from app.pipeline.parsers import image
 

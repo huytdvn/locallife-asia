@@ -1,30 +1,39 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { auth } from "@/lib/auth";
 
-const PROTECTED_PATHS = [/^\/api\/chat/, /^\/admin/];
+// Mọi route cần login (JWT cookie hoặc dev bypass).
+const PROTECTED = [
+  /^\/$/,
+  /^\/dashboard/,
+  /^\/admin/,
+  /^\/api\/chat/,
+  /^\/api\/admin/,
+  /^\/api\/training/,
+  /^\/api\/raw/,
+  /^\/host/,
+  /^\/lok/,
+  /^\/public/,
+  /^\/training/,
+];
+const IS_PROD = process.env.NODE_ENV === "production";
 
-export async function middleware(req: NextRequest) {
+export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
-  if (!PROTECTED_PATHS.some((r) => r.test(pathname))) {
+  if (!PROTECTED.some((r) => r.test(pathname))) {
     return NextResponse.next();
   }
 
-  // Dev bypass: X-Dev-Role header lets local curl hit /api/chat without SSO.
-  if (
-    process.env.NODE_ENV !== "production" &&
-    req.headers.get("x-dev-role")
-  ) {
+  if (!IS_PROD && req.headers.get("x-dev-role")) {
     return NextResponse.next();
   }
 
-  const session = await auth();
-  if (!session?.user?.email) {
+  const hasSession =
+    req.cookies.get("authjs.session-token") ??
+    req.cookies.get("__Secure-authjs.session-token");
+
+  if (!hasSession) {
     if (pathname.startsWith("/api/")) {
-      return NextResponse.json(
-        { error: "unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "unauthorized" }, { status: 401 });
     }
     const url = req.nextUrl.clone();
     url.pathname = "/login";
@@ -35,5 +44,17 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/api/chat/:path*", "/admin/:path*"],
+  matcher: [
+    "/",
+    "/dashboard/:path*",
+    "/admin/:path*",
+    "/api/chat/:path*",
+    "/api/admin/:path*",
+    "/api/training/:path*",
+    "/api/raw/:path*",
+    "/host/:path*",
+    "/lok/:path*",
+    "/public/:path*",
+    "/training/:path*",
+  ],
 };

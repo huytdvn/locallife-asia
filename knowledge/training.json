@@ -1,0 +1,123 @@
+{
+  "description": "Cây training paths — mỗi path là 1 lộ trình tự học, map theo role. Đồng bộ thủ công với docs trong knowledge/.",
+  "paths": [
+    {
+      "slug": "staff-sales-w1",
+      "title": "Onboarding Nhân viên Kinh doanh (Tuần 1)",
+      "subtitle": "Lộ trình 7 ngày cho sales + phát triển đối tác mới",
+      "for_roles": ["employee", "lead", "admin"],
+      "for_audience_tag": "sales",
+      "duration": "7 ngày",
+      "owner": "hr@locallife.asia",
+      "sections": [
+        {
+          "name": "Ngày 1-2 · Nền tảng",
+          "steps": [
+            { "doc_path": "internal/00-company/vision-mission.md", "note": "Tầm nhìn & sứ mệnh" },
+            { "doc_path": "internal/00-company/values.md", "note": "Giá trị cốt lõi" },
+            { "doc_path": "public/about/gioi-thieu-he-sinh-thai-du-lich-ban-dia-local-life-asia.md", "note": "Hệ sinh thái Local Life" },
+            { "doc_path": "internal/10-hr/policies/leave-policy.md", "note": "Chính sách nghỉ phép" },
+            { "doc_path": "internal/10-hr/onboarding/30-60-90.md", "note": "Lộ trình 30-60-90" }
+          ]
+        },
+        {
+          "name": "Ngày 3-4 · Sản phẩm & Vận hành",
+          "steps": [
+            { "doc_path": "internal/30-product/experiences/danh-sach-cac-diem-va-tuyen-trai-nghiem.md", "note": "Sản phẩm trải nghiệm" },
+            { "doc_path": "internal/30-product/homestay/homestay-standards.md", "note": "Tiêu chuẩn homestay" },
+            { "doc_path": "internal/20-operations/processes/quy-trinh-dat-va-hoan-tat-dich-vu-tren-nen-tang-locallife-asia.md", "note": "Quy trình booking" },
+            { "doc_path": "internal/20-operations/processes/refund-policy.md", "note": "Chính sách hoàn tiền" }
+          ]
+        },
+        {
+          "name": "Ngày 5 · Bán hàng & Đối tác",
+          "steps": [
+            { "doc_path": "internal/20-operations/processes/huong-dan-ban-hang-va-quy-trinh-tu-van.md", "note": "Hướng dẫn tư vấn" },
+            { "doc_path": "internal/20-operations/processes/quy-trinh-tu-van-va-chot-sale-tour-du-lich.md", "note": "Chốt sale tour" },
+            { "doc_path": "internal/40-partners/chuong-trinh-doi-tac-2026.md", "note": "Chương trình đối tác 2026" }
+          ]
+        },
+        {
+          "name": "Ngày 6-7 · LOK & kết thúc",
+          "steps": [
+            { "doc_path": "lok/program/thu-moi-tham-gia-chuong-trinh-lok-local-opinions-kol-koc.md", "note": "Chương trình LOK" },
+            { "doc_path": "internal/20-operations/processes/host-onboarding.md", "note": "Onboarding host mới" }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "host-onboarding",
+      "title": "Onboarding Host mới",
+      "subtitle": "Cho chủ homestay / trải nghiệm vừa join platform",
+      "for_roles": ["host", "lead", "admin"],
+      "duration": "5 ngày",
+      "owner": "ops@locallife.asia",
+      "sections": [
+        {
+          "name": "Hiểu nền tảng",
+          "steps": [
+            { "doc_path": "public/about/gioi-thieu-he-sinh-thai-du-lich-ban-dia-local-life-asia.md" },
+            { "doc_path": "host/onboarding/quy-trinh-dang-ky-tro-thanh-host-tren-locallife-asia.md" }
+          ]
+        },
+        {
+          "name": "Tiêu chuẩn chất lượng",
+          "steps": [
+            { "doc_path": "host/standards/tieu-chuan-san-pham-va-dich-vu-danh-cho-host.md" },
+            { "doc_path": "host/standards/tieu-chuan-dich-vu-luu-tru-theo-hang-sao.md" }
+          ]
+        },
+        {
+          "name": "Chính sách + FAQ",
+          "steps": [
+            { "doc_path": "host/policies/chinh-sach-huy-hoan-doi-dich-vu.md" },
+            { "doc_path": "host/policies/chinh-sach-thuong-phat-dua-tren-danh-gia-ty-le-su-co.md" },
+            { "doc_path": "host/faq/cau-hoi-thuong-gap-danh-cho-doi-tac.md" }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "lok-onboarding",
+      "title": "Onboarding LOK Partner (KOL/KOC)",
+      "subtitle": "Lộ trình cho đối tác tham gia chương trình Local Opinions",
+      "for_roles": ["lok", "lead", "admin"],
+      "duration": "3 ngày",
+      "owner": "ops@locallife.asia",
+      "sections": [
+        {
+          "name": "Chương trình",
+          "steps": [
+            { "doc_path": "lok/program/gioi-thieu-chuong-trinh-local-life-asia.md" },
+            { "doc_path": "lok/program/thu-moi-tham-gia-chuong-trinh-lok-local-opinions-kol-koc.md" },
+            { "doc_path": "lok/program/thiet-ke-he-thong-ho-tro-kol-kiem-tien-tren-nen-tang-locallife-asia.md" }
+          ]
+        },
+        {
+          "name": "Đào tạo",
+          "steps": [
+            { "doc_path": "lok/training/so-tay-quy-trinh-van-hanh-va-dao-tao-lok.md" }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "guest-quickstart",
+      "title": "Giới thiệu Local Life cho khách mới",
+      "subtitle": "Hiểu về platform và cách đặt dịch vụ",
+      "for_roles": ["guest", "employee", "lead", "admin", "host", "lok"],
+      "duration": "30 phút",
+      "owner": "ops@locallife.asia",
+      "sections": [
+        {
+          "name": "Tổng quan",
+          "steps": [
+            { "doc_path": "public/about/gioi-thieu-he-sinh-thai-du-lich-ban-dia-local-life-asia.md" },
+            { "doc_path": "public/terms/dieu-khoan-va-dieu-kien-su-dung-nen-tang-locallife.md" }
+          ]
+        }
+      ]
+    }
+  ]
+}

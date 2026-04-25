@@ -39,8 +39,12 @@ data/
 tmp/
 *.sqlite
 *.db
+*.rdb
+dump.rdb
 
 # Secrets
 *.pem
 google-service-account*.json
 apps/web/next-env.d.ts
+.cache/
+apps/web/.cache/

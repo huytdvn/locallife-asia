@@ -1,13 +1,85 @@
-/* Đồng bộ palette với landing (index.html) */
+/* Local Life Asia — Rainforest palette v2.
+   Màu chủ đạo: xanh rừng sâu (deep rainforest), pha với vàng mặt trời + đất đỏ.
+   Cảm giác: rừng nhiệt đới Việt Nam ấm áp, có chiều sâu, không phẳng. */
+
 :root {
-  --ll-green: #1b6b4a;
-  --ll-green-dark: #144f37;
-  --ll-orange: #f5a623;
-  --ll-cream: #fdf8ef;
-  --ll-ink: #1b2321;
-  --ll-muted: #6b7b76;
-  --ll-border: #e5e0d4;
-  --ll-bg: #faf6ed;
+  /* ─── Core brand — RAINFOREST ─── */
+  --ll-green: #0d5430;            /* thân cây, lá già */
+  --ll-green-dark: #062d1a;       /* bóng sâu trong rừng */
+  --ll-green-bright: #1d9b5f;     /* lá non, ánh nắng xuyên */
+  --ll-green-soft: #d9f2e2;       /* sương sớm */
+  --ll-green-mist: #ebf7f0;       /* hơi nước */
+
+  /* ─── Accents ─── */
+  --ll-orange: #e67e22;           /* hoa rừng / mặt trời lặn */
+  --ll-orange-soft: #fef2e2;
+  --ll-terracotta: #b8532a;       /* đất đỏ bazan */
+  --ll-sunlight: #f5c24b;          /* vàng nắng xuyên tán */
+
+  /* ─── Neutrals ─── */
+  --ll-cream: #fdfaf2;
+  --ll-ink: #1a2e24;              /* ink có đuôi xanh nhẹ */
+  --ll-ink-soft: #3d4f46;
+  --ll-muted: #6b7b72;
+  --ll-border: #dfd8c5;
+  --ll-bg: #f7f1e4;               /* nền tone đất nhạt */
+  --ll-surface: #ffffff;
+  --ll-surface-soft: #fbf7ec;
+
+  /* ─── Role accents (màu chim nhiệt đới) ─── */
+  --ll-role-employee: #e5e7eb;
+  --ll-role-lead: #7dd3c0;        /* ngọc lục bảo */
+  --ll-role-admin: #f5c24b;       /* gold nắng */
+  --ll-role-host: #e67e22;        /* cam đất */
+  --ll-role-lok: #a78bfa;         /* tím hoa rừng */
+  --ll-role-guest: #d1d5db;
+
+  /* ─── Sensitivity ─── */
+  --ll-sens-public: #a7e8bf;
+  --ll-sens-internal: #b6d4f5;
+  --ll-sens-restricted: #f5b7a8;
+
+  /* ─── Zone accents ─── */
+  --ll-zone-internal: #0d5430;
+  --ll-zone-host: #e67e22;
+  --ll-zone-lok: #8b5cf6;
+  --ll-zone-public: #0891b2;
+
+  /* ─── Surfaces ─── */
+  --ll-shadow-sm: 0 1px 2px rgba(6, 45, 26, 0.06);
+  --ll-shadow-md: 0 4px 12px rgba(6, 45, 26, 0.08);
+  --ll-shadow-lg: 0 12px 32px rgba(6, 45, 26, 0.12);
+  --ll-radius-sm: 6px;
+  --ll-radius-md: 10px;
+  --ll-radius-lg: 14px;
+  --ll-ease: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* ─── Gradients jungle ─── */
+  --ll-grad-warm: linear-gradient(
+    135deg,
+    #fdfaf2 0%,
+    #fef2e2 50%,
+    #f5c24b 140%
+  );
+  --ll-grad-calm: linear-gradient(135deg, #ebf7f0 0%, #fdfaf2 100%);
+  /* Hero: less saturated, smoother — xanh rừng sâu chuyển sang lá non,
+     accent cam chỉ chạm nhẹ ở góc phải cho ấm. */
+  --ll-grad-hero: linear-gradient(
+    120deg,
+    #062d1a 0%,
+    #0d5430 45%,
+    #1d9b5f 100%
+  );
+  --ll-grad-hero-accent: radial-gradient(
+    circle at 95% 15%,
+    rgba(245, 194, 75, 0.22) 0%,
+    transparent 55%
+  );
+  --ll-grad-canopy: linear-gradient(
+    180deg,
+    rgba(6, 45, 26, 0.92) 0%,
+    rgba(13, 84, 48, 0.95) 100%
+  );
 }
 
 * {
@@ -22,12 +94,490 @@ body {
   color: var(--ll-ink);
   font-family: "Be Vietnam Pro", system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
+  line-height: 1.55;
 }
 
 a {
   color: var(--ll-green);
   text-decoration: none;
+  transition: color 120ms var(--ll-ease);
 }
 a:hover {
   text-decoration: underline;
+  color: var(--ll-green-bright);
+}
+
+button {
+  font-family: inherit;
+  transition:
+    transform 140ms var(--ll-ease),
+    box-shadow 140ms var(--ll-ease),
+    background 140ms var(--ll-ease);
+}
+button:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+/* Selection */
+::selection {
+  background: var(--ll-green-bright);
+  color: white;
+}
+
+/* Scrollbar — subtle forest */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--ll-border);
+  border-radius: 6px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--ll-muted);
+}
+
+/* Utility classes */
+.ll-card {
+  background: var(--ll-surface);
+  border: 1px solid var(--ll-border);
+  border-radius: var(--ll-radius-lg);
+  box-shadow: var(--ll-shadow-sm);
+  padding: 20px;
+  transition:
+    box-shadow 160ms var(--ll-ease),
+    border-color 160ms var(--ll-ease);
+}
+a.ll-card:hover,
+.ll-card.is-interactive:hover {
+  box-shadow: var(--ll-shadow-md);
+  border-color: rgba(13, 84, 48, 0.25);
+}
+
+.ll-card-warm {
+  background: var(--ll-grad-warm);
+  border: 1px solid var(--ll-border);
+  border-radius: var(--ll-radius-lg);
+  box-shadow: var(--ll-shadow-md);
+  padding: 24px;
+}
+
+.ll-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.ll-pill {
+  padding: 6px 12px;
+  border: 1px solid var(--ll-border);
+  border-radius: 999px;
+  background: white;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--ll-ink);
+  transition: all 120ms var(--ll-ease);
+}
+.ll-pill:hover {
+  border-color: var(--ll-green-bright);
+  background: var(--ll-green-soft);
+  color: var(--ll-green-dark);
+  box-shadow: 0 0 0 3px var(--ll-green-mist);
+}
+
+@keyframes ll-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.ll-anim-in {
+  animation: ll-fade-up 320ms var(--ll-ease) both;
+}
+
+@keyframes ll-bubble-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.ll-bubble {
+  animation: ll-bubble-in 280ms var(--ll-ease) both;
+}
+
+@keyframes ll-bounce {
+  0%,
+  80%,
+  100% {
+    transform: scale(0.6);
+    opacity: 0.4;
+  }
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+.ll-typing {
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+}
+.ll-typing > span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ll-green-bright);
+  animation: ll-bounce 1.2s infinite;
+}
+.ll-typing > span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+.ll-typing > span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+/* Markdown in chat */
+.ll-md {
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--ll-ink);
+}
+.ll-md > *:first-child {
+  margin-top: 0;
+}
+.ll-md > *:last-child {
+  margin-bottom: 0;
+}
+.ll-md h1,
+.ll-md h2,
+.ll-md h3 {
+  margin: 18px 0 8px;
+  color: var(--ll-green-dark);
+  font-weight: 700;
+  line-height: 1.3;
+}
+.ll-md h1 {
+  font-size: 18px;
+}
+.ll-md h2 {
+  font-size: 16px;
+}
+.ll-md h3 {
+  font-size: 15px;
+}
+.ll-md p {
+  margin: 8px 0;
+}
+.ll-md ul,
+.ll-md ol {
+  margin: 8px 0;
+  padding-left: 22px;
+}
+.ll-md li {
+  margin: 4px 0;
+}
+.ll-md li::marker {
+  color: var(--ll-green-bright);
+}
+.ll-md strong {
+  color: var(--ll-green-dark);
+  font-weight: 600;
+}
+.ll-md em {
+  color: var(--ll-ink);
+  font-style: italic;
+}
+.ll-md a {
+  color: var(--ll-green-bright);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-color: var(--ll-orange);
+}
+.ll-md code {
+  background: var(--ll-surface-soft);
+  border: 1px solid var(--ll-border);
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 13px;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  color: var(--ll-green-dark);
+}
+.ll-md pre {
+  background: var(--ll-surface-soft);
+  border: 1px solid var(--ll-border);
+  padding: 12px;
+  border-radius: 8px;
+  overflow-x: auto;
+  font-size: 13px;
+  line-height: 1.5;
+  margin: 10px 0;
+}
+.ll-md pre code {
+  background: transparent;
+  border: none;
+  padding: 0;
+  color: inherit;
+}
+.ll-md blockquote {
+  margin: 10px 0;
+  padding: 8px 14px;
+  border-left: 3px solid var(--ll-orange);
+  background: var(--ll-orange-soft);
+  color: var(--ll-ink);
+  border-radius: 0 6px 6px 0;
+}
+.ll-md table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 10px 0;
+  font-size: 13px;
+}
+.ll-md th,
+.ll-md td {
+  border: 1px solid var(--ll-border);
+  padding: 6px 10px;
+  text-align: left;
+}
+.ll-md th {
+  background: var(--ll-green-soft);
+  font-weight: 600;
+  color: var(--ll-green-dark);
+}
+.ll-md hr {
+  border: none;
+  border-top: 1px solid var(--ll-border);
+  margin: 12px 0;
+}
+
+/* Bar chart */
+.ll-bar {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--ll-border);
+  overflow: hidden;
+}
+.ll-bar > span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    var(--ll-green) 0%,
+    var(--ll-green-bright) 100%
+  );
+  border-radius: inherit;
+  transition: width 500ms var(--ll-ease);
+}
+
+/* Raw file link chip — task 2 specific */
+.ll-file-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: var(--ll-green-soft);
+  border: 1px solid var(--ll-green-bright);
+  color: var(--ll-green-dark);
+  font-size: 12px;
+  text-decoration: none;
+  transition: all 120ms var(--ll-ease);
+}
+.ll-file-link:hover {
+  background: var(--ll-green-bright);
+  color: white;
+  text-decoration: none;
+}
+
+/* ─── Responsive helpers ─────────────────────────────────────────────
+   Pages hand-style grids for desktop; these helpers collapse them on
+   narrow viewports so we don't have to rewrite every inline layout. */
+.ll-grid-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+.ll-grid-2col {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+}
+.ll-grid-1col {
+  display: grid;
+  grid-template-columns: 1fr;
+}
+
+/* Mobile/desktop visibility toggles. `!important` để không bị inline
+   style ghi đè ngược. */
+.ll-mobile-only,
+.ll-mobile-only-inline,
+.ll-docs-tree-toggle {
+  display: none !important;
+}
+.ll-nav-mobile {
+  display: none !important;
+}
+
+/* Nav horizontal scroll — hide scrollbar when the row fits (most
+   desktops). Only shows when actual overflow at narrow widths. */
+.ll-nav-desktop {
+  scrollbar-width: none;
+}
+.ll-nav-desktop::-webkit-scrollbar {
+  display: none;
+}
+
+/* Docs manager: mobile tree toggle button — only visible on mobile. */
+.ll-docs-tree-toggle {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 30;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--ll-green);
+  background: white;
+  color: var(--ll-green-dark);
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  box-shadow: var(--ll-shadow-md);
+  gap: 6px;
+  align-items: center;
+}
+
+/* Docs tree backdrop — only shows when open on mobile. */
+.ll-docs-tree-backdrop {
+  display: none;
+}
+
+/* ── 900px: medium screens — 2-col grid collapses ── */
+@media (max-width: 900px) {
+  .ll-grid-2col {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ── 768px: full mobile layout ── */
+@media (max-width: 768px) {
+  html,
+  body {
+    font-size: 15px;
+  }
+
+  .ll-grid-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ll-card {
+    padding: 14px;
+    border-radius: var(--ll-radius-md);
+  }
+
+  main {
+    padding-left: 14px !important;
+    padding-right: 14px !important;
+  }
+
+  /* Nav: hide desktop links, show hamburger */
+  .ll-nav-desktop {
+    display: none !important;
+  }
+  .ll-nav-mobile {
+    display: inline-flex !important;
+  }
+
+  /* Generic mobile/desktop toggles */
+  .ll-mobile-only {
+    display: block !important;
+  }
+  .ll-mobile-only-inline {
+    display: inline-flex !important;
+  }
+  .ll-desktop-only {
+    display: none !important;
+  }
+
+  /* Hero shrinks */
+  .ll-hero {
+    padding: 22px 18px !important;
+    gap: 14px !important;
+  }
+  .ll-hero-mascot {
+    width: 56px !important;
+    height: 56px !important;
+    border-radius: 14px !important;
+  }
+  .ll-hero-title {
+    font-size: 22px !important;
+  }
+
+  /* Docs manager — single column with slide-in tree */
+  .ll-docs-shell {
+    grid-template-columns: 1fr !important;
+    height: calc(100vh - 140px) !important;
+  }
+  .ll-docs-tree-toggle {
+    display: inline-flex !important;
+  }
+  .ll-docs-tree {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 80;
+    background: var(--ll-surface) !important;
+    overflow: auto;
+    transform: translateX(-100%);
+    transition: transform 220ms var(--ll-ease);
+  }
+  .ll-docs-tree.is-open {
+    transform: translateX(0);
+  }
+  .ll-docs-tree-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(6, 45, 26, 0.4);
+    z-index: 79;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 180ms var(--ll-ease);
+  }
+  .ll-docs-tree-backdrop.is-open {
+    display: block;
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .ll-docs-empty {
+    padding: 20px 16px !important;
+  }
+
+  /* Touch-friendly */
+  button,
+  .ll-pill,
+  a.ll-file-link {
+    min-height: 40px;
+  }
+}
+
+@media (max-width: 480px) {
+  .ll-grid-stats {
+    grid-template-columns: 1fr;
+  }
 }

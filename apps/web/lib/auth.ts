@@ -1,9 +1,40 @@
 import NextAuth, { type DefaultSession } from "next-auth";
+import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
 import { audienceFor, type Role, type Session as LLSession } from "@/lib/rbac";
 
 const ALLOWED_DOMAIN =
   process.env.ALLOWED_EMAIL_DOMAIN ?? "locallife.asia";
+
+const IS_PROD = process.env.NODE_ENV === "production";
+
+function devCredentialsProvider() {
+  return Credentials({
+    id: "dev",
+    name: "Dev bypass",
+    credentials: {
+      email: { label: "Email" },
+      role: { label: "Role" },
+    },
+    async authorize(creds) {
+      if (IS_PROD) return null;
+      const role = String(creds?.role ?? "employee") as Role;
+      const valid: Role[] = [
+        "employee",
+        "lead",
+        "admin",
+        "host",
+        "lok",
+        "guest",
+      ];
+      if (!valid.includes(role)) return null;
+      // Ignore caller-supplied email to prevent impersonation of real accounts
+      // via dev bypass. Use a deterministic synthetic email per role.
+      const email = `${role}-dev@${ALLOWED_DOMAIN}`;
+      return { id: email, email, name: `Dev (${role})`, role };
+    },
+  });
+}
 
 /**
  * Role assignment:
@@ -40,20 +71,23 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
       authorization: { params: { hd: ALLOWED_DOMAIN, prompt: "select_account" } },
     }),
+    ...(IS_PROD ? [] : [devCredentialsProvider()]),
   ],
   session: { strategy: "jwt" },
   callbacks: {
-    async signIn({ profile }) {
+    async signIn({ profile, account }) {
+      // Dev credentials provider bypasses domain check.
+      if (account?.provider === "dev") return !IS_PROD;
       const email = profile?.email ?? "";
       if (!email.endsWith(`@${ALLOWED_DOMAIN}`)) return false;
-      // Google's hd claim — defence in depth against spoofed domains.
       const hd = (profile as { hd?: string } | null | undefined)?.hd;
       if (hd && hd !== ALLOWED_DOMAIN) return false;
       return true;
     },
     async jwt({ token, user }) {
-      if (user?.email) {
-        token.role = staticRoleOverride(user.email) ?? "employee";
+      if (user) {
+        const devRole = (user as { role?: Role }).role;
+        token.role = devRole ?? staticRoleOverride(user.email ?? null) ?? "employee";
       } else if (!token.role) {
         token.role = staticRoleOverride(token.email ?? null) ?? "employee";
       }
@@ -77,7 +111,15 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 export async function requireSession(req: Request): Promise<LLSession> {
   if (process.env.NODE_ENV !== "production") {
     const devRole = (req.headers.get("x-dev-role") as Role | null) ?? null;
-    if (devRole && ["employee", "lead", "admin"].includes(devRole)) {
+    const valid: Role[] = [
+      "employee",
+      "lead",
+      "admin",
+      "host",
+      "lok",
+      "guest",
+    ];
+    if (devRole && valid.includes(devRole)) {
       return {
         email: "dev@locallife.asia",
         role: devRole,

@@ -20,8 +20,15 @@ let cache: { docs: LoadedDoc[]; mtime: number } | null = null;
 
 export function knowledgeRoot(): string {
   const envPath = process.env.KNOWLEDGE_DIR;
-  if (envPath) return path.resolve(envPath);
-  return path.resolve(process.cwd(), "..", "..", "knowledge");
+  const candidates: string[] = [];
+  if (envPath) candidates.push(path.resolve(envPath));
+  candidates.push(path.resolve(process.cwd(), "knowledge"));
+  candidates.push(path.resolve(process.cwd(), "..", "..", "knowledge"));
+  candidates.push(path.resolve(process.cwd(), "..", "knowledge"));
+  for (const c of candidates) {
+    if (fs.existsSync(c)) return c;
+  }
+  return candidates[0];
 }
 
 export function loadKnowledge(force = false): LoadedDoc[] {
@@ -58,7 +65,7 @@ export function loadKnowledge(force = false): LoadedDoc[] {
     docs.push({
       meta,
       rawContent: parsed.content,
-      chunks: chunkByHeading(meta.id, parsed.content),
+      chunks: chunkByHeading(meta.id, parsed.content, meta.title),
     });
   }
 
@@ -76,12 +83,15 @@ function walk(dir: string): string[] {
   return out;
 }
 
-function chunkByHeading(docId: string, body: string): Chunk[] {
+function chunkByHeading(docId: string, body: string, docTitle: string): Chunk[] {
   const lines = body.split(/\r?\n/);
   const chunks: Chunk[] = [];
   let currentHeading = "Introduction";
   let buffer: string[] = [];
 
+  // Include doc title in every chunk's tokens so a query like
+  // "Sứ mệnh Local Life Asia" still matches a chunk under H2 "Sứ mệnh"
+  // even though "Local Life Asia" lives only in the H1 / front-matter title.
   const flush = () => {
     const text = buffer.join("\n").trim();
     if (text) {
@@ -89,7 +99,7 @@ function chunkByHeading(docId: string, body: string): Chunk[] {
         docId,
         heading: currentHeading,
         text,
-        tokens: tokenize(`${currentHeading}\n${text}`),
+        tokens: tokenize(`${docTitle}\n${currentHeading}\n${text}`),
       });
     }
     buffer = [];

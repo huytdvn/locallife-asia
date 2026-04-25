@@ -29,6 +29,10 @@ Chi tiết triết lý và lộ trình: xem [`CLAUDE.md`](./CLAUDE.md).
 
 ## Bắt đầu
 
+**Setup máy local từ đầu**: xem [`docs/local-setup.md`](docs/local-setup.md) —
+hướng dẫn đầy đủ prerequisites, env, và prompt sẵn sàng cho Claude Code.
+
+Tóm tắt nhanh:
 ```bash
 # Lần đầu
 cp .env.example .env.local
