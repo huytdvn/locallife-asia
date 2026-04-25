@@ -1,0 +1,38 @@
+{
+  "name": "web",
+  "private": true,
+  "version": "0.0.0",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "smoke:retrieval": "node scripts/smoke-retrieval.mjs",
+    "eval": "node scripts/run-eval.mjs",
+    "build-index": "node scripts/build-index.mjs",
+    "test": "node --test scripts/test-units.mjs scripts/test-reorganize-apply.mjs"
+  },
+  "dependencies": {
+    "@auth/core": "^0.38.0",
+    "@google/genai": "^1.50.1",
+    "gray-matter": "^4.0.3",
+    "next": "^15.1.0",
+    "next-auth": "^5.0.0-beta.25",
+    "pg": "^8.20.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-markdown": "^10.1.0",
+    "remark-gfm": "^4.0.1",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/pg": "^8.20.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "eslint": "^9.0.0",
+    "eslint-config-next": "^15.1.0",
+    "typescript": "^5.6.0"
+  }
+}

@@ -1,0 +1,52 @@
+QUY TRÌNH NHẬN BOOKING VÀ XÁC NHẬN
+Phiên bản 3 - Cập nhật 04/2026
+Phòng ban: Vận hành
+
+
+1. TIẾP NHẬN
+
+Booking đến từ 3 nguồn:
+- Website Local Life Asia (API tự động)
+- Điện thoại / Zalo (nhân viên CS nhập tay)
+- Đối tác giới thiệu (email, nhân viên CS nhập tay)
+
+Mọi booking đều được gán mã LL-YYYYMMDD-XXXX ngay khi tiếp nhận.
+
+
+2. KIỂM TRA TÍNH KHẢ DỤNG
+
+Bước 2.1 - Trong vòng 30 phút kể từ khi nhận:
+- Kiểm tra lịch trống của homestay/trải nghiệm trên hệ thống
+- Nếu trống: chuyển bước 3
+- Nếu không trống: gợi ý 2-3 option thay thế cùng khu vực, cùng hạng giá
+
+Bước 2.2 - Xác nhận với host:
+- Gọi/nhắn host xác nhận (không chỉ dựa hệ thống, vì host có thể quên
+  cập nhật)
+- Deadline xác nhận từ host: 2 giờ. Quá hạn gọi lại.
+
+
+3. XÁC NHẬN VỚI KHÁCH
+
+Sau khi host confirm:
+- Gửi email/SMS xác nhận kèm mã booking
+- Gửi link thanh toán (nếu chưa thanh toán)
+- Gửi thông tin liên hệ host + hướng dẫn đường đi
+
+
+4. TRƯỜNG HỢP ĐẶC BIỆT
+
+- Booking trong vòng 24h (last-minute): duyệt qua lead ops trước khi confirm
+- Booking nhóm >10 người: tạo kế hoạch riêng, có hợp đồng nhóm
+- Booking quốc tế: kiểm tra visa, thời gian bay, múi giờ
+
+
+5. ESCALATE
+
+Nếu không xử lý được trong 2 giờ, escalate lên lead ops.
+Nếu host không phản hồi trong 4 giờ, tìm homestay thay thế (xem SOP
+hoàn tiền và đổi booking).
+
+
+Người soạn: Trần Minh, Lead Ops
+Duyệt: Trần Đăng Huy, Founder

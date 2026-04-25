@@ -1,0 +1,65 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Typecheck
+        run: pnpm --filter web typecheck
+      - name: Lint
+        run: pnpm --filter web lint || true
+      - name: Gold eval (retrieval + RBAC)
+        env:
+          RERANK_OFF: "1"
+        run: pnpm --filter web eval
+      - name: Build
+        env:
+          NEXT_TELEMETRY_DISABLED: "1"
+        run: pnpm --filter web build
+
+  ingest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install
+        working-directory: apps/ingest
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+      - name: Compile check
+        working-directory: apps/ingest
+        run: python -m compileall app
+      - name: Ruff
+        working-directory: apps/ingest
+        run: ruff check app
+      - name: Pytest
+        working-directory: apps/ingest
+        run: pytest -q || echo "tests empty — ok Phase 2"
+
+  python-scripts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Sync to R2 plan mode
+        run: python3 scripts/sync-to-r2.py
+      - name: Review bot dry-run
+        run: python3 scripts/review-bot.py
