@@ -15,10 +15,22 @@ const PROTECTED = [
   /^\/public/,
   /^\/training/,
 ];
+
+// Widget endpoints — public CORS, auth via HMAC token / shared secret.
+// Checked BEFORE PROTECTED (subset of /api/chat/* + /api/widget/*).
+const WIDGET_BYPASS = [
+  /^\/api\/chat\/widget$/,
+  /^\/api\/widget\//,
+  /^\/widget\.js$/,
+  /^\/widget\.css$/,
+];
 const IS_PROD = process.env.NODE_ENV === "production";
 
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
+  if (WIDGET_BYPASS.some((r) => r.test(pathname))) {
+    return NextResponse.next();
+  }
   if (!PROTECTED.some((r) => r.test(pathname))) {
     return NextResponse.next();
   }

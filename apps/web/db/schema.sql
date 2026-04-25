@@ -3,9 +3,18 @@
 
 CREATE TABLE IF NOT EXISTS roles (
   email TEXT PRIMARY KEY,
-  role TEXT NOT NULL CHECK (role IN ('employee', 'lead', 'admin')),
+  role TEXT NOT NULL CHECK (role IN ('employee', 'lead', 'admin', 'host', 'lok', 'guest')),
+  disabled BOOLEAN NOT NULL DEFAULT false,
+  created_by TEXT,                  -- email of admin who provisioned (null for env-bootstrap)
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+CREATE INDEX IF NOT EXISTS roles_role_idx ON roles (role) WHERE NOT disabled;
+
+-- Migration helper: existing DBs need the CHECK constraint relaxed + new
+-- columns. The migration file in db/migrations/ runs the actual ALTER on
+-- live deployments — schema.sql here is the source-of-truth for fresh
+-- `psql -f schema.sql` runs.
 
 -- Mọi tương tác có citation/side-effect lưu vào đây. Phase 3 governance.
 CREATE TABLE IF NOT EXISTS audit_log (
