@@ -95,14 +95,18 @@ export async function DELETE(req: Request) {
     });
   }
   const url = new URL(req.url);
-  const email = url.searchParams.get("email");
-  if (!email) {
+  const rawEmail = url.searchParams.get("email");
+  if (!rawEmail) {
     return new Response(JSON.stringify({ error: "email required" }), {
       status: 400,
       headers: { "Content-Type": "application/json" },
     });
   }
-  if (email === session.email) {
+  // Lowercase both sides — DB stores lowercase, but URL/session.email may
+  // arrive mixed-case. Strict compare here previously let an admin bypass
+  // self-disable by varying case.
+  const email = rawEmail.toLowerCase();
+  if (email === session.email.toLowerCase()) {
     return new Response(
       JSON.stringify({ error: "Không thể tự disable chính mình" }),
       { status: 400, headers: { "Content-Type": "application/json" } }

@@ -25,6 +25,16 @@ export interface WidgetClaims {
   exp: number; // unix seconds
 }
 
+/**
+ * Distinguishes "the server is misconfigured" (which the operator must fix)
+ * from "the client sent an invalid token" (a normal 401). Route handlers
+ * map ConfigError → 503, everything else → 401, so a missing env var never
+ * leaks into the client-facing error body.
+ */
+export class WidgetConfigError extends Error {
+  readonly name = "WidgetConfigError";
+}
+
 const ENC = "base64url" as const;
 
 function b64uEncode(s: Buffer | string): string {
@@ -38,7 +48,9 @@ function b64uDecode(s: string): Buffer {
 function getSecret(): Buffer {
   const s = process.env.WIDGET_HMAC_SECRET;
   if (!s || s.length < 32) {
-    throw new Error("WIDGET_HMAC_SECRET not set or too short (min 32 chars)");
+    throw new WidgetConfigError(
+      "WIDGET_HMAC_SECRET not set or too short (min 32 chars)"
+    );
   }
   return Buffer.from(s, "utf8");
 }
@@ -84,7 +96,17 @@ export function checkAllowedOrigin(origin: string | null): string | null {
     .split(",")
     .map((s) => s.trim())
     .filter(Boolean);
-  if (list.includes("*")) return origin;
+  if (list.includes("*")) {
+    // Wildcard is dev convenience; in prod a misconfig like this would
+    // open the widget to every origin on the internet.
+    if (process.env.NODE_ENV === "production") {
+      console.error(
+        "[widget] WIDGET_ALLOWED_ORIGINS=* refused in production"
+      );
+      return null;
+    }
+    return origin;
+  }
   return list.includes(origin) ? origin : null;
 }
 

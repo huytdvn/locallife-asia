@@ -94,11 +94,23 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       return true;
     },
     async jwt({ token, user }) {
+      // Role staleness — re-resolve from DB at most every ROLE_TTL seconds.
+      // Without this, an admin disabling a user via /admin/users only takes
+      // effect when the JWT cookie itself expires (default 30 days). With
+      // this, max staleness is 5 minutes. For panic-disable (compromised
+      // account), rotate NEXTAUTH_SECRET to invalidate all sessions.
+      const NOW = Math.floor(Date.now() / 1000);
+      const ROLE_TTL = 5 * 60;
       if (user) {
         const devRole = (user as { role?: Role }).role;
         token.role = devRole ?? (await resolveRole(user.email ?? null));
-      } else if (!token.role) {
-        token.role = await resolveRole(token.email ?? null);
+        token.roleCheckedAt = NOW;
+      } else {
+        const checkedAt = (token.roleCheckedAt as number | undefined) ?? 0;
+        if (!token.role || checkedAt + ROLE_TTL < NOW) {
+          token.role = await resolveRole(token.email ?? null);
+          token.roleCheckedAt = NOW;
+        }
       }
       return token;
     },

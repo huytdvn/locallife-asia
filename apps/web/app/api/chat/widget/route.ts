@@ -18,7 +18,11 @@ import { genai, CHAT_MODEL } from "@/lib/llm";
 import { toolDefinitions, runTool } from "@/lib/tools";
 import { writeAudit, recordUnmatchedQuery } from "@/lib/audit";
 import { audienceFor, type Role, type Session } from "@/lib/rbac";
-import { checkAllowedOrigin, verifyWidgetToken } from "@/lib/widget-auth";
+import {
+  WidgetConfigError,
+  checkAllowedOrigin,
+  verifyWidgetToken,
+} from "@/lib/widget-auth";
 import { checkWidgetRate } from "@/lib/widget-rate-limit";
 import { buildWidgetSystemInstruction } from "@/lib/widget-prompt";
 
@@ -77,6 +81,15 @@ export async function POST(req: Request) {
     if (!m) throw new Error("missing token");
     claims = verifyWidgetToken(m[1]);
   } catch (err) {
+    if (err instanceof WidgetConfigError) {
+      // Don't echo the env-var name in the response — log server-side and
+      // return a generic 503 so a probe can't fingerprint missing config.
+      console.error("[widget] config error:", err.message);
+      return new Response(
+        JSON.stringify({ error: "service misconfigured" }),
+        { status: 503, headers: { ...cors, "Content-Type": "application/json" } }
+      );
+    }
     return new Response(
       JSON.stringify({
         error: "token invalid",

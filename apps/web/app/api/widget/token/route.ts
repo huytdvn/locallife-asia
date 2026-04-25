@@ -11,7 +11,11 @@
  */
 
 import { z } from "zod";
-import { checkBackofficeSecret, signWidgetToken } from "@/lib/widget-auth";
+import {
+  WidgetConfigError,
+  checkBackofficeSecret,
+  signWidgetToken,
+} from "@/lib/widget-auth";
 
 export const runtime = "nodejs";
 
@@ -46,7 +50,19 @@ export async function POST(req: Request) {
       { status: 400, headers: { "Content-Type": "application/json" } }
     );
   }
-  const token = signWidgetToken(parsed.data);
+  let token: string;
+  try {
+    token = signWidgetToken(parsed.data);
+  } catch (err) {
+    if (err instanceof WidgetConfigError) {
+      console.error("[widget-token] config error:", err.message);
+      return new Response(
+        JSON.stringify({ error: "service misconfigured" }),
+        { status: 503, headers: { "Content-Type": "application/json" } }
+      );
+    }
+    throw err;
+  }
   const exp = Math.floor(Date.now() / 1000) + (parsed.data.ttlSeconds ?? 3600);
   return new Response(JSON.stringify({ token, exp }), {
     status: 200,
