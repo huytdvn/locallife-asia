@@ -3,24 +3,23 @@ id: 01KPYX8C8JZMEZ81HCCWJKD7YP
 title: Chương Trình Đối Tác Du Lịch Bản Địa 2026
 owner: ops@locallife.asia
 audience:
-- host
-- employee
-- lead
-- admin
+  - employee
+  - lead
+  - admin
 sensitivity: internal
 tags:
-- community_development
-- digital_platform
-- local_tourism
-- partnership_program
-- sustainable_tourism
+  - community_development
+  - digital_platform
+  - local_tourism
+  - partnership_program
+  - sustainable_tourism
 source:
-- type: pdf
-  path: raw-ulid/01KPYX5R07B4J0M6TJN542ZJT6.pdf
-  captured_at: '2026-04-24'
+  - type: pdf
+    path: raw-ulid/01KPYX5R07B4J0M6TJN542ZJT6.pdf
+    captured_at: '2026-04-24'
 last_reviewed: '2026-04-24'
 reviewer: ops@locallife.asia
-status: draft
+status: approved
 related: []
 ---
 

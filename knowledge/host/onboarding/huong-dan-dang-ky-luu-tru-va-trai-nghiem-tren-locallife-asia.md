@@ -3,28 +3,27 @@ id: 01KPYX8YBK2TEBV7XQVFSBZTM8
 title: Hướng dẫn đăng ký lưu trú và trải nghiệm trên Locallife.asia
 owner: ops@locallife.asia
 audience:
-- host
-- lead
-- admin
+  - lead
+  - admin
 sensitivity: public
 tags:
-- accommodation_listing
-- accommodation_registration
-- experience_listing
-- experience_offering
-- host_guide
-- host_guideline
-- host_onboarding
-- locallife_platform
-- onboarding
-- platform_guideline
+  - accommodation_listing
+  - accommodation_registration
+  - experience_listing
+  - experience_offering
+  - host_guide
+  - host_guideline
+  - host_onboarding
+  - locallife_platform
+  - onboarding
+  - platform_guideline
 source:
-- type: pdf
-  path: raw-ulid/01KPYX5RDKKNV1V5BEZMBT24F8.pdf
-  captured_at: '2026-04-24'
+  - type: pdf
+    path: raw-ulid/01KPYX5RDKKNV1V5BEZMBT24F8.pdf
+    captured_at: '2026-04-24'
 last_reviewed: '2026-04-24'
 reviewer: ops@locallife.asia
-status: draft
+status: approved
 related: []
 ---
 
