@@ -533,20 +533,21 @@ function EmptyState({
     >
       <div
         style={{
-          width: 96,
-          height: 96,
+          width: 90,
+          height: 120,
           display: "grid",
           placeItems: "center",
-          filter: "drop-shadow(0 6px 12px rgba(6,45,26,0.18))",
+          filter: "drop-shadow(0 6px 12px rgba(22,163,74,0.18))",
         }}
       >
+        {/* mascot 3:4 — full body in welcome card */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="/mascot.webp"
           alt="Bé Tre"
-          width={96}
-          height={96}
-          style={{ width: "100%", height: "auto" }}
+          width={90}
+          height={120}
+          style={{ width: "100%", height: "100%", objectFit: "contain" }}
         />
       </div>
       <div>

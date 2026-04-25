@@ -40,19 +40,20 @@ export default async function LoginPage({
       >
         <div
           style={{
-            width: 72,
-            height: 72,
+            width: 84,
+            height: 112,
             marginBottom: 4,
-            filter: "drop-shadow(0 6px 12px rgba(6,45,26,0.18))",
+            filter: "drop-shadow(0 6px 12px rgba(22,163,74,0.18))",
           }}
         >
+          {/* mascot 3:4 — never force square */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/mascot.webp"
             alt="Bé Tre"
-            width={72}
-            height={72}
-            style={{ width: "100%", height: "auto" }}
+            width={84}
+            height={112}
+            style={{ width: "100%", height: "100%", objectFit: "contain" }}
           />
         </div>
         <h1

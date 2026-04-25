@@ -120,13 +120,14 @@ export function AppNav({ role, active }: Props) {
             flexShrink: 0,
           }}
         >
+          {/* mascot 3:4 — image is 360×480, never force square */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/mascot.webp"
             alt="Bé Tre"
-            width={30}
-            height={30}
-            style={{ borderRadius: 8 }}
+            width={24}
+            height={32}
+            style={{ borderRadius: 8, objectFit: "contain" }}
           />
           Bé Tre
         </Link>
