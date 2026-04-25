@@ -187,15 +187,17 @@ export function Hero({
       }}
     >
       <div style={{ flexShrink: 0, position: "relative", zIndex: 2 }}>
+        {/* mascot 3:4 portrait — source 360×480, do not force square */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="/mascot.webp"
           alt="Bé Tre"
-          width={88}
-          height={88}
+          width={84}
+          height={112}
           className="ll-hero-mascot"
           style={{
             borderRadius: 20,
+            objectFit: "contain",
             filter: "drop-shadow(0 8px 16px rgba(0,0,0,0.25))",
           }}
         />

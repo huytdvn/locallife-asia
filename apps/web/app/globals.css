@@ -1,84 +1,85 @@
-/* Local Life Asia — Rainforest palette v2.
-   Màu chủ đạo: xanh rừng sâu (deep rainforest), pha với vàng mặt trời + đất đỏ.
-   Cảm giác: rừng nhiệt đới Việt Nam ấm áp, có chiều sâu, không phẳng. */
+/* Local Life Asia — Fresh Jade palette v3.
+   Vẫn là rừng Việt Nam, nhưng nhịp nhanh hơn: jade vivid thay rêu sâu, peach
+   thay đất đỏ, off-white sạch thay beige. Năng lượng đi-tới, không nặng nề.
+   Lưu ý: zone-host / zone-lok / role-host / role-lok / role-guest GIỮ NGUYÊN
+   vì là brand mặt cho widget tích hợp vào back-office — đổi sẽ vỡ nhận diện. */
 
 :root {
-  /* ─── Core brand — RAINFOREST ─── */
-  --ll-green: #0d5430;            /* thân cây, lá già */
-  --ll-green-dark: #062d1a;       /* bóng sâu trong rừng */
-  --ll-green-bright: #1d9b5f;     /* lá non, ánh nắng xuyên */
-  --ll-green-soft: #d9f2e2;       /* sương sớm */
-  --ll-green-mist: #ebf7f0;       /* hơi nước */
+  /* ─── Core brand — FRESH JADE ─── */
+  --ll-green: #16a34a;            /* primary action — kelly green vivid */
+  --ll-green-dark: #15803d;       /* hover / depth — forest grounded */
+  --ll-green-bright: #22c55e;     /* lime jade — accent năng lượng */
+  --ll-green-soft: #dcfce7;       /* mint pastel */
+  --ll-green-mist: #f0fdf4;       /* gần trắng, hint mint */
 
   /* ─── Accents ─── */
-  --ll-orange: #e67e22;           /* hoa rừng / mặt trời lặn */
-  --ll-orange-soft: #fef2e2;
-  --ll-terracotta: #b8532a;       /* đất đỏ bazan */
-  --ll-sunlight: #f5c24b;          /* vàng nắng xuyên tán */
+  --ll-orange: #fb923c;           /* peach juicy — không còn đất đỏ */
+  --ll-orange-soft: #fff7ed;
+  --ll-terracotta: #ea580c;       /* coral đỏ ấm cho callout */
+  --ll-sunlight: #fcd34d;          /* amber tươi */
 
-  /* ─── Neutrals ─── */
-  --ll-cream: #fdfaf2;
-  --ll-ink: #1a2e24;              /* ink có đuôi xanh nhẹ */
-  --ll-ink-soft: #3d4f46;
-  --ll-muted: #6b7b72;
-  --ll-border: #dfd8c5;
-  --ll-bg: #f7f1e4;               /* nền tone đất nhạt */
+  /* ─── Neutrals (slate-modern) ─── */
+  --ll-cream: #fffdfa;
+  --ll-ink: #0f172a;              /* near-black hơi xanh — type sắc */
+  --ll-ink-soft: #475569;
+  --ll-muted: #64748b;
+  --ll-border: #e2e8f0;
+  --ll-bg: #fafafa;               /* off-white sạch */
   --ll-surface: #ffffff;
-  --ll-surface-soft: #fbf7ec;
+  --ll-surface-soft: #f8fafc;
 
-  /* ─── Role accents (màu chim nhiệt đới) ─── */
-  --ll-role-employee: #e5e7eb;
-  --ll-role-lead: #7dd3c0;        /* ngọc lục bảo */
-  --ll-role-admin: #f5c24b;       /* gold nắng */
-  --ll-role-host: #e67e22;        /* cam đất */
-  --ll-role-lok: #a78bfa;         /* tím hoa rừng */
-  --ll-role-guest: #d1d5db;
+  /* ─── Role accents — internal staff brighter, external KEEP ─── */
+  --ll-role-employee: #cbd5e1;    /* slate hơi đậm hơn để readable */
+  --ll-role-lead: #5eead4;        /* teal-300 brighter */
+  --ll-role-admin: #fbbf24;       /* amber-400 sun */
+  --ll-role-host: #e67e22;        /* GIỮ — brand widget */
+  --ll-role-lok: #a78bfa;         /* GIỮ — brand widget */
+  --ll-role-guest: #d1d5db;       /* GIỮ */
 
-  /* ─── Sensitivity ─── */
-  --ll-sens-public: #a7e8bf;
-  --ll-sens-internal: #b6d4f5;
-  --ll-sens-restricted: #f5b7a8;
+  /* ─── Sensitivity (badge) ─── */
+  --ll-sens-public: #bbf7d0;
+  --ll-sens-internal: #bfdbfe;
+  --ll-sens-restricted: #fecaca;
 
-  /* ─── Zone accents ─── */
-  --ll-zone-internal: #0d5430;
-  --ll-zone-host: #e67e22;
-  --ll-zone-lok: #8b5cf6;
-  --ll-zone-public: #0891b2;
+  /* ─── Zone accents — host/lok/public KEEP, internal đổi ─── */
+  --ll-zone-internal: #16a34a;    /* match new green */
+  --ll-zone-host: #e67e22;        /* GIỮ — brand widget */
+  --ll-zone-lok: #8b5cf6;         /* GIỮ — brand widget */
+  --ll-zone-public: #0891b2;      /* GIỮ — brand widget */
 
-  /* ─── Surfaces ─── */
-  --ll-shadow-sm: 0 1px 2px rgba(6, 45, 26, 0.06);
-  --ll-shadow-md: 0 4px 12px rgba(6, 45, 26, 0.08);
-  --ll-shadow-lg: 0 12px 32px rgba(6, 45, 26, 0.12);
-  --ll-radius-sm: 6px;
-  --ll-radius-md: 10px;
-  --ll-radius-lg: 14px;
+  /* ─── Surfaces — shadow tint xanh nhẹ ─── */
+  --ll-shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.05);
+  --ll-shadow-md: 0 4px 14px rgba(22, 163, 74, 0.08);
+  --ll-shadow-lg: 0 16px 40px rgba(15, 23, 42, 0.12);
+  --ll-radius-sm: 8px;
+  --ll-radius-md: 12px;
+  --ll-radius-lg: 16px;
   --ll-ease: cubic-bezier(0.4, 0, 0.2, 1);
 
-  /* ─── Gradients jungle ─── */
+  /* ─── Gradients — fresh, đi-tới ─── */
   --ll-grad-warm: linear-gradient(
     135deg,
-    #fdfaf2 0%,
-    #fef2e2 50%,
-    #f5c24b 140%
+    #fffbeb 0%,
+    #fff7ed 50%,
+    #fcd34d 140%
   );
-  --ll-grad-calm: linear-gradient(135deg, #ebf7f0 0%, #fdfaf2 100%);
-  /* Hero: less saturated, smoother — xanh rừng sâu chuyển sang lá non,
-     accent cam chỉ chạm nhẹ ở góc phải cho ấm. */
+  --ll-grad-calm: linear-gradient(135deg, #f0fdf4 0%, #fffdfa 100%);
+  /* Hero: jade vivid chuyển dần — không còn near-black. */
   --ll-grad-hero: linear-gradient(
     120deg,
-    #062d1a 0%,
-    #0d5430 45%,
-    #1d9b5f 100%
+    #15803d 0%,
+    #16a34a 50%,
+    #22c55e 100%
   );
   --ll-grad-hero-accent: radial-gradient(
     circle at 95% 15%,
-    rgba(245, 194, 75, 0.22) 0%,
+    rgba(252, 211, 77, 0.28) 0%,
     transparent 55%
   );
   --ll-grad-canopy: linear-gradient(
     180deg,
-    rgba(6, 45, 26, 0.92) 0%,
-    rgba(13, 84, 48, 0.95) 100%
+    rgba(21, 128, 61, 0.92) 0%,
+    rgba(22, 163, 74, 0.95) 100%
   );
 }
 
@@ -522,8 +523,9 @@ a.ll-card:hover,
     gap: 14px !important;
   }
   .ll-hero-mascot {
-    width: 56px !important;
-    height: 56px !important;
+    /* mascot ratio 3:4 — never force square, it squashes the bamboo head */
+    width: 48px !important;
+    height: 64px !important;
     border-radius: 14px !important;
   }
   .ll-hero-title {
