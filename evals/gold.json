@@ -20,13 +20,19 @@
       "id": "hr-03",
       "role": "lead",
       "query": "Lộ trình 30-60-90 ngày cho nhân viên mới",
-      "expected_paths": ["internal/10-hr/onboarding/30-60-90.md"]
+      "expected_paths": [
+        "internal/10-hr/onboarding/30-60-90.md",
+        "internal/10-hr/onboarding/onboarding-sales-partner-dev.md"
+      ]
     },
     {
       "id": "ops-01",
       "role": "employee",
       "query": "Quy trình onboarding host homestay mới",
-      "expected_paths": ["internal/20-operations/processes/host-onboarding.md"]
+      "expected_paths": [
+        "internal/20-operations/processes/host-onboarding.md",
+        "internal/10-hr/onboarding/onboarding-sales-partner-dev.md"
+      ]
     },
     {
       "id": "ops-02",

@@ -57,13 +57,14 @@ function loadDocs() {
     const fm = p.data;
     if (!fm.id || !fm.title) continue;
     const rel = path.relative(KNOWLEDGE, abs).replace(/\\/g, "/");
+    const docTitle = String(fm.title);
     const chunks = [];
     const lines = p.content.split(/\r?\n/);
     let heading = "Introduction";
     let buf = [];
     const flush = () => {
       const t = buf.join("\n").trim();
-      if (t) chunks.push({ heading, text: t, tokens: tokenize(`${heading}\n${t}`) });
+      if (t) chunks.push({ heading, text: t, tokens: tokenize(`${docTitle}\n${heading}\n${t}`) });
       buf = [];
     };
     for (const line of lines) {
