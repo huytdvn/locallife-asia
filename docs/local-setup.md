@@ -26,7 +26,7 @@ Cài đầy đủ **trước khi** chạy bất kỳ lệnh setup nào.
 ### macOS
 ```bash
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-brew install git node@22 pnpm python@3.11
+brew install git node@22 pnpm python@3.11 rclone
 brew install --cask docker
 open -a Docker   # mở Docker Desktop, accept license
 ```
@@ -34,7 +34,7 @@ open -a Docker   # mở Docker Desktop, accept license
 ### Linux (Ubuntu/Debian)
 ```bash
 curl -fsSL https://deb.nodesource.com/setup_22.x | sudo bash -
-sudo apt install -y nodejs git python3.11 python3.11-venv
+sudo apt install -y nodejs git python3.11 python3.11-venv rclone
 sudo npm install -g pnpm@10
 curl -fsSL https://get.docker.com | sudo sh
 sudo usermod -aG docker $USER     # logout/login lại
@@ -145,9 +145,29 @@ KNOWLEDGE_WEBHOOK_SECRET=<paste từ bước 2>
 
 ---
 
+## 4b. Cấu hình rclone (cho mode B / C — kéo raw files từ cloud)
+
+Raw files (PDF/DOCX/XLSX/img — ~hundreds of MB) **không nằm trong git**.
+Chúng sync giữa local và cloud qua rclone. Setup 1 lần trên mỗi máy:
+
+```bash
+rclone config        # tạo remote tên `locallife-raw`, hoặc theo $RCLONE_REMOTE trong .env.local
+```
+
+Chi tiết từng provider (Drive default, R2 alt) ở [`raw-storage.md`](raw-storage.md).
+
+Sau khi rclone config xong, bootstrap chỉ là **1 lệnh**:
+
+```bash
+./scripts/deploy-bootstrap.sh
+```
+
+Script này tự: pull raw từ cloud, verify hash, `pnpm install`, `docker compose up`,
+apply schema, setup Python venv. Idempotent — chạy lại để update an toàn.
+
 ## 5. Lệnh setup — copy paste cho Claude
 
-Sau khi xong bước 1-4, mở Claude Code trong thư mục repo
+Sau khi xong bước 1-4 (và 4b nếu cần raw files), mở Claude Code trong thư mục repo
 (`cd ~/code/locallife-asia && claude`) rồi paste prompt dưới đây.
 
 ### Prompt mode A (web-only, nhanh nhất)
@@ -171,31 +191,29 @@ Lưu ý: máy local, không cần SSO/Postgres/Qdrant/Redis. BM25 in-memory đã
 
 ### Prompt mode B (full dev stack — khuyến nghị)
 ```
-Setup project Local Life Asia mode B (full dev: web + ingest + worker + docker services).
+Setup project Local Life Asia mode B (full dev: web + ingest + worker + docker + raw từ cloud).
 
 Tình trạng đã chuẩn bị:
-- Node 22, pnpm 10, Python 3.11, Docker đã cài. Docker Desktop đang chạy.
-- Repo đã clone, đang ở branch claude/ai-company-chat-system-Tz712.
-- .env.local đã điền GEMINI_API_KEY, NEXTAUTH_SECRET, INGEST_API_TOKEN.
-- GOOGLE_CLIENT_* để trống — sẽ dùng dev bypass X-Dev-Role.
+- Node 22, pnpm 10, Python 3.11, Docker, rclone đã cài. Docker Desktop đang chạy.
+- Repo đã clone, đang ở branch chuẩn.
+- .env.local đã điền GEMINI_API_KEY, NEXTAUTH_SECRET, INGEST_API_TOKEN, RCLONE_REMOTE.
+- rclone config đã có remote `locallife-raw` (Drive hoặc R2) — verify bằng `rclone listremotes`.
+- GOOGLE_CLIENT_* để trống — dùng dev bypass X-Dev-Role.
 
-Việc cần làm (theo docs/deploy.md mục 2):
-1. `pnpm install` ở root.
-2. `docker compose -f infra/docker-compose.yml up -d` rồi chờ Postgres healthy.
-3. Apply schema apps/web/db/schema.sql (qua psql nếu có, không thì docker exec vào container postgres).
-4. Setup Python venv cho apps/ingest: python3.11 -m venv .venv && pip install -e ".[dev]".
-5. Verify: pnpm --filter web typecheck + pnpm --filter web smoke:retrieval pass.
-6. Khởi động 3 process song song ở background:
+Việc cần làm:
+1. Chạy `./scripts/deploy-bootstrap.sh` — script tự handle: pull raw, verify, pnpm install, docker compose up, schema, ingest venv.
+2. Verify: `pnpm --filter web typecheck` + `pnpm --filter web smoke:retrieval` + `pnpm --filter web eval` (eval phải ≥ recall 95%, precision 90%).
+3. Khởi động 3 process song song ở background:
    - `pnpm --filter web dev` (web, port 3000)
-   - `cd apps/ingest && source .venv/bin/activate && uvicorn app.main:app --reload --port 8001` (ingest)
-   - `cd apps/ingest && source .venv/bin/activate && python -m app.worker` (worker)
-7. Smoke test:
+   - `cd apps/ingest && source .venv/bin/activate && uvicorn app.main:app --reload --port 8001`
+   - `cd apps/ingest && source .venv/bin/activate && python -m app.worker`
+4. Smoke test:
    - curl http://localhost:3000/  → 200
    - curl http://localhost:8001/health  → {"status":"ok"}
-   - curl chat với X-Dev-Role: employee theo ví dụ trong docs/deploy.md mục 2.
-8. Báo lại URL các service + lỗi nếu có.
+   - `BASE=http://localhost:3000 ./scripts/e2e-smoke.sh`
+5. Báo lại URL + bất kỳ lỗi nào gặp phải.
 
-Lưu ý: máy local, không cần reverse proxy, không cần SSO thật, không cần R2/Drive.
+Lưu ý: máy local, không cần reverse proxy, không cần SSO thật.
 ```
 
 ---
