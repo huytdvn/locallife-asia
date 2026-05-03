@@ -64,6 +64,10 @@ export function getPathsForRole(role: Role): TrainingPath[] {
 }
 
 export function getPathBySlug(slug: string, role: Role): TrainingPath | null {
+  // Pseudo-slug `kt:<n>` resolves to ad-hoc training path từ knowledge_task.
+  // Resolver thực ở `lib/onboarding/adhoc-training.ts` (DB lookup); module
+  // này stay sync để không thay đổi signature → caller tự gọi async resolver
+  // khi gặp prefix kt:. Static knowledge.json paths still work.
   const file = loadFile();
   const found = file.paths.find((p) => p.slug === slug);
   if (!found) return null;
@@ -71,6 +75,39 @@ export function getPathBySlug(slug: string, role: Role): TrainingPath | null {
   const docs = loadKnowledge();
   const docByPath = new Map(docs.map((d) => [d.meta.path, d.meta]));
   return enrichPath(found, role, docByPath);
+}
+
+/**
+ * Build a synthetic TrainingPath từ 1 knowledge doc — dùng cho ad-hoc
+ * training do knowledge_task spawn (slug `kt:<n>`).
+ */
+export function buildAdhocPath(input: {
+  slug: string;
+  title: string;
+  docPath: string;
+  forRoles: Role[];
+}): TrainingPath {
+  const docs = loadKnowledge();
+  const docByPath = new Map(docs.map((d) => [d.meta.path, d.meta]));
+  return enrichPath(
+    {
+      slug: input.slug,
+      title: input.title,
+      subtitle: "Bổ sung kiến thức theo yêu cầu",
+      duration: "1 doc + quiz",
+      for_roles: input.forRoles,
+      sections: [
+        {
+          name: "Tài liệu",
+          steps: [
+            { doc_path: input.docPath, note: "Đọc tài liệu này rồi làm quiz" },
+          ],
+        },
+      ],
+    },
+    input.forRoles[0],
+    docByPath
+  );
 }
 
 function enrichPath(
