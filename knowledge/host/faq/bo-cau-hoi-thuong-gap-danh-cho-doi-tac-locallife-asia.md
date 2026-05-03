@@ -3,6 +3,7 @@ id: 01KPYX8NK0914RJTPG9AT74VDC
 title: Bộ Câu Hỏi Thường Gặp Dành Cho Đối Tác LocalLife.Asia
 owner: ops@locallife.asia
 audience:
+  - host
   - employee
   - lead
   - admin
@@ -29,7 +30,7 @@ status: draft
 related: []
 ---
 
-# Bộ Câu Hỏi Thường Gặp Dành Cho Đối Tác LocalLife.Asia 123123222222
+# Bộ Câu Hỏi Thường Gặp Dành Cho Đối Tác LocalLife.Asia
 
 ## I. Tổng Quan
 

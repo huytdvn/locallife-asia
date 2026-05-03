@@ -3,21 +3,21 @@ id: 01HM9A00COMPANY0002VALUESCORE
 title: Giá trị cốt lõi
 owner: huy@locallife.asia
 audience:
-- employee
-- lead
-- admin
+  - employee
+  - lead
+  - admin
 sensitivity: public
 tags:
-- company
-- values
-- culture
-last_reviewed: 2026-04-15
-reviewer: huy@locallife.asia
+  - company
+  - values
+  - culture
+last_reviewed: '2026-04-28'
+reviewer: admin-dev@locallife.asia
 status: approved
 related:
-- 01HM9A00COMPANY0001VISIONMISS
+  - 01HM9A00COMPANY0001VISIONMISS
+source: []
 ---
-
 # Giá trị cốt lõi
 
 > Năm giá trị, theo thứ tự ưu tiên khi phải chọn lựa.
@@ -32,6 +32,7 @@ related:
 
 - Khi có xung đột lợi ích giữa du khách và cộng đồng, lắng nghe **cộng đồng trước**.
 - Ưu tiên nhà cung cấp là **người địa phương**, kể cả giá cao hơn **10-15%**.
+- Tập trung hướng đến phát triển sinh kế bền vững cho bà con.
 
 ## 3. Gọn & rõ (Lean & clear)
 
