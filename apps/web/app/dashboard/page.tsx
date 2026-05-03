@@ -17,6 +17,7 @@ import {
 import { DailyInsight } from "@/components/daily-insight";
 import { TeamDirectory } from "@/components/team-directory";
 import { AuditLog } from "@/components/audit-log";
+import { PopupHost } from "@/components/onboarding/PopupHost";
 
 export const dynamic = "force-dynamic";
 
@@ -238,6 +239,8 @@ export default async function DashboardPage() {
           <TeamDirectory stats={stats} />
         </aside>
       </div>
+
+      <PopupHost />
     </PageShell>
   );
 }

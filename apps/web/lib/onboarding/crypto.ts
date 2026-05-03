@@ -1,40 +1,71 @@
-import sodium from "libsodium-wrappers";
+import {
+  createCipheriv,
+  createDecipheriv,
+  randomBytes,
+} from "node:crypto";
 import { query, isEnabled } from "@/lib/db";
 
 /**
  * Envelope encryption cho response text của daily_popup (FR-010, R2).
  *
+ * Sử dụng Node built-in `node:crypto` AES-256-GCM (audited, zero new deps).
  * Master key (`ONBOARDING_DEK_MASTER`, 64 hex = 32 bytes) wrap mỗi DEK
  * 32 bytes per-account. DEK lưu encrypted ở `account_crypto_key`. Plaintext
- * dùng `secretbox(text, dek, random_nonce)`; nonce lưu cùng ciphertext.
+ * dùng AES-256-GCM(text, dek, random_iv); IV (12B) + auth tag (16B) lưu
+ * tách trong cột `nonce` (chuẩn: nonce_bytes = iv ‖ tag, total 28B).
  *
- * Decrypt: nonce + dek_encrypted → unwrap với master → decrypt response.
  * In-process cache DEK 60s để tránh round-trip DB cho aggregate decrypt.
  */
 
 const MASTER_HEX = process.env.ONBOARDING_DEK_MASTER ?? "";
+const ALGO = "aes-256-gcm";
+const IV_LEN = 12;     // GCM standard
+const TAG_LEN = 16;    // GCM auth tag
+const KEY_LEN = 32;    // AES-256
 
-let _ready = false;
-async function ensureReady(): Promise<void> {
-  if (_ready) return;
-  await sodium.ready;
+function masterKey(): Buffer {
   if (!MASTER_HEX || MASTER_HEX.length !== 64) {
     throw new Error(
       "ONBOARDING_DEK_MASTER chưa set hoặc không phải 64 hex chars (32 bytes)"
     );
   }
-  _ready = true;
+  return Buffer.from(MASTER_HEX, "hex");
 }
 
-function masterKey(): Uint8Array {
-  return sodium.from_hex(MASTER_HEX);
+/** Encrypt với AES-256-GCM. Trả {ciphertext, iv|tag (28B)}. */
+function aesGcmEncrypt(key: Buffer, plaintext: Buffer): {
+  ciphertext: Buffer;
+  nonce: Buffer;
+} {
+  const iv = randomBytes(IV_LEN);
+  const cipher = createCipheriv(ALGO, key, iv);
+  const ct = Buffer.concat([cipher.update(plaintext), cipher.final()]);
+  const tag = cipher.getAuthTag();
+  return { ciphertext: ct, nonce: Buffer.concat([iv, tag]) };
 }
 
-const dekCache = new Map<string, { dek: Uint8Array; expiresAt: number }>();
+/** Decrypt — nonce = iv (12B) ‖ tag (16B). Throw nếu fail (auth tag mismatch). */
+function aesGcmDecrypt(
+  key: Buffer,
+  ciphertext: Buffer,
+  nonce: Buffer
+): Buffer {
+  if (nonce.length !== IV_LEN + TAG_LEN) {
+    throw new Error(
+      `nonce phải ${IV_LEN + TAG_LEN} bytes (iv 12 + tag 16), nhận ${nonce.length}`
+    );
+  }
+  const iv = nonce.subarray(0, IV_LEN);
+  const tag = nonce.subarray(IV_LEN);
+  const decipher = createDecipheriv(ALGO, key, iv);
+  decipher.setAuthTag(tag);
+  return Buffer.concat([decipher.update(ciphertext), decipher.final()]);
+}
+
+const dekCache = new Map<string, { dek: Buffer; expiresAt: number }>();
 const DEK_TTL_MS = 60_000;
 
-async function getOrCreateDek(email: string): Promise<Uint8Array> {
-  await ensureReady();
+async function getOrCreateDek(email: string): Promise<Buffer> {
   const cached = dekCache.get(email);
   if (cached && cached.expiresAt > Date.now()) return cached.dek;
 
@@ -45,25 +76,23 @@ async function getOrCreateDek(email: string): Promise<Uint8Array> {
     [email]
   );
   if (rows.length > 0) {
-    const dek = sodium.crypto_secretbox_open_easy(
-      new Uint8Array(rows[0].dek_encrypted),
-      new Uint8Array(rows[0].dek_nonce),
-      masterKey()
+    const dek = aesGcmDecrypt(
+      masterKey(),
+      rows[0].dek_encrypted,
+      rows[0].dek_nonce
     );
-    if (!dek) throw new Error(`DEK decrypt fail cho ${email}`);
     dekCache.set(email, { dek, expiresAt: Date.now() + DEK_TTL_MS });
     return dek;
   }
 
   // Tạo DEK mới (ensure-on-first-use)
-  const dek = sodium.randombytes_buf(sodium.crypto_secretbox_KEYBYTES);
-  const nonce = sodium.randombytes_buf(sodium.crypto_secretbox_NONCEBYTES);
-  const dekEncrypted = sodium.crypto_secretbox_easy(dek, nonce, masterKey());
+  const dek = randomBytes(KEY_LEN);
+  const wrapped = aesGcmEncrypt(masterKey(), dek);
   await query(
     `INSERT INTO account_crypto_key (email, dek_encrypted, dek_nonce)
      VALUES ($1, $2, $3)
      ON CONFLICT (email) DO NOTHING`,
-    [email, Buffer.from(dekEncrypted), Buffer.from(nonce)]
+    [email, wrapped.ciphertext, wrapped.nonce]
   );
   dekCache.set(email, { dek, expiresAt: Date.now() + DEK_TTL_MS });
   return dek;
@@ -78,15 +107,8 @@ export async function encryptForAccount(
   email: string,
   plaintext: string
 ): Promise<EncryptedPayload> {
-  await ensureReady();
   const dek = await getOrCreateDek(email);
-  const nonce = sodium.randombytes_buf(sodium.crypto_secretbox_NONCEBYTES);
-  const cipher = sodium.crypto_secretbox_easy(
-    sodium.from_string(plaintext),
-    nonce,
-    dek
-  );
-  return { ciphertext: Buffer.from(cipher), nonce: Buffer.from(nonce) };
+  return aesGcmEncrypt(dek, Buffer.from(plaintext, "utf8"));
 }
 
 export async function decryptForAccount(
@@ -94,15 +116,9 @@ export async function decryptForAccount(
   ciphertext: Buffer,
   nonce: Buffer
 ): Promise<string> {
-  await ensureReady();
   const dek = await getOrCreateDek(email);
-  const plain = sodium.crypto_secretbox_open_easy(
-    new Uint8Array(ciphertext),
-    new Uint8Array(nonce),
-    dek
-  );
-  if (!plain) throw new Error("Decrypt fail (wrong key hoặc payload corrupt)");
-  return sodium.to_string(plain);
+  const plain = aesGcmDecrypt(dek, ciphertext, nonce);
+  return plain.toString("utf8");
 }
 
 /** Reset cache — chủ yếu cho test. */
