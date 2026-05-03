@@ -160,7 +160,7 @@ def ingest_job(
     settings = get_settings()
     subdir = settings.knowledge_repo_subdir
     slug = _slugify(title)
-    # Nếu admin chỉ định target → đi thẳng vào đó. Ngược lại inbox (chờ AI classify qua re-organize).
+    # Admin chỉ định target → đi thẳng. Ngược lại inbox (chờ AI re-organize).
     if target_zone and target_dept:
         sub_seg = f"/{target_subfolder}" if target_subfolder else ""
         manual_path = f"{target_zone}/{target_dept}{sub_seg}/{slug}.md"
