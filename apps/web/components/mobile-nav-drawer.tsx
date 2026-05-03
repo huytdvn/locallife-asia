@@ -9,7 +9,14 @@ export interface NavLinkData {
   key: string;
   active: boolean;
   subtle?: boolean;
+  group?: "primary" | "manage" | "preview";
 }
+
+const GROUP_LABEL: Record<NonNullable<NavLinkData["group"]>, string> = {
+  primary: "Hằng ngày",
+  manage: "Quản lý",
+  preview: "Xem dưới góc nhìn khác",
+};
 
 /**
  * Mobile-only hamburger + drawer. Links được precompute bởi server
@@ -163,29 +170,60 @@ export function MobileNavDrawer({ links }: { links: NavLinkData[] }) {
                 ×
               </button>
             </div>
-            {links.map((l) => (
-              <Link
-                key={`${l.key}-${l.href}`}
-                href={l.href}
-                onClick={() => setOpen(false)}
-                style={{
-                  padding: "10px 12px",
-                  borderRadius: 8,
-                  background: l.active ? "var(--ll-green-soft)" : "transparent",
-                  color: l.active
-                    ? "var(--ll-green-dark)"
-                    : "var(--ll-ink)",
-                  fontWeight: l.active ? 600 : 500,
-                  fontSize: 14,
-                  textDecoration: "none",
-                }}
-              >
-                {l.label}
-              </Link>
-            ))}
+            {renderGroupedLinks(links, () => setOpen(false))}
           </div>
         </div>
       )}
     </>
   );
+}
+
+function renderGroupedLinks(
+  links: NavLinkData[],
+  onClick: () => void
+): React.ReactNode {
+  const out: React.ReactNode[] = [];
+  let prevGroup: NavLinkData["group"] | undefined = undefined;
+  for (const l of links) {
+    const grp = l.group ?? "primary";
+    if (grp !== prevGroup) {
+      out.push(
+        <div
+          key={`grp-${grp}`}
+          style={{
+            fontSize: 11,
+            fontWeight: 600,
+            textTransform: "uppercase",
+            letterSpacing: 0.6,
+            color: "var(--ll-muted)",
+            marginTop: prevGroup ? 12 : 4,
+            marginBottom: 2,
+            padding: "0 12px",
+          }}
+        >
+          {GROUP_LABEL[grp]}
+        </div>
+      );
+    }
+    out.push(
+      <Link
+        key={`${l.key}-${l.href}`}
+        href={l.href}
+        onClick={onClick}
+        style={{
+          padding: "10px 12px",
+          borderRadius: 8,
+          background: l.active ? "var(--ll-green-soft)" : "transparent",
+          color: l.active ? "var(--ll-green-dark)" : "var(--ll-ink)",
+          fontWeight: l.active ? 600 : 500,
+          fontSize: 14,
+          textDecoration: "none",
+        }}
+      >
+        {l.label}
+      </Link>
+    );
+    prevGroup = grp;
+  }
+  return out;
 }
