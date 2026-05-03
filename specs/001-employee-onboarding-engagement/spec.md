@@ -9,6 +9,17 @@
 
 Mở rộng hệ thống chat nội bộ LocalLife thành một **bot onboarding + engagement** chạy nền cho từng nhân viên (employee account). Mỗi tuần bot tạo một lộ trình đọc nhỏ kèm bài kiểm tra; mỗi ngày bot gửi 3–5 popup ngắn (động viên / hỏi tiến độ / test vui) để duy trì sự tập trung. Toàn bộ tương tác có lịch sử + chấm điểm để admin theo dõi và yêu cầu bổ sung kiến thức khi thấy lỗ hổng. AI chỉ soạn — admin duyệt; mọi tài liệu mới đi qua pipeline knowledge hiện có (citation-or-reject).
 
+## Clarifications
+
+### Session 2026-05-03
+
+- Q: Lịch popup hàng ngày dùng pattern nào? → A: B — Random uniform trong khung work-hours của account, ràng buộc khoảng cách tối thiểu 90 phút giữa 2 popup liên tiếp (tránh dồn cụm).
+- Q: Test pass threshold + retry policy? → A: B — Pass 70%; cho phép 1 retry trong 24h sau lần submit đầu; fail lần 2 → đẩy admin review (không auto-mark fail) trước khi đóng assignment.
+- Q: Bảo mật + retention cho response text của employee? → A: B — Field-level encryption (AES-GCM, KMS-managed key) cho `response_text` + raw answer humor test; retention 12 tháng; chỉ employee + direct lead + admin có quyền decrypt; aggregate stats tính trên metadata, không decrypt.
+- Q: Focus score "low" — ngưỡng + auto-action? → A: Ngưỡng `focus_score < 60/100`; auto-action = flag visual trên dashboard + suggest "Nói chuyện 1-1?" cho manager. KHÔNG tự reduce popup, KHÔNG auto-create HR ticket — manager quyết action thật.
+- Q: Lead role authority trên knowledge_task? → A: Lead có quyền CREATE task cho team mình + REVIEW PR (comment / request changes); chỉ admin mới `merge` PR và `escalate` deadline. Lead = creator/reviewer; admin = gatekeeper cuối.
+- **Bonus (user-added)**: Yêu cầu UX **anti-stress** cho mọi surface employee-facing — giao diện vui, màu tương tác, microcopy thân tình, button low-friction (không confirm dialog cho action đảo ngược được, copy động viên thay lệnh, popup không nag). Đã encode thành FR-027..FR-031 + SC-009..SC-010.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 — Vòng onboarding tuần (Priority: P1)
@@ -102,20 +113,20 @@ Admin/lead xem dashboard tổng hợp: theo employee và theo team — số onbo
 - **FR-002**: System MUST chọn 1–3 doc cho mỗi assignment dựa trên: (a) doc do admin push trực tiếp, (b) doc chưa đọc trong knowledge phù hợp role + level, (c) doc do knowledge task vừa merge (Story 3).
 - **FR-003**: System MUST gen test 5–10 câu cho assignment, citation-or-reject (mỗi câu đính `file#heading`).
 - **FR-004**: Employees MUST thấy assignment khi mở app; có thể đánh dấu doc đã đọc + làm test bất kỳ lúc nào trong tuần.
-- **FR-005**: System MUST chấm test (auto), record `passed/failed/expired` + thời gian hoàn thành.
+- **FR-005**: System MUST chấm test (auto) với threshold pass = **70%**, record `passed/failed_pending_review/expired` + attempt_number + thời gian hoàn thành. Cho phép tối đa **1 retry trong 24h** kể từ submit đầu; fail lần 2 chuyển trạng thái `failed_pending_review` (không tự đóng), notify admin để quyết định cuối — tránh AI gen câu hỏi tệ làm employee mất công lao oan.
 - **FR-006**: Admin MUST nhận notify mỗi khi 1 assignment kết thúc (pass/fail/expire).
 - **FR-007**: Admin MUST có thao tác **OK** (đóng tuần) hoặc **Request supplement** (mở knowledge task mới — xem FR-014).
 
 **Daily engagement (Story 2)**
-- **FR-008**: System MUST gửi 3–5 popup/ngày cho mỗi active employee, rải đều trong giờ làm cấu hình của account.
+- **FR-008**: System MUST gửi 3–5 popup/ngày cho mỗi active employee, rải theo **random uniform** trong giờ làm cấu hình của account, với ràng buộc khoảng cách tối thiểu 90 phút giữa 2 popup liên tiếp.
 - **FR-009**: Mỗi popup MUST thuộc 1 trong 3 dạng: motivation / work-check-in / humor; tỉ lệ cấu hình được, mặc định 2:2:1.
-- **FR-010**: System MUST lưu mỗi response (text + timestamp + flag responded/ignored/answered).
+- **FR-010**: System MUST lưu mỗi response (text + timestamp + flag responded/ignored/answered). Trường text MUST được **field-level encrypt** (AES-GCM, KMS-managed key); chỉ decrypt khi caller có RBAC = `self | direct_lead | admin`. Aggregate stats (response rate, humor accuracy) MUST tính từ metadata không cần decrypt. Retention text = 12 tháng kể từ ngày tạo, sau đó auto-purge (giữ lại metadata cho lịch sử aggregate).
 - **FR-011**: Popup content MUST sinh từ AI prompt có guard tone công ty (định nghĩa trong knowledge `internal/00-company/values.md`).
 - **FR-012**: Humor test MUST có "report bad question" để loại noise.
 - **FR-013**: System MUST respect calendar busy (không popup trong meeting nếu employee đã connect Google Calendar — optional v1).
 
 **Knowledge supplement (Story 3)**
-- **FR-014**: Admin MUST tạo `knowledge_task` với: topic, audience, level, deadline (default +7 ngày), level-based flag.
+- **FR-014**: Admin **HOẶC lead (cho team của lead đó)** MUST tạo được `knowledge_task` với: topic, audience, level, deadline (default +7 ngày), level-based flag. Lead role có thêm quyền REVIEW PR (comment / request-changes) nhưng **không** có quyền `merge` hay `escalate` — chỉ admin có. Owner trên task ghi rõ creator role để audit phân biệt.
 - **FR-015**: AI agent MUST nhận task, tra knowledge hiện có, soạn markdown + FM hợp schema (`knowledge/README.md`), mở PR vào `knowledge/` qua existing GitHub flow.
 - **FR-016**: System MUST track task status: `pending → drafting → pr_open → merged → ingested → assigned`. Mỗi chuyển trạng thái record audit.
 - **FR-017**: System MUST gửi nhắc admin khi deadline còn 24h và khi quá hạn; quá hạn 3 ngày → escalate lead.
@@ -123,23 +134,34 @@ Admin/lead xem dashboard tổng hợp: theo employee và theo team — số onbo
 
 **Dashboard (Story 4)**
 - **FR-019**: Admin/lead MUST xem aggregate per-employee + per-team: assignments pass/fail/expired %, popup response rate, humor score, focus score.
-- **FR-020**: System MUST tính `focus_score` công thức minh bạch (documented), phối hợp 3 input: (a) on-time test, (b) popup response rate, (c) humor accuracy. Trọng số mặc định 50/30/20, cấu hình được.
+- **FR-020**: System MUST tính `focus_score` (thang 0–100) công thức minh bạch (documented), phối hợp 3 input: (a) on-time test, (b) popup response rate, (c) humor accuracy. Trọng số mặc định 50/30/20, cấu hình được. **Ngưỡng "low" mặc định = `< 60`** → dashboard hiển thị flag visual + suggest "Nói chuyện 1-1?" cho manager. System **KHÔNG** tự reduce popup tần suất và **KHÔNG** auto-create HR ticket — quyết định thuộc manager/admin.
 - **FR-021**: Admin MUST drill-down 1 employee → timeline đầy đủ tương tác trong khoảng thời gian chọn.
 - **FR-022**: System MUST cho export CSV per-employee timeline.
 
 **Cross-cutting**
-- **FR-023**: Mọi feature MUST tuân RBAC hiện có (`apps/web/lib/rbac.ts`); chỉ admin mới tạo/đóng knowledge task.
+- **FR-023**: Mọi feature MUST tuân RBAC hiện có (`apps/web/lib/rbac.ts`). Knowledge task creation = `admin` hoặc `lead` (cho team mình); knowledge task `merge` PR + `escalate` deadline = `admin` only. Decrypt response text = `self` (employee đó) / `direct_lead` / `admin`.
 - **FR-024**: Tất cả interaction (test answer, popup response, admin verify) MUST ghi audit không thể xoá (giữ ≥ 12 tháng).
 - **FR-025**: AI prompt MUST guard tone (động viên — không chỉ trích; humor — không nhạy cảm).
 - **FR-026**: System MUST có feature flag `onboarding_bot_enabled` per-account để admin pilot dần.
+
+**UX & tone (anti-stress, employee-facing surfaces)**
+- **FR-027**: Giao diện employee-facing (assignment list, popup card, test runner, dashboard cá nhân) MUST theo design language **vui — không công sở khô khan**: palette ấm + accent màu sống (đề xuất pair fresh-jade hiện có với 1 màu nhấn warm vàng/cam cho CTA tích cực), microcopy thân tình tiếng Việt, illustration/emoji có chừng mực — KHÔNG đỏ-cảnh-báo cho fail/expired (chuyển sang amber + tone "thử lại nhé").
+- **FR-028**: Mọi nút có-thể-stress (Submit test, Mark fail, Skip popup, Close assignment) MUST có:
+  - State loading mềm (skeleton hoặc shimmer, không spinner trắng);
+  - Confirm dialog **chỉ** cho action không đảo ngược (vd hard-delete) — submit test KHÔNG cần confirm;
+  - Hover/focus state có micro-interaction nhẹ (scale 1.02 hoặc tint shift);
+  - Copy nút động viên thay vì lệnh: "Mình nộp bài nhé" thay cho "Submit", "Để lúc khác" thay cho "Cancel".
+- **FR-029**: Popup card MUST dismissable bằng `Esc` + click-outside; không bao giờ chiếm full-screen; không block scroll trang chính. Popup chưa response sẽ tự minimize sau 30s thành 1 chip nhỏ góc dưới — KHÔNG nag.
+- **FR-030**: Test runner MUST có progress bar friendly (vd "Câu 3/8 — anh/chị làm tốt lắm"), không countdown timer trừ khi admin bật, và auto-save draft mỗi câu để không mất công khi refresh.
+- **FR-031**: Dashboard cá nhân (employee tự xem) MUST hiển thị streak / progress positive-framed (vd "5 tuần liên tiếp pass" thay vì "0 lần fail tháng này"); focus score thấp được phrase là "tuần này anh/chị có vẻ bận, cần em hỗ trợ gì không?" không phải "Low focus detected".
 
 ### Key Entities
 
 - **Account** *(existing)*: extend với `timezone`, `work_hours`, `level (entry|mid|senior)`, `onboarding_bot_enabled`, `popup_ratio` (override), `is_on_leave`.
 - **WeeklyAssignment**: id, account_id, week_iso (`2026-W18`), doc_ids[], test_id, status, assigned_at, completed_at, score, admin_decision (`ok|request_supplement|expired`).
 - **Test / TestQuestion / TestAnswer**: AI-generated; mỗi câu link tới citation `file#heading`; answers per-employee.
-- **DailyPopup**: id, account_id, type (`motivation|check_in|humor`), content_text, scheduled_at, sent_at, response_text, response_flag, humor_correct (nullable).
-- **KnowledgeTask**: id, requested_by_admin_id, topic, audience, level, deadline, level_based, status, related_assignment_id (nullable — link ngược về source request), pr_url, merged_at.
+- **DailyPopup**: id, account_id, type (`motivation|check_in|humor`), content_text, scheduled_at, sent_at, **response_text_encrypted** (AES-GCM, KMS key id), response_flag, humor_correct (nullable), purge_after (timestamp +12 mo). Aggregate readers chỉ đọc metadata; raw decrypt cần RBAC `self|direct_lead|admin`.
+- **KnowledgeTask**: id, **created_by_account_id**, **created_by_role** (`admin|lead`), topic, audience, level, deadline, level_based, status, related_assignment_id (nullable — link ngược về source request), pr_url, merged_at, escalated_at (nullable, only set by admin).
 - **FocusEvaluation**: account_id, period (week/month), assignments_pass_pct, popup_response_rate, humor_accuracy, focus_score, computed_at.
 - **AuditEvent** *(existing pattern)*: extend `kind` enum với onboarding events.
 
@@ -155,6 +177,8 @@ Admin/lead xem dashboard tổng hợp: theo employee và theo team — số onbo
 - **SC-006**: Focus score correlate (Spearman ρ ≥ 0.5) với manager's qualitative review hàng quý → tín hiệu công thức không trật.
 - **SC-007**: Cost AI call: ≤ $0.15/employee/tháng (popup + test gen + knowledge draft) ở scale 50 nhân viên.
 - **SC-008**: Zero leak — không có popup/test/doc xuất hiện cho account ngoài role được phép (kiểm bằng RBAC test 3 role × 3 sensitivity).
+- **SC-009**: Stress-survey sau pilot 4 tuần: ≥ 80% employee trả lời "không thấy app gây áp lực" (Likert ≥ 4/5); ≤ 5% feedback negative về tone microcopy hay màu sắc.
+- **SC-010**: Không có popup chiếm > 30% chiều cao viewport ở mọi breakpoint; mọi nút có-thể-stress (Submit/Mark fail/Close) đạt WCAG AA contrast và có hover/focus state đo được (visual regression test).
 
 ## Assumptions
 
@@ -169,11 +193,11 @@ Admin/lead xem dashboard tổng hợp: theo employee và theo team — số onbo
 
 ## Open Questions / Need Clarification
 
-- **NEEDS CLARIFICATION**: Lịch popup — fixed slots (vd 9:00, 11:00, 14:00, 16:00) hay random trong khung giờ? Random thì cần tránh spam consecutive.
-- **NEEDS CLARIFICATION**: "Test pass threshold" mặc định bao nhiêu (70%? 80%?) và có cho retry không?
-- **NEEDS CLARIFICATION**: Khi knowledge task escalate sang lead — lead có quyền đẩy AI làm tiếp hay chỉ notify thuần?
-- **NEEDS CLARIFICATION**: Focus score ngưỡng "low" cụ thể (vd < 60/100?) và policy hành động kèm theo (tự động nhắc HR? chỉ flag dashboard?).
-- **NEEDS CLARIFICATION**: Lưu trữ response text — có cần encrypt at rest đặc biệt không (chứa lời tâm sự / blocker nội bộ)?
-- **NEEDS CLARIFICATION**: Multi-language — tone humor có cần localize cho nhân viên người nước ngoài (nếu có) hay chỉ tiếng Việt v1?
+- ~~Lịch popup~~ — Resolved (Q1, see Clarifications): random uniform + 90-minute min-gap.
+- ~~Test pass threshold + retry~~ — Resolved (Q2): 70% + 1 retry trong 24h, fail-2 → admin review.
+- ~~Lead authority trên knowledge task~~ — Resolved (Q5): lead = creator + reviewer (PR comment / request-changes); admin = sole `merge` + `escalate` authority.
+- ~~Focus score ngưỡng "low" + policy~~ — Resolved (Q4): `< 60/100` → flag dashboard + suggest 1-1; KHÔNG auto reduce popup, KHÔNG auto HR ticket.
+- ~~Response text encryption + retention~~ — Resolved (Q3): field-level AES-GCM + KMS key, retention 12 tháng, decrypt RBAC = self / direct_lead / admin.
+- **Deferred to /speckit.plan**: Multi-language tone humor — v1 tiếng Việt only (pilot là team VN); localize defer v2.
 
-→ Sẽ giải quyết ở `/speckit.clarify`.
+→ Tất cả `/speckit.clarify` items đã giải quyết hoặc defer. Sẵn sàng chạy `/speckit.plan`.
