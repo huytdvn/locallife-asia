@@ -48,3 +48,12 @@ google-service-account*.json
 apps/web/next-env.d.ts
 .cache/
 apps/web/.cache/
+
+# Spec-kit / Claude project agent (per spec-kit security warning)
+# Skills + .specify are checked in (shared workflow), but local agent
+# state, credentials, and per-machine settings stay out.
+.claude/settings.local.json
+.claude/cache/
+.claude/credentials*
+.claude/projects/
+.specify/.cache/
