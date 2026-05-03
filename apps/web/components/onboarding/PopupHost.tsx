@@ -32,7 +32,9 @@ export function PopupHost() {
 
   useEffect(() => {
     refresh();
-    const id = setInterval(refresh, 30_000);
+    // Poll mỗi 5s ở dev (tiện debug), 30s ở prod để tiết kiệm.
+    const interval = process.env.NODE_ENV === "production" ? 30_000 : 5_000;
+    const id = setInterval(refresh, interval);
     return () => clearInterval(id);
   }, [refresh]);
 

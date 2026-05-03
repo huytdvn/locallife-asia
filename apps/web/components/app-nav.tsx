@@ -7,10 +7,12 @@ type NavKey =
   | "home"
   | "dashboard"
   | "training"
+  | "onboarding"
   | "admin"
   | "admin-docs"
   | "admin-report"
   | "admin-users"
+  | "admin-onboarding"
   | "host"
   | "lok"
   | "public";
@@ -36,6 +38,7 @@ export function AppNav({ role, active }: Props) {
       { href: "/dashboard", label: "Tổng quan", key: "dashboard" },
       { href: "/", label: "Trợ lý AI", key: "home" },
       { href: "/training", label: "Training", key: "training" },
+      { href: "/onboarding", label: "Onboarding", key: "onboarding" },
     );
   }
   if (role === "host") {
@@ -62,6 +65,12 @@ export function AppNav({ role, active }: Props) {
       href: "/admin/training-report",
       label: "Training report",
       key: "admin-report",
+      subtle: true,
+    });
+    specs.push({
+      href: "/admin/onboarding",
+      label: "Onboarding",
+      key: "admin-onboarding",
       subtle: true,
     });
   }
