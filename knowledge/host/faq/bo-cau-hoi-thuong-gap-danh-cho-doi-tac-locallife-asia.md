@@ -3,34 +3,33 @@ id: 01KPYX8NK0914RJTPG9AT74VDC
 title: Bộ Câu Hỏi Thường Gặp Dành Cho Đối Tác LocalLife.Asia
 owner: ops@locallife.asia
 audience:
-- host
-- employee
-- lead
-- admin
+  - employee
+  - lead
+  - admin
 sensitivity: public
 tags:
-- collaboration
-- faq
-- guidelines
-- local life
-- local_life
-- onboarding_guide
-- partner
-- partner_faq
-- partner_guidelines
-- platform
-- platform_info
+  - collaboration
+  - faq
+  - guidelines
+  - local life
+  - local_life
+  - onboarding_guide
+  - partner
+  - partner_faq
+  - partner_guidelines
+  - platform
+  - platform_info
 source:
-- type: docx
-  path: raw-ulid/01KPYX5RA3Z7D432HCYBSFVFRH.docx
-  captured_at: '2026-04-24'
+  - type: docx
+    path: raw-ulid/01KPYX5RA3Z7D432HCYBSFVFRH.docx
+    captured_at: '2026-04-24'
 last_reviewed: '2026-04-24'
 reviewer: ops@locallife.asia
 status: draft
 related: []
 ---
 
-# Bộ Câu Hỏi Thường Gặp Dành Cho Đối Tác LocalLife.Asia
+# Bộ Câu Hỏi Thường Gặp Dành Cho Đối Tác LocalLife.Asia 12123 12132
 
 ## I. Tổng Quan
 
