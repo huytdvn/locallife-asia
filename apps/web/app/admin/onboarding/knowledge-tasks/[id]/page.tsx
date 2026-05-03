@@ -38,6 +38,11 @@ interface SaveResult {
   path: string;
   prUrl: string | null;
   previewUrl: string;
+  spawnedAssignments?: {
+    count: number;
+    emails: string[];
+    weekIso: string;
+  };
 }
 
 const ZONES = ["public", "host", "lok", "internal"] as const;
@@ -282,6 +287,7 @@ export default function KnowledgeTaskDetailPage() {
 }
 
 function SuccessPanel({ saved }: { saved: SaveResult }) {
+  const spawn = saved.spawnedAssignments;
   return (
     <div
       style={{
@@ -293,35 +299,78 @@ function SuccessPanel({ saved }: { saved: SaveResult }) {
       }}
     >
       <h2 style={{ margin: "0 0 8px", fontSize: 18, color: "var(--ll-green-dark)" }}>
-        ✓ Đã lưu nháp vào knowledge
+        ✓ Đã tạo khoá training thành công
       </h2>
       <p style={{ fontSize: 14, color: "var(--ll-ink)", margin: "0 0 12px" }}>
-        Doc đã commit vào git với <code>status=draft</code>. Bước tiếp:
+        Doc đã commit vào git tier-1, knowledge_task chuyển status{" "}
+        <code>assigned</code>. Mọi nhân viên audience-match nhận assignment
+        tuần này — họ sẽ thấy ngay khi mở <code>/onboarding</code>.
       </p>
-      <ul style={{ fontSize: 14, paddingLeft: 18, margin: "0 0 12px" }}>
-        <li>
-          Path: <code>{saved.path}</code>
-        </li>
-        <li>
-          Doc ID: <code>{saved.docId}</code>
-        </li>
-        {saved.prUrl && (
-          <li>
-            Commit:{" "}
-            <a href={saved.prUrl} target="_blank" rel="noreferrer" style={{ color: "var(--ll-green-dark)" }}>
-              {saved.prUrl.split("/").slice(-1)[0].slice(0, 8)} ↗
-            </a>
-          </li>
-        )}
-      </ul>
-      <div style={{ display: "flex", gap: 8 }}>
+      <div
+        style={{
+          background: "white",
+          border: "1px solid var(--ll-green-soft)",
+          borderRadius: 8,
+          padding: 12,
+          marginBottom: 12,
+        }}
+      >
+        <div style={{ fontSize: 13, lineHeight: 1.8 }}>
+          <div>
+            <strong>📚 Doc:</strong> <code>{saved.path}</code>{" "}
+            <span style={{ color: "var(--ll-muted)" }}>
+              (id <code>{saved.docId}</code>)
+            </span>
+          </div>
+          {saved.prUrl && (
+            <div>
+              <strong>🔗 Commit:</strong>{" "}
+              <a
+                href={saved.prUrl}
+                target="_blank"
+                rel="noreferrer"
+                style={{ color: "var(--ll-green-dark)" }}
+              >
+                {saved.prUrl.split("/").slice(-1)[0].slice(0, 8)} ↗
+              </a>
+            </div>
+          )}
+          {spawn && (
+            <div>
+              <strong>🎯 Đã giao cho:</strong>{" "}
+              {spawn.count > 0 ? (
+                <>
+                  <strong style={{ color: "var(--ll-green-dark)" }}>
+                    {spawn.count} nhân viên
+                  </strong>{" "}
+                  · tuần <code>{spawn.weekIso}</code>
+                  {spawn.emails.length > 0 && spawn.emails.length <= 8 && (
+                    <div style={{ marginTop: 4, fontSize: 12, color: "var(--ll-muted)" }}>
+                      {spawn.emails.join(", ")}
+                    </div>
+                  )}
+                </>
+              ) : (
+                <span style={{ color: "var(--ll-muted)" }}>
+                  0 — chưa có account nào audience-match đã bật onboarding bot
+                </span>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
         <a href={saved.previewUrl} style={{ ...primaryBtn, textDecoration: "none" }}>
-          Mở /admin/docs để duyệt →
+          Duyệt doc → approved
         </a>
         <a href="/admin/onboarding" style={secondaryBtn}>
           Về dashboard
         </a>
       </div>
+      <p style={{ fontSize: 12, color: "var(--ll-muted)", marginTop: 12, marginBottom: 0 }}>
+        💡 Doc đang ở status=<code>draft</code>. Sau khi approve trong /admin/docs,
+        retrieval (chat AI) cũng truy cập được nội dung.
+      </p>
     </div>
   );
 }

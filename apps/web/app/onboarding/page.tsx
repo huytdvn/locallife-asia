@@ -8,6 +8,7 @@ import {
 } from "@/lib/onboarding/weekly-assignment";
 import { getPathBySlug } from "@/lib/training";
 import { getProgress } from "@/lib/training-progress";
+import { isAdhocSlug, resolveAdhocPath } from "@/lib/onboarding/adhoc-training";
 import { aggregatePopupMetrics, computeFocusScore, isLow } from "@/lib/onboarding/focus-score";
 import { POSITIVE_DASHBOARD_COPY } from "@/lib/onboarding/copy.vi";
 import { PageShell, SectionHeader } from "@/components/ui";
@@ -26,7 +27,11 @@ export default async function OnboardingPage() {
   const current = await getCurrentForEmail(email, week);
   const history = await listForEmail(email, 6);
 
-  const path = current ? getPathBySlug(current.trainingSlug, role) : null;
+  const path = current
+    ? isAdhocSlug(current.trainingSlug)
+      ? await resolveAdhocPath(current.trainingSlug, role)
+      : getPathBySlug(current.trainingSlug, role)
+    : null;
   const progress = current ? getProgress(email, current.trainingSlug) : null;
 
   // Focus stats (week-to-date)

@@ -6,6 +6,12 @@ import { buildCreateDoc } from "@/lib/knowledge-editor";
 import { commitUpdateDirect } from "@/lib/github";
 import { triggerKnowledgeSync } from "@/lib/sync-trigger";
 import { writeAudit } from "@/lib/audit";
+import {
+  spawnAdhocAssignments,
+  tagSavedDocPath,
+} from "@/lib/onboarding/adhoc-training";
+import { isoWeekLabel } from "@/lib/onboarding/weekly-assignment";
+import { query } from "@/lib/db";
 
 export const runtime = "nodejs";
 
@@ -110,7 +116,18 @@ export async function POST(
     );
   }
 
-  await setStatus(taskId, "pr_open", { prUrl: prUrl ?? undefined });
+  // Tag doc path vào notes để adhoc resolver tìm sau (defer schema mới).
+  const newNotes = tagSavedDocPath(task.notes, built.repoPath);
+  await query(
+    `UPDATE knowledge_task SET notes = $2, status = 'assigned', pr_url = $3
+     WHERE id = $1`,
+    [taskId, newNotes, prUrl]
+  );
+
+  // Spawn ad-hoc weekly_assignment cho mọi user audience-match.
+  const week = isoWeekLabel(new Date());
+  const spawn = await spawnAdhocAssignments(taskId, task.audience, week);
+
   await writeAudit({
     actorEmail: session.email,
     role: session.role,
@@ -120,6 +137,7 @@ export async function POST(
       knowledgeTaskId: taskId,
       path: built.repoPath,
       action: "save_draft_from_ai",
+      spawnedAssignments: spawn.created,
     },
   });
 
@@ -131,6 +149,11 @@ export async function POST(
       path: built.repoPath,
       prUrl,
       previewUrl: `/admin/docs?id=${built.preview.id}`,
+      spawnedAssignments: {
+        count: spawn.created,
+        emails: spawn.emails,
+        weekIso: week,
+      },
     },
   });
 }

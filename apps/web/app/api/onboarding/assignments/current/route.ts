@@ -7,6 +7,7 @@ import {
 } from "@/lib/onboarding/weekly-assignment";
 import { getPathBySlug } from "@/lib/training";
 import { getProgress } from "@/lib/training-progress";
+import { isAdhocSlug, resolveAdhocPath } from "@/lib/onboarding/adhoc-training";
 
 export const runtime = "nodejs";
 
@@ -17,7 +18,9 @@ export async function GET(req: Request) {
 
   let enriched = null;
   if (current) {
-    const path = getPathBySlug(current.trainingSlug, session.role);
+    const path = isAdhocSlug(current.trainingSlug)
+      ? await resolveAdhocPath(current.trainingSlug, session.role)
+      : getPathBySlug(current.trainingSlug, session.role);
     const progress = getProgress(session.email, current.trainingSlug);
     enriched = {
       ...current,
