@@ -3,11 +3,42 @@ import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
 import { audienceFor, type Role, type Session as LLSession } from "@/lib/rbac";
 import { getRoleFromDb } from "@/lib/roles";
+import { verifyPassword } from "@/lib/password";
 
 const ALLOWED_DOMAIN =
   process.env.ALLOWED_EMAIL_DOMAIN ?? "locallife.asia";
 
 const IS_PROD = process.env.NODE_ENV === "production";
+
+/**
+ * Production password Credentials provider — for internal users không có
+ * Google Workspace account (vd: server-on-prem deploy). Password do admin
+ * set qua /api/admin/users/set-password. Email phải tồn tại trong
+ * `roles` table và không disabled.
+ *
+ * Bypass `ALLOWED_DOMAIN` check vì password user có thể là email ngoài
+ * domain (vd `huy@locallife.asia` lẫn `external@partner.com`). Domain
+ * gate ở `signIn` callback chỉ áp cho Google SSO provider.
+ */
+function passwordCredentialsProvider() {
+  return Credentials({
+    id: "password",
+    name: "Email + mật khẩu",
+    credentials: {
+      email: { label: "Email", type: "email" },
+      password: { label: "Mật khẩu", type: "password" },
+    },
+    async authorize(creds) {
+      const email = String(creds?.email ?? "").trim().toLowerCase();
+      const password = String(creds?.password ?? "");
+      if (!email || !password) return null;
+      const verified = await verifyPassword(email, password);
+      if (!verified) return null;
+      // Role resolved later in jwt callback từ DB.
+      return { id: verified.email, email: verified.email, name: verified.email };
+    },
+  });
+}
 
 function devCredentialsProvider() {
   return Credentials({
@@ -80,6 +111,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
       authorization: { params: { hd: ALLOWED_DOMAIN, prompt: "select_account" } },
     }),
+    passwordCredentialsProvider(),
     ...(IS_PROD ? [] : [devCredentialsProvider()]),
   ],
   session: { strategy: "jwt" },
@@ -87,6 +119,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     async signIn({ profile, account }) {
       // Dev credentials provider bypasses domain check.
       if (account?.provider === "dev") return !IS_PROD;
+      // Password Credentials đã verify qua DB trong authorize(); skip domain
+      // gate vì password user có thể là email ngoài @locallife.asia.
+      if (account?.provider === "password") return true;
       const email = profile?.email ?? "";
       if (!email.endsWith(`@${ALLOWED_DOMAIN}`)) return false;
       const hd = (profile as { hd?: string } | null | undefined)?.hd;
@@ -154,10 +189,18 @@ export async function requireSession(req: Request): Promise<LLSession> {
     throw new UnauthorizedError("Chưa đăng nhập");
   }
   const email = session.user.email;
-  if (!email.endsWith(`@${ALLOWED_DOMAIN}`)) {
-    throw new UnauthorizedError("Email không thuộc domain cho phép");
-  }
+  // Domain gate chỉ áp khi user đăng nhập qua Google SSO. Password
+  // Credentials user (email ngoài domain) đã pass DB verify trong authorize.
+  // Phân biệt qua sự tồn tại `role` từ JWT (set trong jwt callback). Cả 2
+  // provider cuối cùng đều set token.role nên không lệch ở đây — relax check.
   const role: Role = session.role ?? "guest";
+  if (
+    !email.endsWith(`@${ALLOWED_DOMAIN}`) &&
+    role === "guest"
+  ) {
+    // Email ngoài domain + không có role trong DB = chưa được provision.
+    throw new UnauthorizedError("Email chưa được admin cấp quyền");
+  }
   return { email, role, audience: audienceFor(role) };
 }
 

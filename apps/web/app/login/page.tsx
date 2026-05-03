@@ -7,10 +7,11 @@ const IS_PROD = process.env.NODE_ENV === "production";
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ next?: string }>;
+  searchParams: Promise<{ next?: string; error?: string }>;
 }) {
   const params = await searchParams;
   const nextPath = params.next ?? "/";
+  const authError = params.error;
 
   return (
     <main
@@ -77,6 +78,23 @@ export default async function LoginPage({
           luôn kèm nguồn tài liệu rõ ràng.
         </p>
 
+        {authError && (
+          <div
+            style={{
+              padding: "10px 12px",
+              borderRadius: 8,
+              background: "#fef2f2",
+              border: "1px solid #fecaca",
+              color: "#991b1b",
+              fontSize: 13,
+            }}
+          >
+            {authError === "CredentialsSignin"
+              ? "Email hoặc mật khẩu không đúng. Liên hệ admin nếu quên mật khẩu."
+              : `Đăng nhập thất bại: ${authError}`}
+          </div>
+        )}
+
         <form
           action={async () => {
             "use server";
@@ -110,6 +128,71 @@ export default async function LoginPage({
             }}
           >
             Chỉ hỗ trợ email @locallife.asia
+          </p>
+        </form>
+
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+            color: "var(--ll-muted)",
+            fontSize: 12,
+            margin: "4px 0",
+          }}
+        >
+          <span style={{ flex: 1, height: 1, background: "var(--ll-border)" }} />
+          HOẶC
+          <span style={{ flex: 1, height: 1, background: "var(--ll-border)" }} />
+        </div>
+
+        <form
+          action={async (formData: FormData) => {
+            "use server";
+            const email = String(formData.get("email") ?? "").trim();
+            const password = String(formData.get("password") ?? "");
+            await signIn("password", {
+              email,
+              password,
+              redirectTo: nextPath,
+            });
+          }}
+          style={{ display: "flex", flexDirection: "column", gap: 10 }}
+        >
+          <input
+            name="email"
+            type="email"
+            required
+            placeholder="email@công-ty.tld"
+            autoComplete="username"
+            style={inputStyle}
+          />
+          <input
+            name="password"
+            type="password"
+            required
+            placeholder="Mật khẩu (≥10 ký tự)"
+            autoComplete="current-password"
+            style={inputStyle}
+          />
+          <button
+            type="submit"
+            style={{
+              width: "100%",
+              padding: "12px 16px",
+              borderRadius: 10,
+              border: "1px solid var(--ll-green)",
+              background: "white",
+              color: "var(--ll-green-dark)",
+              fontWeight: 600,
+              fontSize: 14,
+              cursor: "pointer",
+            }}
+          >
+            Đăng nhập bằng email + mật khẩu
+          </button>
+          <p style={{ margin: 0, fontSize: 11, color: "var(--ll-muted)", textAlign: "center" }}>
+            Dành cho user nội bộ không có Google Workspace. Quên password? Liên hệ admin.
           </p>
         </form>
 
@@ -177,3 +260,14 @@ export default async function LoginPage({
     </main>
   );
 }
+
+const inputStyle: React.CSSProperties = {
+  width: "100%",
+  padding: "10px 12px",
+  borderRadius: 8,
+  border: "1px solid var(--ll-border)",
+  fontSize: 14,
+  fontFamily: "inherit",
+  background: "white",
+  boxSizing: "border-box",
+};
