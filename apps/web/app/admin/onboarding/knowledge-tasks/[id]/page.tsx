@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 import { PageShell } from "@/components/ui";
 
 interface Task {
-  id: number;
+  id: string;          // pg BIGSERIAL serializes as string in JSON
   topic: string;
   audience: string[];
   level: string | null;
@@ -27,21 +27,24 @@ interface DraftResult {
 
 export default function KnowledgeTaskDetailPage() {
   const params = useParams();
-  const id = Number(params.id);
+  const id = String(params.id);
   const [task, setTask] = useState<Task | null>(null);
   const [draft, setDraft] = useState<DraftResult | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    setLoading(true);
     fetch(`/api/onboarding/admin/knowledge-tasks`)
       .then((r) => r.json())
       .then((d) => {
         if (d.ok) {
-          const t = (d.data as Task[]).find((x) => x.id === id);
+          const t = (d.data as Task[]).find((x) => String(x.id) === id);
           if (t) setTask(t);
         }
-      });
+      })
+      .finally(() => setLoading(false));
   }, [id]);
 
   async function genDraft() {
@@ -61,10 +64,23 @@ export default function KnowledgeTaskDetailPage() {
     }
   }
 
+  if (loading) {
+    return (
+      <PageShell>
+        <div style={{ padding: 32, color: "var(--ll-muted)" }}>Đang tải…</div>
+      </PageShell>
+    );
+  }
   if (!task) {
     return (
       <PageShell>
-        <div style={{ padding: 32 }}>Đang tải…</div>
+        <div style={{ padding: 32 }}>
+          <h1>Không tìm thấy task #{id}</h1>
+          <p style={{ color: "var(--ll-muted)" }}>
+            Có thể anh không có quyền xem (lead chỉ thấy task của mình tạo), hoặc task đã xoá.
+          </p>
+          <a href="/admin/onboarding" style={{ color: "var(--ll-green-dark)" }}>← Quay lại dashboard</a>
+        </div>
       </PageShell>
     );
   }
