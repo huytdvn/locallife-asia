@@ -70,7 +70,10 @@
       "id": "company-01",
       "role": "employee",
       "query": "Sứ mệnh và tầm nhìn của Local Life Asia",
-      "expected_paths": ["internal/00-company/vision-mission.md"]
+      "expected_paths": [
+        "internal/00-company/vision-mission.md",
+        "public/about/gioi-thieu-he-sinh-thai-du-lich-ban-dia-local-life-asia.md"
+      ]
     },
     {
       "id": "company-02",
