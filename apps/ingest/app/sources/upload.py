@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
+import io
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
 
-from app.config import get_settings
 from app.pipeline.jobs import enqueue_ingest
 from app.storage.raw import (
     content_sha256,
@@ -62,7 +62,6 @@ def _quick_parse_text(filename: str, data: bytes) -> str:
         if ext in ("md", "txt"):
             return data.decode("utf-8", errors="ignore")[:4000]
         if ext == "pdf":
-            import io
             import pdfplumber  # type: ignore
 
             with pdfplumber.open(io.BytesIO(data)) as pdf:
@@ -71,7 +70,6 @@ def _quick_parse_text(filename: str, data: bytes) -> str:
                     pieces.append(p.extract_text() or "")
                 return ("\n".join(pieces))[:4000]
         if ext == "docx":
-            import io
             from docx import Document  # type: ignore
 
             doc = Document(io.BytesIO(data))
