@@ -109,5 +109,13 @@ follow doc.
 
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
-shell commands, and other important information, read the current plan
+shell commands, and other important information, read the current plan:
+
+- Active feature: `001-employee-onboarding-engagement`
+- Plan: [`specs/001-employee-onboarding-engagement/plan.md`](specs/001-employee-onboarding-engagement/plan.md)
+- Spec: [`specs/001-employee-onboarding-engagement/spec.md`](specs/001-employee-onboarding-engagement/spec.md)
+- Research: [`specs/001-employee-onboarding-engagement/research.md`](specs/001-employee-onboarding-engagement/research.md)
+- Data model: [`specs/001-employee-onboarding-engagement/data-model.md`](specs/001-employee-onboarding-engagement/data-model.md)
+- API contracts: [`specs/001-employee-onboarding-engagement/contracts/api.md`](specs/001-employee-onboarding-engagement/contracts/api.md)
+- Quickstart: [`specs/001-employee-onboarding-engagement/quickstart.md`](specs/001-employee-onboarding-engagement/quickstart.md)
 <!-- SPECKIT END -->

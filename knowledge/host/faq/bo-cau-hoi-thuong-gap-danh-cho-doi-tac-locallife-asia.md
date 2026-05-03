@@ -36,7 +36,7 @@ related: []
 
 ### 1. LocalLife.Asia là gì?
 LocalLife.Asia là một nền tảng du lịch cộng đồng bền vững, kết nối người dân địa phương trực tiếp với du khách thông qua các trải nghiệm văn hóa, lưu trú, ẩm thực, thủ công truyền thống và dịch vụ du lịch đặc sắc. Mục tiêu là giúp cộng đồng địa phương phát triển kinh tế, bảo tồn bản sắc và thúc đẩy du lịch bền vững.
-
+2222
 ### 2. Mô hình hoạt động của LocalLife.Asia có gì khác biệt so với các sàn TMĐT du lịch khác?
 - Không thu phí sử dụng nền tảng của **host**.
 - **Đối tác** là người dân địa phương có thể trực tiếp tạo gian hàng, đăng sản phẩm/dịch vụ.

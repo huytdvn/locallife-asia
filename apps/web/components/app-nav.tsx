@@ -7,82 +7,48 @@ type NavKey =
   | "home"
   | "dashboard"
   | "training"
+  | "onboarding"
   | "admin"
   | "admin-docs"
   | "admin-report"
   | "admin-users"
+  | "admin-onboarding"
   | "host"
   | "lok"
   | "public";
+
+type NavGroup = "primary" | "manage" | "preview";
 
 interface Props {
   role: Role;
   active: NavKey;
 }
 
+interface LinkSpec {
+  href: string;
+  label: string;
+  key: NavKey;
+  group: NavGroup;
+}
+
 /**
- * Shared top nav (server component). Role-aware + mobile drawer.
- * Links được compute server-side rồi pass cho MobileNavDrawer client.
+ * Shared top nav (server component). Smart grouping per-role:
+ * - "primary" — daily tasks, ordered by usage frequency.
+ * - "manage" — staff/admin tools (lead + admin only).
+ * - "preview" — admin-only role-switch preview.
+ *
+ * Visual: desktop separates groups by faded dot; mobile drawer shows
+ * group label headings.
  */
 export function AppNav({ role, active }: Props) {
-  const isInternal = ["employee", "lead", "admin"].includes(role);
-  const isStaff = role === "admin" || role === "lead";
-  const isAdmin = role === "admin";
-
-  type LinkSpec = { href: string; label: string; key: NavKey; subtle?: boolean };
-  const specs: LinkSpec[] = [];
-  if (isInternal) {
-    specs.push(
-      { href: "/dashboard", label: "Tổng quan", key: "dashboard" },
-      { href: "/", label: "Trợ lý AI", key: "home" },
-      { href: "/training", label: "Training", key: "training" },
-    );
-  }
-  if (role === "host") {
-    specs.push({ href: "/host", label: "Cổng Host", key: "host" });
-  }
-  if (role === "lok") {
-    specs.push({ href: "/lok", label: "Cổng LOK", key: "lok" });
-  }
-  if (role === "guest") {
-    specs.push({ href: "/public", label: "Trang công khai", key: "public" });
-  }
-  if (role === "host" || role === "lok" || role === "guest") {
-    specs.push({ href: "/training", label: "Training", key: "training" });
-  }
-  if (isStaff) {
-    specs.push({ href: "/admin", label: "Admin", key: "admin" });
-    specs.push({
-      href: "/admin/docs",
-      label: "Tài liệu",
-      key: "admin-docs",
-      subtle: true,
-    });
-    specs.push({
-      href: "/admin/training-report",
-      label: "Training report",
-      key: "admin-report",
-      subtle: true,
-    });
-  }
-  if (isAdmin) {
-    specs.push({
-      href: "/admin/users",
-      label: "Quản lý user",
-      key: "admin-users",
-      subtle: true,
-    });
-  }
-  if (isAdmin) {
-    specs.push({ href: "/host", label: "Host", key: "host", subtle: true });
-    specs.push({ href: "/lok", label: "LOK", key: "lok", subtle: true });
-  }
+  const specs: LinkSpec[] = buildLinksForRole(role);
 
   const navLinks: NavLinkData[] = specs.map((s) => ({
     href: s.href,
     label: s.label,
     key: s.key,
-    subtle: s.subtle,
+    subtle: s.group !== "primary",
+    group: s.group,
     active: active === s.key,
   }));
 
@@ -108,7 +74,7 @@ export function AppNav({ role, active }: Props) {
         }}
       >
         <Link
-          href="/"
+          href={homeForRole(role)}
           style={{
             fontWeight: 700,
             color: "var(--ll-green-dark)",
@@ -143,22 +109,10 @@ export function AppNav({ role, active }: Props) {
             overflowY: "hidden",
           }}
         >
-          <span
-            style={{ color: "var(--ll-border)", flexShrink: 0 }}
-            aria-hidden
-          >
+          <span style={{ color: "var(--ll-border)", flexShrink: 0 }} aria-hidden>
             ·
           </span>
-          {navLinks.map((l) => (
-            <NavLink
-              key={`${l.key}-${l.href}`}
-              href={l.href}
-              active={l.active}
-              subtle={l.subtle}
-            >
-              {l.label}
-            </NavLink>
-          ))}
+          {renderDesktopWithSeparators(navLinks)}
         </div>
       </div>
 
@@ -175,6 +129,110 @@ export function AppNav({ role, active }: Props) {
       </div>
     </nav>
   );
+}
+
+function homeForRole(role: Role): string {
+  if (role === "host") return "/host";
+  if (role === "lok") return "/lok";
+  if (role === "guest") return "/public";
+  return "/dashboard";
+}
+
+function buildLinksForRole(role: Role): LinkSpec[] {
+  const isInternal = role === "employee" || role === "lead" || role === "admin";
+  const isStaff = role === "admin" || role === "lead";
+  const isAdmin = role === "admin";
+
+  const out: LinkSpec[] = [];
+
+  // ─── PRIMARY: daily tasks ───
+  if (isInternal) {
+    // Order by usage frequency: dashboard landing → chat (most used)
+    // → onboarding (curated weekly) → training (full library).
+    out.push({ href: "/dashboard", label: "Tổng quan", key: "dashboard", group: "primary" });
+    out.push({ href: "/", label: "Trợ lý AI", key: "home", group: "primary" });
+    out.push({ href: "/onboarding", label: "Onboarding", key: "onboarding", group: "primary" });
+    out.push({ href: "/training", label: "Training", key: "training", group: "primary" });
+  } else if (role === "host") {
+    out.push({ href: "/host", label: "Cổng Host", key: "host", group: "primary" });
+    out.push({ href: "/", label: "Trợ lý AI", key: "home", group: "primary" });
+    out.push({ href: "/training", label: "Training", key: "training", group: "primary" });
+  } else if (role === "lok") {
+    out.push({ href: "/lok", label: "Cổng LOK", key: "lok", group: "primary" });
+    out.push({ href: "/", label: "Trợ lý AI", key: "home", group: "primary" });
+    out.push({ href: "/training", label: "Training", key: "training", group: "primary" });
+  } else {
+    // guest
+    out.push({ href: "/public", label: "Trang công khai", key: "public", group: "primary" });
+    out.push({ href: "/training", label: "Training", key: "training", group: "primary" });
+  }
+
+  // ─── MANAGE: staff/admin tools ───
+  if (isStaff) {
+    // Order by frequency of admin work: overview → docs (most edited)
+    // → onboarding (weekly review) → training report (occasional).
+    out.push({ href: "/admin", label: "Admin", key: "admin", group: "manage" });
+    out.push({ href: "/admin/docs", label: "Tài liệu", key: "admin-docs", group: "manage" });
+    out.push({
+      href: "/admin/onboarding",
+      label: "Onboarding admin",
+      key: "admin-onboarding",
+      group: "manage",
+    });
+    out.push({
+      href: "/admin/training-report",
+      label: "Training report",
+      key: "admin-report",
+      group: "manage",
+    });
+    if (isAdmin) {
+      out.push({
+        href: "/admin/users",
+        label: "Quản lý user",
+        key: "admin-users",
+        group: "manage",
+      });
+    }
+  }
+
+  // ─── PREVIEW: role-switch (admin only) ───
+  if (isAdmin) {
+    out.push({ href: "/host", label: "Xem dưới Host", key: "host", group: "preview" });
+    out.push({ href: "/lok", label: "Xem dưới LOK", key: "lok", group: "preview" });
+  }
+
+  return out;
+}
+
+function renderDesktopWithSeparators(links: NavLinkData[]): React.ReactNode {
+  const result: React.ReactNode[] = [];
+  let prevGroup: NavGroup | null = null;
+  for (const l of links) {
+    const grp = (l.group ?? "primary") as NavGroup;
+    if (prevGroup !== null && grp !== prevGroup) {
+      result.push(
+        <span
+          key={`sep-${grp}`}
+          style={{ color: "var(--ll-border)", flexShrink: 0, fontSize: 11, opacity: 0.6 }}
+          aria-hidden
+        >
+          •
+        </span>
+      );
+    }
+    result.push(
+      <NavLink
+        key={`${l.key}-${l.href}`}
+        href={l.href}
+        active={l.active}
+        subtle={l.subtle}
+      >
+        {l.label}
+      </NavLink>
+    );
+    prevGroup = grp;
+  }
+  return result;
 }
 
 function NavLink({
