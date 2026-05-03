@@ -16,7 +16,11 @@ export interface AuditEntry {
     | "upload"
     | "webhook"
     | "role_upsert"
-    | "role_disable";
+    | "role_disable"
+    | "onboarding.popup.responded"
+    | "onboarding.popup.dismissed"
+    | "onboarding.assignment.decided"
+    | "onboarding.knowledge_task.created";
   docId?: string;
   query?: string;
   answerExcerpt?: string;

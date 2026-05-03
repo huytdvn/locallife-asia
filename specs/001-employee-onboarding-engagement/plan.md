@@ -140,4 +140,41 @@ prisma/
 
 ---
 
-*Phase 0 (research.md) và Phase 1 (data-model.md, contracts/, quickstart.md) được generate cùng PR này. Re-evaluate Constitution Check sau Phase 1 — KẾT QUẢ: vẫn PASS với phân kỳ MVP/v1.1/v1.2 ở Complexity Tracking.*
+## Addendum 2026-05-03 — Existing infra discovery
+
+Khi bước vào /speckit.implement, phát hiện repo **đã có** Phase-1 training infrastructure không reflect trong CLAUDE.md docs:
+
+| Concern | Existing | Plan giả định | Action |
+|---|---|---|---|
+| ORM | Raw `pg` driver + SQL migrations (`apps/web/db/migrations/`) | Prisma | **Đổi**: dùng raw SQL, KHÔNG add Prisma. Vi phạm YAGNI nếu add. |
+| Training paths | `knowledge/training.json` + `lib/training.ts` (role-gated, enriched) | "AI picks docs from retrieval" | **Reuse**: assignment chọn từ training paths có sẵn cho role; AI gen chỉ áp cho doc mới. |
+| Quiz | `lib/training-quiz.ts` Gemini 5 câu, `PASS_THRESHOLD = 0.8`, attempt cached file `.cache/training/quizzes/<attempt_id>.json` | Custom 5-10 câu prompt + DB | **Reuse + extend**: spec nói 70% pass / 5-10 câu — adjust constant + extend prompt. KHÔNG rewrite. |
+| Progress | `lib/training-progress.ts` JSON file `.cache/training/progress.json` | DB tables `WeeklyAssignment` + `TestAnswer` | **Hybrid**: extend JSON với `weekly_assignments[]` field; new pg tables CHỈ cho daily_popup + focus_evaluation + account_extras (cần encryption + index). |
+| Account | `roles` table (email PK + role + disabled) — KHÔNG có Account table separate | Account model với 10 cột mới | **Đổi**: tạo bảng `account_extras` (email PK, FK roles) chứa timezone/work_hours/level/onboarding_bot_enabled/etc. KHÔNG alter `roles`. |
+| Audit | `audit_log` table (existing) | extend audit kind enum | **Reuse**: ghi qua existing `lib/audit.ts`, action prefix `onboarding.*`. |
+
+**Updated migration plan**: `apps/web/db/migrations/2026-05-03-onboarding.sql` — 4 tables mới: `account_extras`, `daily_popup`, `focus_evaluation`, `account_crypto_key`. KHÔNG có `weekly_assignment` / `test` / `test_question` / `test_answer` tables ở DB — tận dụng `training-progress.ts` JSON.
+
+**Updated lib structure**:
+```
+apps/web/lib/onboarding/
+├── crypto.ts            # libsodium envelope (R2 plan)
+├── popup-randomizer.ts  # FR-008 random + 90-min gap
+├── popup-gen.ts         # pull từ copy.vi.ts pool
+├── popup-store.ts       # pg CRUD cho daily_popup
+├── focus-score.ts       # FR-020 formula
+├── account-extras.ts    # pg CRUD cho account_extras
+├── scheduler.ts         # weekly + daily cron handlers (chưa pg-boss — dùng next-cron đơn giản)
+├── copy.vi.ts           # microcopy pool VN
+└── weekly-assignment.ts # extend training-progress với week_iso + admin_decision
+```
+
+**Scheduler simplification**: pg-boss vẫn là choice tốt nhưng để giảm complexity v1, dùng **node-cron** (lightweight, in-process) cho 4 cron job. Worker chạy chung Next.js custom server. Pg-boss = upgrade path khi scale > 100 nhân viên.
+
+**Encryption preserved**: libsodium envelope vẫn áp cho `daily_popup.response_text_encrypted`. Quiz answers (training-quiz) KHÔNG encrypt vì không chứa text tự do nhạy cảm — chỉ là số option chọn.
+
+Plan markdown KHÔNG re-issue — addendum này là delta. Tasks.md có thể cần re-generate; tạm thời implement theo addendum, /speckit.tasks v2 nếu scope thay đổi đáng kể.
+
+---
+
+*Phase 0 (research.md) và Phase 1 (data-model.md, contracts/, quickstart.md) được generate cùng PR này. Re-evaluate Constitution Check sau Phase 1 — KẾT QUẢ: vẫn PASS với phân kỳ MVP/v1.1/v1.2 ở Complexity Tracking. Addendum 2026-05-03 ghi nhận điều chỉnh do infra existing.*

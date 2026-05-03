@@ -11,12 +11,13 @@
     "smoke:retrieval": "node scripts/smoke-retrieval.mjs",
     "eval": "node scripts/run-eval.mjs",
     "build-index": "node scripts/build-index.mjs",
-    "test": "node --test scripts/test-units.mjs scripts/test-reorganize-apply.mjs"
+    "test": "node --test scripts/test-units.mjs scripts/test-reorganize-apply.mjs scripts/test-onboarding-popup-randomizer.mjs"
   },
   "dependencies": {
     "@auth/core": "^0.38.0",
     "@google/genai": "^1.50.1",
     "gray-matter": "^4.0.3",
+    "libsodium-wrappers": "^0.7.16",
     "next": "^15.1.0",
     "next-auth": "^5.0.0-beta.25",
     "pg": "^8.20.0",
@@ -27,6 +28,7 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@types/libsodium-wrappers": "^0.7.14",
     "@types/node": "^22.0.0",
     "@types/pg": "^8.20.0",
     "@types/react": "^19.0.0",
