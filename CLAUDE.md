@@ -106,3 +106,8 @@ follow doc.
   yêu cầu — cần PR + duyệt.
 - Đừng commit vào `knowledge/` tự động từ code — đi qua pipeline ingestion.
 - Đừng xoá/đổi `id` trong front-matter. Đổi path OK, đổi id thì break.
+
+<!-- SPECKIT START -->
+For additional context about technologies to be used, project structure,
+shell commands, and other important information, read the current plan
+<!-- SPECKIT END -->
