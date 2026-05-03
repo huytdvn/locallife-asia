@@ -52,11 +52,14 @@ services:
       KNOWLEDGE_DIR: /app/knowledge
       DATABASE_URL: postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-locallife}
       INGEST_API_URL: http://ingest:8001
+      INGEST_API_TOKEN: ${INGEST_API_TOKEN:-}
       NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
     ports: ["3000:3000"]
     volumes:
       # Bind mount knowledge để chatbot đọc bản đã sync từ git (tier 2).
-      - ../knowledge:/app/knowledge:ro
+      # :ro để cố ý chặn ghi local: admin save phải đi qua git (tier 1)
+      # → ingest /sync/knowledge fast-forward mount này.
+      - kbdata:/app/knowledge:ro
 
   ingest:
     build:
@@ -70,10 +73,18 @@ services:
       REDIS_URL: redis://redis:6379
       RAW_DIR: /data/raw
       LEGAL_DIR: /data/legal
+      KNOWLEDGE_DIR: /data/knowledge
+      KNOWLEDGE_REPO_OWNER: ${KNOWLEDGE_REPO_OWNER:-huytdvn}
+      KNOWLEDGE_REPO_NAME: ${KNOWLEDGE_REPO_NAME:-locallife-asia}
+      KNOWLEDGE_REPO_BRANCH: ${KNOWLEDGE_REPO_BRANCH:-main}
+      INGEST_API_TOKEN: ${INGEST_API_TOKEN:-}
     ports: ["8001:8001"]
     volumes:
       - rawdata:/data/raw
       - legaldata:/data/legal
+      # KB mount RW: ingest chạy git fetch + reset trong /data/knowledge.
+      # Chia sẻ volume `kbdata` với web (web mount :ro) để 1 nguồn tier 2.
+      - kbdata:/data/knowledge
 
   worker:
     build:
@@ -97,3 +108,6 @@ volumes:
   qdrantdata:
   rawdata:
   legaldata:
+  # Tier 2 mount: ingest ghi (git pull), web đọc (:ro). Khởi tạo lần đầu
+  # bằng `git clone` từ ingest qua scripts/sync-knowledge.sh.
+  kbdata:
