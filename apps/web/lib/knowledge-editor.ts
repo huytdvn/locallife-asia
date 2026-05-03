@@ -23,6 +23,16 @@ export interface FullDoc {
   body: string;
 }
 
+/** Output của các build* helpers — caller tự đẩy lên git. */
+export interface BuiltUpdate {
+  /** Đường dẫn tương đối trong repo, vd "knowledge/host/faq/abc.md" */
+  repoPath: string;
+  /** Nội dung file đầy đủ (FM + body) sẵn sàng commit */
+  content: string;
+  /** Meta dự kiến sau khi commit (path tương đối với knowledge root, không có prefix "knowledge/") */
+  preview: DocMeta;
+}
+
 export function listDocs(): DocMeta[] {
   return loadKnowledge().map((d) => d.meta);
 }
@@ -33,17 +43,25 @@ export function getFullDoc(id: string): FullDoc | null {
   return { meta: d.meta, body: d.rawContent };
 }
 
-export function writeDoc(
+/**
+ * Build markdown nội dung cho 1 update. KHÔNG ghi filesystem.
+ * Caller chịu trách nhiệm push lên GitHub (tier 1) — ingest sync sẽ
+ * cập nhật mount đọc (tier 2) + R2 (tier 3).
+ *
+ * Đọc file gốc qua loader cache để lấy front-matter cũ (giữ source[]).
+ * Nếu mount RO thì việc đọc cache vẫn OK; chỉ writeFileSync mới fail.
+ */
+export function buildDocUpdate(
   id: string,
   updates: { fm: EditableFM; body: string }
-): DocMeta {
-  const root = knowledgeRoot();
+): BuiltUpdate {
   const current = loadKnowledge().find((x) => x.meta.id === id);
   if (!current) throw new EditorError("Không tìm thấy tài liệu");
-  const abs = path.join(root, current.meta.path);
 
   validateFM(updates.fm);
 
+  const root = knowledgeRoot();
+  const abs = path.join(root, current.meta.path);
   const rawFile = fs.readFileSync(abs, "utf8");
   const parsed = matter(rawFile);
   const prevSource = parsed.data.source ?? [];
@@ -54,21 +72,31 @@ export function writeDoc(
     source: prevSource,  // preserve source refs untouched
   };
 
-  const output = matter.stringify(updates.body.trimEnd() + "\n", newFM);
-  fs.writeFileSync(abs, output, "utf8");
-  // Touch root dir so knowledge-loader's mtime cache invalidates.
-  fs.utimesSync(root, new Date(), new Date());
+  const content = matter.stringify(updates.body.trimEnd() + "\n", newFM);
+  const preview: DocMeta = {
+    ...current.meta,
+    title: updates.fm.title,
+    owner: updates.fm.owner,
+    audience: updates.fm.audience,
+    sensitivity: updates.fm.sensitivity,
+    tags: updates.fm.tags,
+    last_reviewed: updates.fm.last_reviewed,
+    reviewer: updates.fm.reviewer,
+    status: updates.fm.status,
+  };
 
-  const next = loadKnowledge(true).find((x) => x.meta.id === id);
-  if (!next) throw new EditorError("Ghi thành công nhưng reload thất bại");
-  return next.meta;
+  return {
+    repoPath: toRepoPath(current.meta.path),
+    content,
+    preview,
+  };
 }
 
-export function deprecateDoc(id: string, reason: string): DocMeta {
+export function buildDeprecateUpdate(id: string, reason: string): BuiltUpdate {
   const current = getFullDoc(id);
   if (!current) throw new EditorError("Không tìm thấy tài liệu");
   const note = `\n\n> **Deprecated** — ${new Date().toISOString().slice(0, 10)}: ${reason}\n`;
-  return writeDoc(id, {
+  return buildDocUpdate(id, {
     fm: {
       title: current.meta.title,
       owner: current.meta.owner,
@@ -146,7 +174,14 @@ export function generateUlid(): string {
   return ts + rand;
 }
 
-export function createDoc(input: CreateDocInput): DocMeta {
+/**
+ * Build markdown nội dung cho 1 file mới. KHÔNG ghi filesystem.
+ * Trả về repoPath + content để caller commit lên GitHub.
+ *
+ * Vẫn check trùng id qua loader cache (tier 2). Trùng path trên git
+ * sẽ bị endpoint commit trả lỗi 409 — caller nên catch.
+ */
+export function buildCreateDoc(input: CreateDocInput): BuiltUpdate {
   validateFM(input.fm);
   if (!input.path.endsWith(".md")) {
     throw new EditorError("Path phải kết thúc bằng .md");
@@ -161,11 +196,6 @@ export function createDoc(input: CreateDocInput): DocMeta {
       "Path phải bắt đầu bằng internal/ host/ lok/ public/ hoặc inbox/"
     );
   }
-  const root = knowledgeRoot();
-  const target = path.join(root, input.path);
-  if (fs.existsSync(target)) {
-    throw new EditorError(`File đã tồn tại: ${input.path}`);
-  }
 
   const newId = generateUlid();
   const fm = {
@@ -173,39 +203,53 @@ export function createDoc(input: CreateDocInput): DocMeta {
     ...input.fm,
     source: [],
   };
-  const output = matter.stringify(input.body.trimEnd() + "\n", fm);
-  fs.mkdirSync(path.dirname(target), { recursive: true });
-  fs.writeFileSync(target, output, "utf8");
-  fs.utimesSync(root, new Date(), new Date());
-
-  const refreshed = loadKnowledge(true).find((x) => x.meta.id === newId);
-  if (!refreshed) {
-    throw new EditorError("Tạo thành công nhưng reload thất bại");
-  }
-  return refreshed.meta;
+  const content = matter.stringify(input.body.trimEnd() + "\n", fm);
+  const preview: DocMeta = {
+    id: newId,
+    title: input.fm.title,
+    owner: input.fm.owner,
+    audience: input.fm.audience,
+    sensitivity: input.fm.sensitivity,
+    tags: input.fm.tags,
+    last_reviewed: input.fm.last_reviewed,
+    reviewer: input.fm.reviewer,
+    status: input.fm.status,
+    path: input.path,
+  };
+  return {
+    repoPath: toRepoPath(input.path),
+    content,
+    preview,
+  };
 }
 
 /**
- * Hard delete: xoá file khỏi filesystem vĩnh viễn.
- * BẮT BUỘC password supervisor. Không gọi ngoài context admin.
+ * Hard delete: file path để caller xoá khỏi git repo qua GitHub API.
+ * BẮT BUỘC password supervisor.
  */
-export function hardDeleteDoc(id: string, password: string): { deleted: string } {
+export function authorizeHardDelete(
+  id: string,
+  password: string
+): { repoPath: string; relPath: string } {
   if (!ID_RE.test(id)) {
     throw new EditorError("ID không hợp lệ");
   }
   if (!verifyDestructivePassword(password)) {
     throw new EditorError("Mật khẩu xác nhận không đúng");
   }
-  const root = knowledgeRoot();
   const doc = loadKnowledge().find((d) => d.meta.id === id);
   if (!doc) {
     throw new EditorError("Không tìm thấy tài liệu");
   }
-  const abs = path.join(root, doc.meta.path);
-  if (!abs.startsWith(root)) {
-    throw new EditorError("Path sanity check failed");
-  }
-  fs.unlinkSync(abs);
-  fs.utimesSync(root, new Date(), new Date());
-  return { deleted: doc.meta.path };
+  return { repoPath: toRepoPath(doc.meta.path), relPath: doc.meta.path };
+}
+
+/**
+ * `meta.path` từ loader đã tương đối với knowledge root (không có "knowledge/").
+ * GitHub API contents endpoint cần path tương đối với repo root.
+ * Convention: repo lưu KB ở thư mục `knowledge/`.
+ */
+function toRepoPath(relInsideKnowledge: string): string {
+  const prefix = process.env.KNOWLEDGE_REPO_SUBDIR ?? "knowledge";
+  return prefix ? `${prefix}/${relInsideKnowledge}` : relInsideKnowledge;
 }

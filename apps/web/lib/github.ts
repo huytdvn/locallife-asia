@@ -182,3 +182,26 @@ export async function commitUpdateDirect(input: CommitUpdateInput): Promise<{
     message: `${input.rationale} (by ${input.actorEmail})`,
   });
 }
+
+/**
+ * Xoá 1 file khỏi default branch qua GitHub contents API.
+ * Cần file SHA hiện tại — fetch trước rồi DELETE.
+ */
+export async function deleteFileOnRemote(input: {
+  repoPath: string;
+  message: string;
+}): Promise<{ commitSha: string }> {
+  const { owner, repo, branch } = repoCoords();
+  const sha = await getFileSha(input.repoPath, branch);
+  if (!sha) {
+    throw new GithubError(`File không tồn tại trên ${branch}: ${input.repoPath}`);
+  }
+  const data = await gh<{ commit: { sha: string } }>(
+    `/repos/${owner}/${repo}/contents/${encodeURIComponent(input.repoPath)}`,
+    {
+      method: "DELETE",
+      body: { message: input.message, branch, sha },
+    }
+  );
+  return { commitSha: data.commit.sha };
+}

@@ -2,12 +2,14 @@ import { NextResponse } from "next/server";
 import { requireSession } from "@/lib/auth";
 import {
   EditorError,
-  deprecateDoc,
+  authorizeHardDelete,
+  buildDeprecateUpdate,
+  buildDocUpdate,
   getFullDoc,
-  hardDeleteDoc,
-  writeDoc,
   type EditableFM,
 } from "@/lib/knowledge-editor";
+import { commitUpdateDirect, GithubError } from "@/lib/github";
+import { triggerKnowledgeSync } from "@/lib/sync-trigger";
 import { writeAudit } from "@/lib/audit";
 
 export const runtime = "nodejs";
@@ -44,17 +46,10 @@ export async function PUT(
   } catch {
     return NextResponse.json({ error: "invalid json" }, { status: 400 });
   }
+
+  let built;
   try {
-    const meta = writeDoc(id, body);
-    await writeAudit({
-      actorEmail: session.email,
-      role: session.role,
-      action: "commit_update",
-      docId: id,
-      answerExcerpt: `Edit via admin UI: ${meta.title}`,
-      metadata: { path: meta.path, status: meta.status },
-    });
-    return NextResponse.json({ ok: true, meta });
+    built = buildDocUpdate(id, body);
   } catch (err) {
     if (err instanceof EditorError) {
       return NextResponse.json({ error: err.message }, { status: 400 });
@@ -64,6 +59,55 @@ export async function PUT(
       { status: 500 }
     );
   }
+
+  // Tier 1 — commit lên GitHub (source of truth). Fail ở đây = save fail.
+  let commit;
+  try {
+    commit = await commitUpdateDirect({
+      id,
+      rationale: `Edit via admin UI: ${built.preview.title}`,
+      newContent: built.content,
+      repoPath: built.repoPath,
+      actorEmail: session.email,
+    });
+  } catch (err) {
+    const msg =
+      err instanceof GithubError || err instanceof Error
+        ? err.message
+        : "github commit failed";
+    return NextResponse.json({ error: msg, stage: "github" }, { status: 502 });
+  }
+
+  // Tier 2/3 — trigger sync mount + R2 (best-effort, không chặn save).
+  const sync = await triggerKnowledgeSync({
+    changedPath: built.repoPath,
+    reason: `admin edit ${id} by ${session.email}`,
+    content: built.content,
+  });
+
+  await writeAudit({
+    actorEmail: session.email,
+    role: session.role,
+    action: "commit_update",
+    docId: id,
+    answerExcerpt: `Edit via admin UI: ${built.preview.title}`,
+    metadata: {
+      path: built.preview.path,
+      status: built.preview.status,
+      commit_sha: commit.commitSha,
+      commit_url: commit.htmlUrl,
+      sync_ok: sync.ok,
+      sync_error: sync.error,
+      r2: sync.r2,
+    },
+  });
+
+  return NextResponse.json({
+    ok: true,
+    meta: built.preview,
+    commit: { sha: commit.commitSha, url: commit.htmlUrl },
+    sync,
+  });
 }
 
 export async function DELETE(
@@ -100,50 +144,76 @@ export async function DELETE(
         { status: 403 }
       );
     }
+    let target: { repoPath: string; relPath: string };
     try {
-      const res = hardDeleteDoc(id, password);
-      // NEVER log password. Ghi nhận delete + actor.
+      target = authorizeHardDelete(id, password);
+    } catch (err) {
+      const msg =
+        err instanceof EditorError
+          ? err.message
+          : err instanceof Error
+            ? err.message
+            : "unknown";
+      // Audit fail attempt (potential sabotage signal)
       await writeAudit({
         actorEmail: session.email,
         role: session.role,
         action: "commit_update",
         docId: id,
-        answerExcerpt: `HARD DELETE: ${reason}`,
-        metadata: { hard_delete: true, path: res.deleted },
+        answerExcerpt: "HARD DELETE REJECTED",
+        metadata: { hard_delete: false, reason: msg },
       });
-      return NextResponse.json({ ok: true, hardDeleted: res.deleted });
+      return NextResponse.json({ error: msg }, { status: 403 });
+    }
+
+    // Xoá trên GitHub qua contents API.
+    let commitSha: string | undefined;
+    try {
+      const { deleteFileOnRemote } = await import("@/lib/github");
+      const res = await deleteFileOnRemote({
+        repoPath: target.repoPath,
+        message: `HARD DELETE ${id} by ${session.email}: ${reason}`,
+      });
+      commitSha = res.commitSha;
     } catch (err) {
-      if (err instanceof EditorError) {
-        // Audit fail attempt (potential sabotage signal)
-        await writeAudit({
-          actorEmail: session.email,
-          role: session.role,
-          action: "commit_update",
-          docId: id,
-          answerExcerpt: "HARD DELETE REJECTED",
-          metadata: { hard_delete: false, reason: err.message },
-        });
-        return NextResponse.json({ error: err.message }, { status: 403 });
-      }
+      const msg = err instanceof Error ? err.message : "github delete failed";
       return NextResponse.json(
-        { error: err instanceof Error ? err.message : "unknown" },
-        { status: 500 }
+        { error: msg, stage: "github" },
+        { status: 502 }
       );
     }
-  }
 
-  // Soft delete (deprecate) — safe default
-  try {
-    const meta = deprecateDoc(id, reason);
+    const sync = await triggerKnowledgeSync({
+      changedPath: target.repoPath,
+      reason: `hard delete ${id} by ${session.email}`,
+    });
+
     await writeAudit({
       actorEmail: session.email,
       role: session.role,
       action: "commit_update",
       docId: id,
-      answerExcerpt: `Deprecated: ${reason}`,
-      metadata: { path: meta.path },
+      answerExcerpt: `HARD DELETE: ${reason}`,
+      metadata: {
+        hard_delete: true,
+        path: target.relPath,
+        commit_sha: commitSha,
+        sync_ok: sync.ok,
+        sync_error: sync.error,
+      },
     });
-    return NextResponse.json({ ok: true, meta });
+    return NextResponse.json({
+      ok: true,
+      hardDeleted: target.relPath,
+      commit: { sha: commitSha },
+      sync,
+    });
+  }
+
+  // Soft delete (deprecate) — safe default
+  let built;
+  try {
+    built = buildDeprecateUpdate(id, reason);
   } catch (err) {
     if (err instanceof EditorError) {
       return NextResponse.json({ error: err.message }, { status: 400 });
@@ -153,4 +223,48 @@ export async function DELETE(
       { status: 500 }
     );
   }
+
+  let commit;
+  try {
+    commit = await commitUpdateDirect({
+      id,
+      rationale: `Deprecate via admin UI: ${reason}`,
+      newContent: built.content,
+      repoPath: built.repoPath,
+      actorEmail: session.email,
+    });
+  } catch (err) {
+    const msg =
+      err instanceof GithubError || err instanceof Error
+        ? err.message
+        : "github commit failed";
+    return NextResponse.json({ error: msg, stage: "github" }, { status: 502 });
+  }
+
+  const sync = await triggerKnowledgeSync({
+    changedPath: built.repoPath,
+    reason: `deprecate ${id} by ${session.email}`,
+    content: built.content,
+  });
+
+  await writeAudit({
+    actorEmail: session.email,
+    role: session.role,
+    action: "commit_update",
+    docId: id,
+    answerExcerpt: `Deprecated: ${reason}`,
+    metadata: {
+      path: built.preview.path,
+      commit_sha: commit.commitSha,
+      sync_ok: sync.ok,
+      sync_error: sync.error,
+    },
+  });
+
+  return NextResponse.json({
+    ok: true,
+    meta: built.preview,
+    commit: { sha: commit.commitSha, url: commit.htmlUrl },
+    sync,
+  });
 }

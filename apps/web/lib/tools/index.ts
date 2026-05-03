@@ -2,16 +2,22 @@ import { Type, type FunctionDeclaration } from "@google/genai";
 import type { Session, Role, Sensitivity } from "@/lib/rbac";
 import { searchKnowledge, getDocument } from "@/lib/retrieval";
 import { canWriteDirect } from "@/lib/rbac";
-import { draftUpdate, commitUpdateDirect, GithubError } from "@/lib/github";
+import {
+  draftUpdate,
+  commitUpdateDirect,
+  deleteFileOnRemote,
+  GithubError,
+} from "@/lib/github";
 import { writeAudit } from "@/lib/audit";
 import {
   EditorError,
-  createDoc,
+  authorizeHardDelete,
+  buildCreateDoc,
+  buildDocUpdate,
   getFullDoc,
-  hardDeleteDoc,
-  writeDoc,
   type EditableFM,
 } from "@/lib/knowledge-editor";
+import { triggerKnowledgeSync } from "@/lib/sync-trigger";
 import { getPathsForRole, getPathBySlug } from "@/lib/training";
 import matter from "gray-matter";
 
@@ -305,55 +311,69 @@ export async function runTool(
           current.meta.status,
       };
 
-      // Thử local FS trước (luôn hoạt động trên dev)
+      // Git-first: build content → commit GitHub → trigger sync mount + R2.
+      let built;
       try {
-        const meta = writeDoc(id, { fm, body: newBody });
-        await writeAudit({
-          actorEmail: session.email,
-          role: session.role,
-          action: "commit_update",
-          docId: id,
-          answerExcerpt: rationale,
-          metadata: { path: meta.path, local_write: true },
-        });
-
-        // Optional: nếu có GITHUB_TOKEN, push lên git song song (best-effort)
-        let prMsg = "";
-        if (process.env.GITHUB_TOKEN) {
-          try {
-            const commit = await commitUpdateDirect({
-              id,
-              rationale,
-              newContent: new_content,
-              repoPath: repoPathFor(meta.path),
-              actorEmail: session.email,
-            });
-            prMsg = ` · Đã sync GitHub: ${commit.htmlUrl}`;
-          } catch (err) {
-            if (!(err instanceof GithubError)) throw err;
-            prMsg = " (GitHub sync skip — token/perm issue)";
-          }
-        }
-
-        return {
-          content: `Đã cập nhật "${meta.title}" thành công.${prMsg} Tài liệu sẵn sàng tra cứu ngay.`,
-          citations: [meta.path],
-          citationRefs: [
-            {
-              docId: meta.id,
-              path: meta.path,
-              heading: "",
-              title: meta.title,
-            },
-          ],
-        };
+        built = buildDocUpdate(id, { fm, body: newBody });
       } catch (err) {
         const msg =
           err instanceof EditorError
             ? err.message
             : err instanceof Error
               ? err.message
-              : "Lỗi ghi file";
+              : "Lỗi build content";
+        return { content: `Không update được: ${msg}` };
+      }
+
+      try {
+        const commit = await commitUpdateDirect({
+          id,
+          rationale,
+          newContent: built.content,
+          repoPath: built.repoPath,
+          actorEmail: session.email,
+        });
+        const sync = await triggerKnowledgeSync({
+          changedPath: built.repoPath,
+          reason: `commit_update tool: ${rationale}`,
+          content: built.content,
+        });
+        await writeAudit({
+          actorEmail: session.email,
+          role: session.role,
+          action: "commit_update",
+          docId: id,
+          answerExcerpt: rationale,
+          metadata: {
+            path: built.preview.path,
+            commit_sha: commit.commitSha,
+            commit_url: commit.htmlUrl,
+            sync_ok: sync.ok,
+            sync_error: sync.error,
+          },
+        });
+        const syncMsg = sync.ok
+          ? " Tài liệu sẵn sàng tra cứu ngay."
+          : ` (sync mount sẽ chạy trong vài phút: ${sync.error ?? "queued"})`;
+        return {
+          content: `Đã cập nhật "${built.preview.title}" lên git (${commit.commitSha.slice(0, 7)}).${syncMsg}`,
+          citations: [built.preview.path],
+          citationRefs: [
+            {
+              docId: built.preview.id,
+              path: built.preview.path,
+              heading: "",
+              title: built.preview.title,
+            },
+          ],
+        };
+      } catch (err) {
+        const msg =
+          err instanceof GithubError
+            ? `GitHub: ${err.message}`
+            : err instanceof Error
+              ? err.message
+              : "Lỗi commit";
         return { content: `Không update được: ${msg}` };
       }
     }
@@ -397,30 +417,63 @@ export async function runTool(
         reviewer: session.email,
         status: "approved",
       };
+      let built;
       try {
-        const meta = createDoc({ path: docPath, fm, body });
+        built = buildCreateDoc({ path: docPath, fm, body });
+      } catch (err) {
+        const msg = err instanceof EditorError ? err.message : "Lỗi tạo doc";
+        return { content: `Không tạo được: ${msg}` };
+      }
+      try {
+        const commit = await commitUpdateDirect({
+          id: built.preview.id,
+          rationale: `CREATE: ${rationale}`,
+          newContent: built.content,
+          repoPath: built.repoPath,
+          actorEmail: session.email,
+        });
+        const sync = await triggerKnowledgeSync({
+          changedPath: built.repoPath,
+          reason: `create_document tool: ${rationale}`,
+          content: built.content,
+        });
         await writeAudit({
           actorEmail: session.email,
           role: session.role,
           action: "commit_update",
-          docId: meta.id,
+          docId: built.preview.id,
           answerExcerpt: `CREATE: ${rationale}`,
-          metadata: { created: true, path: meta.path, title: meta.title },
+          metadata: {
+            created: true,
+            path: built.preview.path,
+            title: built.preview.title,
+            commit_sha: commit.commitSha,
+            sync_ok: sync.ok,
+            sync_error: sync.error,
+          },
         });
+        const syncMsg = sync.ok
+          ? " Chatbot sẽ tra cứu được ngay."
+          : ` (sync mount đang chạy: ${sync.error ?? "queued"})`;
         return {
-          content: `Đã tạo tài liệu mới: "${meta.title}" tại ${meta.path} (id ${meta.id}). Chatbot sẽ tra cứu được ngay.`,
-          citations: [meta.path],
+          content: `Đã tạo tài liệu mới: "${built.preview.title}" tại ${built.preview.path} (id ${built.preview.id}, commit ${commit.commitSha.slice(0, 7)}).${syncMsg}`,
+          citations: [built.preview.path],
           citationRefs: [
             {
-              docId: meta.id,
-              path: meta.path,
+              docId: built.preview.id,
+              path: built.preview.path,
               heading: "",
-              title: meta.title,
+              title: built.preview.title,
             },
           ],
         };
       } catch (err) {
-        const msg = err instanceof EditorError ? err.message : "Lỗi tạo doc";
+        const msg =
+          err instanceof GithubError
+            ? `GitHub: ${err.message}`
+            : err instanceof Error
+              ? err.message
+              : "Lỗi commit";
         return { content: `Không tạo được: ${msg}` };
       }
     }
@@ -490,8 +543,33 @@ export async function runTool(
         password: string;
         reason: string;
       };
+      let target: { repoPath: string; relPath: string };
       try {
-        const res = hardDeleteDoc(id, password);
+        target = authorizeHardDelete(id, password);
+      } catch (err) {
+        const msg =
+          err instanceof EditorError ? err.message : "Lỗi xoá vĩnh viễn";
+        await writeAudit({
+          actorEmail: session.email,
+          role: session.role,
+          action: "commit_update",
+          docId: id,
+          answerExcerpt: "HARD DELETE REJECTED",
+          metadata: { hard_delete: false, reason: msg },
+        });
+        return {
+          content: `Bị chặn: ${msg}. Nếu thực sự cần xoá, liên hệ trực tiếp sếp Huy xin lại password.`,
+        };
+      }
+      try {
+        const del = await deleteFileOnRemote({
+          repoPath: target.repoPath,
+          message: `HARD DELETE ${id} via chat by ${session.email}: ${reason}`,
+        });
+        const sync = await triggerKnowledgeSync({
+          changedPath: target.repoPath,
+          reason: `hard_delete_document tool: ${reason}`,
+        });
         // Audit — KHÔNG log password.
         await writeAudit({
           actorEmail: session.email,
@@ -499,14 +577,24 @@ export async function runTool(
           action: "commit_update",
           docId: id,
           answerExcerpt: `HARD DELETE via chat: ${reason}`,
-          metadata: { hard_delete: true, path: res.deleted },
+          metadata: {
+            hard_delete: true,
+            path: target.relPath,
+            commit_sha: del.commitSha,
+            sync_ok: sync.ok,
+            sync_error: sync.error,
+          },
         });
         return {
-          content: `Đã XOÁ VĨNH VIỄN: ${res.deleted}. Không khôi phục được. Audit đã ghi: ${session.email} · lý do: ${reason}`,
+          content: `Đã XOÁ VĨNH VIỄN: ${target.relPath} (commit ${del.commitSha.slice(0, 7)}). Không khôi phục được. Audit đã ghi: ${session.email} · lý do: ${reason}`,
         };
       } catch (err) {
         const msg =
-          err instanceof EditorError ? err.message : "Lỗi xoá vĩnh viễn";
+          err instanceof GithubError
+            ? `GitHub: ${err.message}`
+            : err instanceof Error
+              ? err.message
+              : "Lỗi xoá vĩnh viễn";
         await writeAudit({
           actorEmail: session.email,
           role: session.role,

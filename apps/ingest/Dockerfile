@@ -7,6 +7,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 PIP_DISABLE_PIP_VERSION_CHECK=1
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libglib2.0-0 libsm6 libxext6 libxrender1 \
+    git ca-certificates bash \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
@@ -15,8 +16,12 @@ RUN pip install --no-cache-dir -e ".[dev]" || pip install --no-cache-dir -e .
 
 COPY apps/ingest/app ./app
 COPY apps/ingest/README.md ./README.md
+# /sync/knowledge endpoint exec sync-knowledge.sh từ đây.
+COPY scripts ./scripts
 
-RUN useradd -r -u 1001 -g root ingest && chown -R ingest:root /app
+RUN useradd -r -u 1001 -g root ingest \
+    && chown -R ingest:root /app \
+    && mkdir -p /data/knowledge && chown ingest:root /data/knowledge
 USER ingest
 
 EXPOSE 8001
