@@ -38,6 +38,15 @@ class Settings(BaseSettings):
     legal_dir: Path = Field(default=Path("/mnt/locallife-legal"))
     max_raw_mb: int = Field(default=25)
 
+    # --- Knowledge mount (tier 2 — đọc/ghi từ ingest cho sync) ---
+    knowledge_dir: Path = Field(
+        default=Path("/data/knowledge"),
+        description=(
+            "Mount RW vào ingest. sync-knowledge.sh git fetch + reset vào đây."
+            " Web container vẫn mount path này :ro."
+        ),
+    )
+
     # --- Google Drive ---
     google_drive_raw_folder_id: str = Field(default="")
     google_drive_legal_folder_id: str = Field(default="")

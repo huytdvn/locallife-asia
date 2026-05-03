@@ -2,10 +2,12 @@ import { NextResponse } from "next/server";
 import { requireSession } from "@/lib/auth";
 import {
   EditorError,
-  createDoc,
+  buildCreateDoc,
   listDocs,
   type EditableFM,
 } from "@/lib/knowledge-editor";
+import { commitUpdateDirect, GithubError } from "@/lib/github";
+import { triggerKnowledgeSync } from "@/lib/sync-trigger";
 import { writeAudit } from "@/lib/audit";
 
 export const runtime = "nodejs";
@@ -21,6 +23,7 @@ export async function GET(req: Request) {
 /**
  * POST /api/admin/docs — tạo tài liệu mới.
  * Chỉ admin. Path phải nằm trong zone hợp lệ (internal/host/lok/public/inbox).
+ * Ghi tier 1 (GitHub) trước, sync tier 2/3 best-effort.
  */
 export async function POST(req: Request) {
   const session = await requireSession(req);
@@ -39,17 +42,10 @@ export async function POST(req: Request) {
       { status: 400 }
     );
   }
+
+  let built;
   try {
-    const meta = createDoc({ path: body.path, fm: body.fm, body: body.body });
-    await writeAudit({
-      actorEmail: session.email,
-      role: session.role,
-      action: "commit_update",
-      docId: meta.id,
-      answerExcerpt: `Create doc: ${meta.title}`,
-      metadata: { created: true, path: meta.path },
-    });
-    return NextResponse.json({ ok: true, meta });
+    built = buildCreateDoc({ path: body.path, fm: body.fm, body: body.body });
   } catch (err) {
     if (err instanceof EditorError) {
       return NextResponse.json({ error: err.message }, { status: 400 });
@@ -59,4 +55,49 @@ export async function POST(req: Request) {
       { status: 500 }
     );
   }
+
+  let commit;
+  try {
+    commit = await commitUpdateDirect({
+      id: built.preview.id,
+      rationale: `Create via admin UI: ${built.preview.title}`,
+      newContent: built.content,
+      repoPath: built.repoPath,
+      actorEmail: session.email,
+    });
+  } catch (err) {
+    const msg =
+      err instanceof GithubError || err instanceof Error
+        ? err.message
+        : "github commit failed";
+    return NextResponse.json({ error: msg, stage: "github" }, { status: 502 });
+  }
+
+  const sync = await triggerKnowledgeSync({
+    changedPath: built.repoPath,
+    reason: `create ${built.preview.id} by ${session.email}`,
+    content: built.content,
+  });
+
+  await writeAudit({
+    actorEmail: session.email,
+    role: session.role,
+    action: "commit_update",
+    docId: built.preview.id,
+    answerExcerpt: `Create doc: ${built.preview.title}`,
+    metadata: {
+      created: true,
+      path: built.preview.path,
+      commit_sha: commit.commitSha,
+      sync_ok: sync.ok,
+      sync_error: sync.error,
+    },
+  });
+
+  return NextResponse.json({
+    ok: true,
+    meta: built.preview,
+    commit: { sha: commit.commitSha, url: commit.htmlUrl },
+    sync,
+  });
 }
