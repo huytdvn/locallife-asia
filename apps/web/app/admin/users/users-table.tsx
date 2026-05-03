@@ -67,6 +67,42 @@ export function UsersTable({
     });
   }
 
+  async function setPassword(email: string) {
+    const pw = prompt(
+      `Đặt password mới cho ${email}\n` +
+        `(≥ 10 ký tự, có chữ thường + hoa + số):`
+    );
+    if (!pw) return;
+    setError(null);
+    startTransition(async () => {
+      const r = await fetch("/api/admin/users/set-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, newPassword: pw }),
+      });
+      const j = await r.json().catch(() => ({}));
+      if (!j.ok) {
+        setError(j.error?.message ?? `HTTP ${r.status}`);
+        return;
+      }
+      alert(`✓ Đã đặt password cho ${email}. Báo họ password trực tiếp (KHÔNG qua chat / email không-encrypt).`);
+    });
+  }
+
+  async function clearPassword(email: string) {
+    if (!confirm(`Xoá password của ${email}? User sẽ phải dùng Google SSO sau đó.`)) return;
+    setError(null);
+    startTransition(async () => {
+      const r = await fetch("/api/admin/users/set-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, action: "clear" }),
+      });
+      const j = await r.json().catch(() => ({}));
+      if (!j.ok) setError(j.error?.message ?? `HTTP ${r.status}`);
+    });
+  }
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
       <form
@@ -175,15 +211,35 @@ export function UsersTable({
                     {new Date(row.updated_at).toLocaleDateString("vi-VN")}
                   </td>
                   <td style={td}>
-                    <button
-                      type="button"
-                      disabled={pending || row.disabled || isMe}
-                      title={isMe ? "Không thể disable chính mình" : ""}
-                      onClick={() => disable(row.email)}
-                      style={btnDanger}
-                    >
-                      Disable
-                    </button>
+                    <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                      <button
+                        type="button"
+                        disabled={pending || row.disabled}
+                        onClick={() => setPassword(row.email)}
+                        style={btnSecondary}
+                        title="Đặt mật khẩu cho user (login bằng email + password)"
+                      >
+                        🔑 Set pw
+                      </button>
+                      <button
+                        type="button"
+                        disabled={pending || row.disabled}
+                        onClick={() => clearPassword(row.email)}
+                        style={btnSecondary}
+                        title="Xoá password — user phải dùng Google SSO"
+                      >
+                        Clear pw
+                      </button>
+                      <button
+                        type="button"
+                        disabled={pending || row.disabled || isMe}
+                        title={isMe ? "Không thể disable chính mình" : ""}
+                        onClick={() => disable(row.email)}
+                        style={btnDanger}
+                      >
+                        Disable
+                      </button>
+                    </div>
                   </td>
                 </tr>
               );
@@ -219,6 +275,16 @@ const btnDanger: React.CSSProperties = {
   background: "transparent",
   color: "#b91c1c",
   border: "1px solid #fca5a5",
+  cursor: "pointer",
+  fontSize: 12,
+};
+
+const btnSecondary: React.CSSProperties = {
+  padding: "4px 10px",
+  borderRadius: 4,
+  background: "white",
+  color: "var(--ll-ink-soft)",
+  border: "1px solid var(--ll-border)",
   cursor: "pointer",
   fontSize: 12,
 };
