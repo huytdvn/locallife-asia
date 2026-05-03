@@ -8,6 +8,7 @@ import {
   listRoles,
   upsertRole,
 } from "@/lib/roles";
+import { setPasswordForEmail, validatePassword } from "@/lib/password";
 
 export const runtime = "nodejs";
 
@@ -55,6 +56,9 @@ const upsertSchema = z.object({
     isAssignableRole,
     "Chỉ assign được admin / lead / employee. host & lok dùng widget token, không qua admin UI."
   ),
+  // Optional — nếu admin truyền password thì tạo user kèm password ngay
+  // (1-step thay vì 2-step "create role" → "set password" tách rời).
+  password: z.string().min(10).max(200).optional(),
 });
 
 export async function POST(req: Request) {
@@ -72,18 +76,47 @@ export async function POST(req: Request) {
       { status: 400, headers: { "Content-Type": "application/json" } }
     );
   }
-  const { email, role } = parsed.data;
+  const { email, role, password } = parsed.data;
+
+  // Validate password trước upsert để fail fast (tránh tạo role rồi
+  // password reject — phải rollback hoặc để dangling).
+  if (password) {
+    const policy = validatePassword(password);
+    if (!policy.ok) {
+      return new Response(
+        JSON.stringify({
+          error: "Password yếu: " + policy.errors.join("; "),
+        }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
+      );
+    }
+  }
+
   await upsertRole({ email, role, createdBy: session.email });
+
+  let passwordSet = false;
+  if (password) {
+    passwordSet = await setPasswordForEmail({
+      email,
+      newPassword: password,
+      setByEmail: session.email,
+    });
+  }
+
   await writeAudit({
     actorEmail: session.email,
     role: session.role,
     action: "role_upsert",
-    metadata: { target: email, role },
+    metadata: {
+      target: email,
+      role,
+      passwordSet, // tracked: admin tạo user "1-step" hay "role-only"
+    },
   });
-  return new Response(JSON.stringify({ ok: true }), {
-    status: 200,
-    headers: { "Content-Type": "application/json" },
-  });
+  return new Response(
+    JSON.stringify({ ok: true, passwordSet }),
+    { status: 200, headers: { "Content-Type": "application/json" } }
+  );
 }
 
 export async function DELETE(req: Request) {
