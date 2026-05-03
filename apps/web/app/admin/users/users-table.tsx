@@ -16,6 +16,7 @@ export function UsersTable({
   const [rows, setRows] = useState(initialRows);
   const [newEmail, setNewEmail] = useState("");
   const [newRole, setNewRole] = useState<Role>("employee");
+  const [newPassword, setNewPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
@@ -30,17 +31,38 @@ export function UsersTable({
     e.preventDefault();
     setError(null);
     startTransition(async () => {
+      const body: {
+        email: string;
+        role: Role;
+        password?: string;
+      } = {
+        email: newEmail.trim().toLowerCase(),
+        role: newRole,
+      };
+      const pw = newPassword.trim();
+      if (pw.length > 0) body.password = pw;
+
       const r = await fetch("/api/admin/users", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: newEmail.trim().toLowerCase(), role: newRole }),
+        body: JSON.stringify(body),
       });
+      const j = (await r.json().catch(() => ({}))) as {
+        error?: string;
+        passwordSet?: boolean;
+      };
       if (!r.ok) {
-        const j = (await r.json().catch(() => ({}))) as { error?: string };
         setError(j.error ?? `HTTP ${r.status}`);
         return;
       }
       setNewEmail("");
+      setNewPassword("");
+      if (j.passwordSet) {
+        alert(
+          `✓ Đã tạo ${body.email} với role ${body.role} + password.\n` +
+            `Báo password trực tiếp cho user (KHÔNG qua chat / email không-encrypt).`
+        );
+      }
       await refresh();
     });
   }
@@ -111,7 +133,7 @@ export function UsersTable({
         style={{
           display: "grid",
           gap: 12,
-          gridTemplateColumns: "1fr 160px auto",
+          gridTemplateColumns: "1.2fr 140px 1.2fr auto",
           alignItems: "end",
         }}
       >
@@ -142,6 +164,19 @@ export function UsersTable({
             ))}
           </select>
         </label>
+        <label style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+          <span style={{ fontSize: 13, color: "var(--ll-muted)" }}>
+            Password (optional)
+          </span>
+          <input
+            type="text"
+            autoComplete="new-password"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            placeholder="≥10 ký tự, có lower+upper+digit; bỏ trống = SSO only"
+            style={inputStyle}
+          />
+        </label>
         <button type="submit" disabled={pending} style={btnPrimary}>
           {pending ? "..." : "Thêm / cập nhật"}
         </button>
@@ -156,6 +191,20 @@ export function UsersTable({
             {error}
           </div>
         )}
+        <p
+          style={{
+            gridColumn: "1 / -1",
+            margin: 0,
+            fontSize: 12,
+            color: "var(--ll-muted)",
+            lineHeight: 1.5,
+          }}
+        >
+          💡 Nếu user có Google Workspace <code>@locallife.asia</code> — bỏ
+          trống password, họ login bằng SSO. Nếu user nội bộ không có
+          Workspace (vd partner liaison) — nhập password để tạo trong 1 bước;
+          user login bằng email + password.
+        </p>
       </form>
 
       <div className="ll-card" style={{ overflowX: "auto" }}>
