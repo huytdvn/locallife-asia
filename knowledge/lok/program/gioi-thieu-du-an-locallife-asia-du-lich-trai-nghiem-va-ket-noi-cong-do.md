@@ -3,24 +3,23 @@ id: 01KPYX9CQN9BHGCX1Y2J4N4E0A
 title: 'Giới thiệu dự án Locallife.asia: Du lịch trải nghiệm và kết nối cộng đồng'
 owner: ops@locallife.asia
 audience:
-- lok
-- lead
-- admin
+  - lead
+  - admin
 sensitivity: public
 tags:
-- community
-- culture
-- experience
-- locallife
-- sustainable
-- tourism
+  - community
+  - culture
+  - experience
+  - locallife
+  - sustainable
+  - tourism
 source:
-- type: pdf
-  path: raw-ulid/01KPYX5RSKBPMR6VT234K9B6FQ.pdf
-  captured_at: '2026-04-24'
-last_reviewed: '2026-04-24'
+  - type: pdf
+    path: raw-ulid/01KPYX5RSKBPMR6VT234K9B6FQ.pdf
+    captured_at: '2026-04-24'
+last_reviewed: '2026-05-08'
 reviewer: ops@locallife.asia
-status: draft
+status: approved
 related: []
 ---
 
