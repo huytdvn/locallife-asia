@@ -3,25 +3,25 @@ id: 01KPYXBCT47Y62ZNHC9AZWGJWG
 title: Quy Chế Giải Quyết Khiếu Nại Và Tranh Chấp Nền Tảng
 owner: ops@locallife.asia
 audience:
-- employee
-- lead
-- admin
+  - employee
+  - lead
+  - admin
 sensitivity: internal
 tags:
-- complaint_handling
-- customer_support
-- dispute_resolution
-- internal_process
-- platform_policy
-- service_agreement
-- terms_of_service
+  - complaint_handling
+  - customer_support
+  - dispute_resolution
+  - internal_process
+  - platform_policy
+  - service_agreement
+  - terms_of_service
 source:
-- type: docx
-  path: raw-ulid/01KPYX5RYXXN6N5ZQSBW48FD8F.docx
-  captured_at: '2026-04-24'
-last_reviewed: '2026-04-24'
+  - type: docx
+    path: raw-ulid/01KPYX5RYXXN6N5ZQSBW48FD8F.docx
+    captured_at: '2026-04-24'
+last_reviewed: '2026-05-08'
 reviewer: ops@locallife.asia
-status: draft
+status: approved
 related: []
 ---
 
