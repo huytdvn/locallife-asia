@@ -8,13 +8,13 @@ audience:
   - employee
   - lead
   - admin
-sensitivity: internal
+sensitivity: public
 tags:
   - onboarding
   - ai-drafted
 last_reviewed: '2026-05-08'
 reviewer: huytran@locallife.asia
-status: draft
+status: approved
 source: []
 ---
 # Sứ mệnh và Góc nhìn của Local Life Asia về Phát triển Du lịch Bền vững
@@ -89,6 +89,6 @@ Chúng ta là những **người tiên phong, là cầu nối quan trọng nhấ
 
 ## Liên hệ thắc mắc
 
-Nếu bạn có bất kỳ câu hỏi, ý tưởng hay đóng góp nào về du lịch bền vững, đừng ngần ngại liên hệ với [Bộ phận/Người phụ trách: <tên bộ phận/người phụ trách>]. Chúng ta luôn lắng nghe và sẵn sàng thảo luận.
+Nếu bạn có bất kỳ câu hỏi, ý tưởng hay đóng góp nào về du lịch bền vững, đừng ngần ngại liên hệ với [Bộ phận/Người phụ trách: Lê Thu Uyên - Phụ trách kinh doanh. Chúng ta luôn lắng nghe và sẵn sàng thảo luận.
 
 Xin cảm ơn sự lắng nghe và đồng hành của tất cả mọi người!
