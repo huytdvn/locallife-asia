@@ -198,6 +198,55 @@ export function DocPane({
     }
   }
 
+  /**
+   * One-click status switch from the preview header — no need to enter edit
+   * mode just to flip draft <-> approved. Sends the current FM + body
+   * unchanged except for `status` and bumps `last_reviewed` to today.
+   * Deprecate goes through the existing prompt-for-reason flow.
+   */
+  async function quickSetStatus(
+    next: "draft" | "approved" | "deprecated"
+  ) {
+    if (!doc || saving) return;
+    if (next === doc.meta.status) return;
+    if (next === "deprecated") {
+      await deprecate();
+      return;
+    }
+    setSaving(true);
+    setError(null);
+    const fm = {
+      title: doc.meta.title,
+      owner: doc.meta.owner,
+      audience: doc.meta.audience,
+      sensitivity: doc.meta.sensitivity,
+      tags: doc.meta.tags,
+      last_reviewed: new Date().toISOString().slice(0, 10),
+      reviewer: doc.meta.reviewer,
+      status: next,
+    };
+    try {
+      const res = await fetch(`/api/admin/docs/${encodeURIComponent(id)}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ fm, body: doc.body }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error ?? `HTTP ${res.status}`);
+        return;
+      }
+      onSaved(data.meta);
+      setDoc({ meta: data.meta, body: doc.body });
+      setStatus(next);
+      setLastReviewed(fm.last_reviewed);
+    } catch (e) {
+      setError(String(e));
+    } finally {
+      setSaving(false);
+    }
+  }
+
   if (!doc) {
     return (
       <div
@@ -286,21 +335,29 @@ export function DocPane({
                 restricted
               </span>
             )}
-            {doc.meta.status !== "approved" && (
-              <span
-                className="ll-badge"
-                style={{
-                  background:
-                    doc.meta.status === "draft"
-                      ? "var(--ll-orange-soft)"
-                      : "#f3f4f6",
-                  color:
-                    doc.meta.status === "draft" ? "#c07600" : "#6b7280",
-                  fontSize: 10,
-                }}
-              >
-                {doc.meta.status}
-              </span>
+            {canEdit && mode === "preview" ? (
+              <StatusSwitcher
+                current={doc.meta.status}
+                disabled={saving}
+                onChange={quickSetStatus}
+              />
+            ) : (
+              doc.meta.status !== "approved" && (
+                <span
+                  className="ll-badge"
+                  style={{
+                    background:
+                      doc.meta.status === "draft"
+                        ? "var(--ll-orange-soft)"
+                        : "#f3f4f6",
+                    color:
+                      doc.meta.status === "draft" ? "#c07600" : "#6b7280",
+                    fontSize: 10,
+                  }}
+                >
+                  {doc.meta.status}
+                </span>
+              )
             )}
           </div>
           <h2
@@ -844,4 +901,99 @@ function navBtnStyle(enabled: boolean): React.CSSProperties {
     placeItems: "center",
     transition: "all 120ms var(--ll-ease)",
   };
+}
+
+type DocStatus = "draft" | "approved" | "deprecated";
+
+const STATUS_META: Record<
+  DocStatus,
+  { label: string; bg: string; fg: string; activeBg: string; activeFg: string }
+> = {
+  draft: {
+    label: "Nháp",
+    bg: "transparent",
+    fg: "#c07600",
+    activeBg: "var(--ll-orange-soft)",
+    activeFg: "#c07600",
+  },
+  approved: {
+    label: "Đã duyệt",
+    bg: "transparent",
+    fg: "#15803d",
+    activeBg: "var(--ll-green-soft)",
+    activeFg: "var(--ll-green-dark)",
+  },
+  deprecated: {
+    label: "Lỗi thời",
+    bg: "transparent",
+    fg: "#6b7280",
+    activeBg: "#f3f4f6",
+    activeFg: "#374151",
+  },
+};
+
+/**
+ * Inline 3-state status switcher rendered next to the doc title in
+ * preview mode. Click any segment → quickSetStatus() runs PUT
+ * immediately. Used as a faster path than entering edit mode just to
+ * flip status. "Lỗi thời" goes through the existing reason-prompt flow
+ * so the deprecation note still gets written into the body.
+ */
+function StatusSwitcher(props: {
+  current: DocStatus;
+  disabled: boolean;
+  onChange: (next: DocStatus) => void;
+}) {
+  const STATUSES: DocStatus[] = ["draft", "approved", "deprecated"];
+  return (
+    <div
+      role="radiogroup"
+      aria-label="Đổi trạng thái nhanh"
+      style={{
+        display: "inline-flex",
+        border: "1px solid var(--ll-border)",
+        borderRadius: 999,
+        padding: 2,
+        background: "white",
+        gap: 0,
+      }}
+    >
+      {STATUSES.map((s) => {
+        const meta = STATUS_META[s];
+        const active = s === props.current;
+        return (
+          <button
+            key={s}
+            type="button"
+            role="radio"
+            aria-checked={active}
+            onClick={() => !active && !props.disabled && props.onChange(s)}
+            disabled={props.disabled}
+            title={
+              active
+                ? `Hiện đang: ${meta.label}`
+                : s === "deprecated"
+                  ? "Đánh dấu lỗi thời (cần lý do)"
+                  : `Đổi sang: ${meta.label}`
+            }
+            style={{
+              padding: "3px 9px",
+              border: "none",
+              borderRadius: 999,
+              fontSize: 11,
+              fontWeight: active ? 700 : 500,
+              cursor: active || props.disabled ? "default" : "pointer",
+              background: active ? meta.activeBg : meta.bg,
+              color: active ? meta.activeFg : meta.fg,
+              opacity: props.disabled && !active ? 0.5 : 1,
+              transition: "background 120ms, color 120ms",
+              fontFamily: "inherit",
+            }}
+          >
+            {meta.label}
+          </button>
+        );
+      })}
+    </div>
+  );
 }
