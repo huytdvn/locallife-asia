@@ -3,25 +3,24 @@ id: 01KPYXAW05SGCAXGY758RV4KGD
 title: Tiêu Chuẩn Sản Phẩm Và Dịch Vụ Dành Cho Host
 owner: ops@locallife.asia
 audience:
-- host
-- employee
-- lead
-- admin
+  - employee
+  - lead
+  - admin
 sensitivity: internal
 tags:
-- authenticity
-- host_responsibilities
-- product_requirements
-- safety_standards
-- service_guidelines
-- transparency
+  - authenticity
+  - host_responsibilities
+  - product_requirements
+  - safety_standards
+  - service_guidelines
+  - transparency
 source:
-- type: docx
-  path: raw-ulid/01KPYX5RXYJHASCGA08AG5DNTA.docx
-  captured_at: '2026-04-24'
+  - type: docx
+    path: raw-ulid/01KPYX5RXYJHASCGA08AG5DNTA.docx
+    captured_at: '2026-04-24'
 last_reviewed: '2026-04-24'
 reviewer: ops@locallife.asia
-status: draft
+status: approved
 related: []
 ---
 
