@@ -245,7 +245,7 @@ export function Chat({ starterQuestions = [], userName = "" }: ChatProps) {
         style={{
           display: "flex",
           gap: 8,
-          padding: "12px 16px 16px",
+          padding: "12px 16px max(16px, env(safe-area-inset-bottom))",
           borderTop: "1px solid var(--ll-border)",
           background: "var(--ll-surface-soft)",
           alignItems: "flex-end",

@@ -570,17 +570,70 @@ a.ll-card:hover,
     padding: 20px 16px !important;
   }
 
-  /* Touch-friendly */
+  /* Touch target ≥ Apple HIG 44pt */
   button,
   .ll-pill,
   a.ll-file-link {
-    min-height: 40px;
+    min-height: 44px;
+  }
+
+  /* iOS Safari auto-zooms vào input fontSize < 16px khi focus.
+     Áp 16px cho mọi text input để tránh viewport jump. Inline `style`
+     fontSize 13/14/15 đã rải khắp components — !important để override. */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="number"],
+  input[type="search"],
+  input[type="tel"],
+  input[type="url"],
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+
+  /* Safe-area-inset cho notched phones — body padding bottom + sticky bottom
+     bars (chat input form, onboarding popup). Phải có viewport-fit=cover
+     trong layout.tsx để env() activate. */
+  body {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* Hidden scrollbars trên mobile — webkit (iOS Safari + Chrome) */
+  .ll-no-scrollbar-mobile {
+    scrollbar-width: none;
+  }
+  .ll-no-scrollbar-mobile::-webkit-scrollbar {
+    display: none;
   }
 }
 
 @media (max-width: 480px) {
   .ll-grid-stats {
     grid-template-columns: 1fr;
+  }
+  /* Hero ảnh nhỏ thêm trên màn ≤ iPhone SE */
+  .ll-hero-mascot {
+    width: 40px !important;
+    height: 54px !important;
+  }
+  /* Cross-doc AI: diff side-by-side stack thành 1 cột — 2 cột 150px không đọc được */
+  .ll-diff-pair {
+    grid-template-columns: 1fr !important;
+  }
+  /* Profile dropdown — sát mép viewport, dùng calc để không tràn */
+  .ll-profile-menu {
+    right: 8px !important;
+    left: 8px !important;
+    min-width: 0 !important;
+    max-width: none !important;
+  }
+}
+
+/* iOS bounce smoothing — overflow containers feel "native" */
+@supports (-webkit-touch-callout: none) {
+  .ll-scroll-momentum {
+    -webkit-overflow-scrolling: touch;
   }
 }
 
