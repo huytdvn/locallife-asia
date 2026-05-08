@@ -608,6 +608,14 @@ a.ll-card:hover,
   }
 }
 
+/* Default: text label trên send button, ẩn icon. Đảo lại trên mobile. */
+.ll-chat-send-icon {
+  display: none;
+}
+.ll-chat-send-label {
+  display: inline;
+}
+
 @media (max-width: 480px) {
   .ll-grid-stats {
     grid-template-columns: 1fr;
@@ -627,6 +635,53 @@ a.ll-card:hover,
     left: 8px !important;
     min-width: 0 !important;
     max-width: none !important;
+  }
+
+  /* Login: card co vừa viewport, padding nhỏ hơn, mascot scale nhỏ */
+  .ll-login-shell {
+    padding: 12px !important;
+  }
+  .ll-login-card {
+    padding: 20px 16px !important;
+    gap: 12px !important;
+    border-radius: var(--ll-radius-md) !important;
+  }
+  .ll-login-mascot {
+    width: 60px !important;
+    height: 80px !important;
+    margin-bottom: 0 !important;
+  }
+  .ll-login-card h1 {
+    font-size: 20px !important;
+  }
+  .ll-login-card p {
+    font-size: 13px !important;
+  }
+
+  /* Chat input: button đổi sang icon "→" trên màn hẹp để chừa nhiều chỗ
+     cho textarea nhập tin (text "Gửi" chiếm 80px+, icon chỉ ~40px). */
+  .ll-chat-form {
+    padding: 10px 12px max(12px, env(safe-area-inset-bottom)) !important;
+    gap: 6px !important;
+  }
+  .ll-chat-send {
+    min-width: 0 !important;
+    padding: 0 14px !important;
+  }
+  .ll-chat-send-label {
+    display: none;
+  }
+  .ll-chat-send-icon {
+    display: inline;
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  /* App nav: gap nhỏ + margin-bottom giảm để chừa chỗ content */
+  .ll-app-nav {
+    margin-bottom: 14px !important;
+    gap: 8px !important;
   }
 }
 

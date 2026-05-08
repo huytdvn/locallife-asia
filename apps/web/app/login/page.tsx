@@ -48,6 +48,7 @@ export default async function LoginPage({
 
   return (
     <main
+      className="ll-login-shell"
       style={{
         minHeight: "100vh",
         display: "grid",
@@ -58,7 +59,7 @@ export default async function LoginPage({
       }}
     >
       <div
-        className="ll-anim-in"
+        className="ll-anim-in ll-login-card"
         style={{
           background: "var(--ll-surface)",
           padding: 32,
@@ -68,11 +69,12 @@ export default async function LoginPage({
           display: "flex",
           flexDirection: "column",
           gap: 16,
-          minWidth: 400,
+          width: "100%",
           maxWidth: 440,
         }}
       >
         <div
+          className="ll-login-mascot"
           style={{
             width: 84,
             height: 112,

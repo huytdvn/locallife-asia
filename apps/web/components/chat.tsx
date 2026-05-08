@@ -23,9 +23,21 @@ type Msg = {
 interface ChatProps {
   starterQuestions?: string[];
   userName?: string;
+  /**
+   * For unauthenticated public portals (/host, /lok, /public). When set,
+   * `publicAs` is forwarded to /api/chat as a role downgrade hint —
+   * server validates it's one of "host" | "lok" | "guest" and synthesises
+   * a session at request time. Ignored entirely when a real session
+   * exists (server prefers cookie auth).
+   */
+  publicAs?: "host" | "lok" | "guest";
 }
 
-export function Chat({ starterQuestions = [], userName = "" }: ChatProps) {
+export function Chat({
+  starterQuestions = [],
+  userName = "",
+  publicAs,
+}: ChatProps) {
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -78,7 +90,10 @@ export function Chat({ starterQuestions = [], userName = "" }: ChatProps) {
         method: "POST",
         signal: ctrl.signal,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: history }),
+        body: JSON.stringify({
+          messages: history,
+          ...(publicAs ? { publicAs } : {}),
+        }),
       });
       if (!res.ok || !res.body) {
         if (res.status === 401) {
@@ -242,6 +257,7 @@ export function Chat({ starterQuestions = [], userName = "" }: ChatProps) {
           e.preventDefault();
           send();
         }}
+        className="ll-chat-form"
         style={{
           display: "flex",
           gap: 8,
@@ -259,8 +275,10 @@ export function Chat({ starterQuestions = [], userName = "" }: ChatProps) {
           placeholder="Hỏi mình bất cứ điều gì về Local Life..."
           disabled={loading}
           rows={1}
+          className="ll-chat-textarea"
           style={{
             flex: 1,
+            minWidth: 0,
             padding: "12px 14px",
             borderRadius: 10,
             border: "1px solid var(--ll-border)",
@@ -278,6 +296,7 @@ export function Chat({ starterQuestions = [], userName = "" }: ChatProps) {
           type="submit"
           disabled={loading || !input.trim()}
           aria-label="Gửi"
+          className="ll-chat-send"
           style={{
             padding: "10px 16px",
             borderRadius: 10,
@@ -291,10 +310,16 @@ export function Chat({ starterQuestions = [], userName = "" }: ChatProps) {
             fontWeight: 600,
             minWidth: 80,
             height: 42,
+            flexShrink: 0,
             boxShadow: "var(--ll-shadow-sm)",
           }}
         >
-          {loading ? "…" : "Gửi"}
+          <span className="ll-chat-send-label" aria-hidden>
+            {loading ? "…" : "Gửi"}
+          </span>
+          <span className="ll-chat-send-icon" aria-hidden>
+            {loading ? "…" : "→"}
+          </span>
         </button>
       </form>
       <div

@@ -1,5 +1,4 @@
 import { auth } from "@/lib/auth";
-import { redirect } from "next/navigation";
 import { ZonePortal } from "@/components/zone-portal";
 import { computeStats } from "@/lib/stats";
 import type { Role } from "@/lib/rbac";
@@ -17,24 +16,28 @@ const LOK_QUESTIONS = [
 
 export default async function LokPortal() {
   const session = await auth();
-  if (!session?.user?.email) redirect("/login?next=/lok");
-  const role = (session.role ?? "guest") as Role;
-  if (!["lok", "lead", "admin"].includes(role)) {
-    redirect("/login?next=/lok&error=wrong_role");
-  }
-  const email = session.user.email;
+  const sessionRole = (session?.role ?? null) as Role | null;
+  const isLoggedInForThisZone =
+    sessionRole === "lok" || sessionRole === "lead" || sessionRole === "admin";
+  const role: Role = isLoggedInForThisZone ? sessionRole : "lok";
+  const email = session?.user?.email ?? "";
   const stats = computeStats(role);
 
   return (
     <ZonePortal
       zone="lok"
       brandName="Cổng LOK Partner"
-      subtitle="Xin chào đối tác LOK!"
+      subtitle={
+        isLoggedInForThisZone
+          ? "Xin chào đối tác LOK!"
+          : "Cổng LOK công khai"
+      }
       accent="var(--ll-zone-lok)"
       starterQuestions={LOK_QUESTIONS}
-      userName={humanName(email)}
+      userName={email ? humanName(email) : "khách"}
       role={role}
       docCount={stats.totalVisible}
+      isPublic={!isLoggedInForThisZone}
     />
   );
 }

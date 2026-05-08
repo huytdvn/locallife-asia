@@ -3,7 +3,8 @@ import type { Content, FunctionCall, Part } from "@google/genai";
 import { genai, CHAT_MODEL } from "@/lib/llm";
 import { buildSystemInstruction } from "@/lib/prompt";
 import { toolDefinitions, runTool } from "@/lib/tools";
-import { requireSession } from "@/lib/auth";
+import { auth, requireSession } from "@/lib/auth";
+import { audienceFor, type Role, type Session } from "@/lib/rbac";
 import { writeAudit, recordUnmatchedQuery } from "@/lib/audit";
 
 export const runtime = "nodejs";
@@ -15,13 +16,45 @@ const bodySchema = z.object({
       content: z.string(),
     })
   ),
+  /**
+   * Public-portal hint. /host /lok /public landing pages are unauthenticated;
+   * the client forwards this to request a synthesized read-only session
+   * scoped to the corresponding zone. Server enforces the whitelist —
+   * `admin`/`lead`/`employee` are NOT acceptable here, no privilege escalation.
+   */
+  publicAs: z.enum(["host", "lok", "guest"]).optional(),
 });
 
 type ClientMessage = z.infer<typeof bodySchema>["messages"][number];
 
+/** Build a transient Session object for an unauthenticated portal visitor. */
+function anonSession(role: "host" | "lok" | "guest"): Session {
+  return {
+    email: `anon@${role}.public`,
+    role: role as Role,
+    audience: audienceFor(role as Role),
+  };
+}
+
 export async function POST(req: Request) {
-  const session = await requireSession(req);
-  const { messages } = bodySchema.parse(await req.json());
+  const body = bodySchema.parse(await req.json());
+  const { messages, publicAs } = body;
+
+  // Try cookie auth first. If absent and client requested a public role,
+  // synthesize a downgraded session. Both paths fall through to /api/chat
+  // pipeline unchanged.
+  const real = await auth();
+  let session: Session;
+  if (real?.user?.email) {
+    session = await requireSession(req);
+  } else if (publicAs) {
+    session = anonSession(publicAs);
+  } else {
+    return new Response(JSON.stringify({ error: "unauthorized" }), {
+      status: 401,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
 
   const systemInstruction = buildSystemInstruction({
     role: session.role,
