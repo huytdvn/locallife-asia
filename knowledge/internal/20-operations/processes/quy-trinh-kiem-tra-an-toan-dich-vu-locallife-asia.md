@@ -3,27 +3,27 @@ id: 01KPYXBFBCW69E5E39D1BRE7KR
 title: Quy Trình Kiểm Tra An Toàn Dịch Vụ LocalLife.Asia
 owner: ops@locallife.asia
 audience:
-- employee
-- lead
-- admin
+  - employee
+  - lead
+  - admin
 sensitivity: internal
 tags:
-- an_toan
-- dich_vu
-- kiem_tra
-- localife
-- partner_safety
-- quy_trinh
-- risk_management
-- safety_procedure
-- service_inspection
+  - an_toan
+  - dich_vu
+  - kiem_tra
+  - localife
+  - partner_safety
+  - quy_trinh
+  - risk_management
+  - safety_procedure
+  - service_inspection
 source:
-- type: docx
-  path: raw-ulid/01KPYX5RYZXXDG4Z5JTETH1HKK.docx
-  captured_at: '2026-04-24'
-last_reviewed: '2026-04-24'
+  - type: docx
+    path: raw-ulid/01KPYX5RYZXXDG4Z5JTETH1HKK.docx
+    captured_at: '2026-04-24'
+last_reviewed: '2026-05-08'
 reviewer: ops@locallife.asia
-status: draft
+status: approved
 related: []
 ---
 
