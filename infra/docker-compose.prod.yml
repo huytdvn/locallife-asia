@@ -49,7 +49,12 @@ services:
       postgres: { condition: service_healthy }
     env_file: [../.env.local]
     environment:
-      KNOWLEDGE_DIR: /app/knowledge
+      # KB content lives at <volume>/knowledge/* — the kbdata volume is a
+      # sparse-checkout of the monorepo where only the knowledge subdir is
+      # materialised. Web only needs the KB content, so point straight at
+      # the nested path. Ingest sync still operates on the volume root
+      # because it needs the .git for fetch + reset.
+      KNOWLEDGE_DIR: /app/knowledge/knowledge
       DATABASE_URL: postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-locallife}
       INGEST_API_URL: http://ingest:8001
       INGEST_API_TOKEN: ${INGEST_API_TOKEN:-}
