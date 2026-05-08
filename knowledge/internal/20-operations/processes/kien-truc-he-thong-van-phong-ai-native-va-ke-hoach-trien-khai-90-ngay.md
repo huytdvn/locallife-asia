@@ -3,23 +3,23 @@ id: 01KPYX5RX3MH4KJAK4A2WM28DH
 title: Kiến trúc hệ thống văn phòng AI-native và Kế hoạch triển khai 90 ngày
 owner: ops@locallife.asia
 audience:
-- lead
-- admin
+  - lead
+  - admin
 sensitivity: restricted
 tags:
-- ai_native
-- architecture
-- implementation_plan
-- office_system
-- paperclip_ai
-- reviewed-by-admin
+  - ai_native
+  - architecture
+  - implementation_plan
+  - office_system
+  - paperclip_ai
+  - reviewed-by-admin
 source:
-- type: manual
-  path: raw-ulid/01KPYX5QP7GQ97AX05ARPDRQRY.md
-  captured_at: '2026-04-24'
+  - type: manual
+    path: raw-ulid/01KPYX5QP7GQ97AX05ARPDRQRY.md
+    captured_at: '2026-04-24'
 last_reviewed: '2026-04-24'
 reviewer: admin-dev@locallife.asia
-status: draft
+status: approved
 related: []
 ---
 
