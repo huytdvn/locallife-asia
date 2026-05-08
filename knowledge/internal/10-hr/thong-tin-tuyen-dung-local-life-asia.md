@@ -23,7 +23,7 @@ source:
     captured_at: '2026-04-24'
 last_reviewed: '2026-04-24'
 reviewer: huytd@gmail.com
-status: draft
+status: approved
 related: []
 ---
 
