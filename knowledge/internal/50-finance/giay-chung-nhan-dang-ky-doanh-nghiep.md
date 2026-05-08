@@ -3,26 +3,26 @@ id: 01KPYX62ME5QD2428JHQX9XC1G
 title: Giấy Chứng Nhận Đăng Ký Doanh Nghiệp
 owner: ops@locallife.asia
 audience:
-- lead
-- admin
+  - lead
+  - admin
 sensitivity: restricted
 tags:
-- business_registration
-- company_certificate
-- company_details
-- company_information
-- da_nang
-- legal_document
-- legal_entity
-- limited_company
-- local_life_tech
+  - business_registration
+  - company_certificate
+  - company_details
+  - company_information
+  - da_nang
+  - legal_document
+  - legal_entity
+  - limited_company
+  - local_life_tech
 source:
-- type: pdf
-  path: raw-ulid/01KPYX5QPNEH2Z5Z8M3BQDX4EH.pdf
-  captured_at: '2026-04-24'
-last_reviewed: '2026-04-24'
+  - type: pdf
+    path: raw-ulid/01KPYX5QPNEH2Z5Z8M3BQDX4EH.pdf
+    captured_at: '2026-04-24'
+last_reviewed: '2026-05-08'
 reviewer: ops@locallife.asia
-status: draft
+status: approved
 related: []
 ---
 
