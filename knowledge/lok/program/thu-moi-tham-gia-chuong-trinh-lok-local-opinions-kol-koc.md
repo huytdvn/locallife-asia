@@ -3,30 +3,29 @@ id: 01KPYX7ZYSBNG1165YCRHNYMFP
 title: Thư mời tham gia Chương trình LOK (Local Opinions KOL/KOC)
 owner: ops@locallife.asia
 audience:
-- lok
-- employee
-- lead
-- admin
+  - employee
+  - lead
+  - admin
 sensitivity: restricted
 tags:
-- influencer
-- influencer_marketing
-- invitation
-- koc
-- kol
-- kol_koc
-- local travel
-- local_travel
-- lok
-- lok_program
-- partner_invitation
+  - influencer
+  - influencer_marketing
+  - invitation
+  - koc
+  - kol
+  - kol_koc
+  - local travel
+  - local_travel
+  - lok
+  - lok_program
+  - partner_invitation
 source:
-- type: docx
-  path: raw-ulid/01KPYX5QSFYCF8A53GQWJSKN9E.docx
-  captured_at: '2026-04-24'
-last_reviewed: '2026-04-24'
+  - type: docx
+    path: raw-ulid/01KPYX5QSFYCF8A53GQWJSKN9E.docx
+    captured_at: '2026-04-24'
+last_reviewed: '2026-05-08'
 reviewer: ops@locallife.asia
-status: draft
+status: approved
 related: []
 ---
 
