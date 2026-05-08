@@ -12,6 +12,9 @@ interface Props {
   userName: string;
   role: Role;
   docCount: number;
+  /** True if the visitor has no session — render anon-friendly hints + tell
+   *  Chat to forward a publicAs role downgrade so /api/chat can serve it. */
+  isPublic?: boolean;
 }
 
 const ZONE_TO_NAV: Record<Zone, "host" | "lok" | "public" | "home"> = {
@@ -33,7 +36,13 @@ export function ZonePortal({
   userName,
   role,
   docCount,
+  isPublic = false,
 }: Props) {
+  const publicAs: "host" | "lok" | "guest" | undefined = isPublic
+    ? role === "host" || role === "lok" || role === "guest"
+      ? role
+      : "guest"
+    : undefined;
   return (
     <main
       style={{
@@ -83,7 +92,11 @@ export function ZonePortal({
       </header>
 
       <div style={{ flex: 1, minHeight: 0 }}>
-        <Chat starterQuestions={starterQuestions} userName={userName} />
+        <Chat
+          starterQuestions={starterQuestions}
+          userName={userName}
+          publicAs={publicAs}
+        />
       </div>
 
       <p

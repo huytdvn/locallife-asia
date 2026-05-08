@@ -53,10 +53,12 @@ export function AppNav({ role, active }: Props) {
 
   return (
     <nav
+      className="ll-app-nav"
       style={{
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
+        flexWrap: "nowrap",
         marginBottom: 20,
         gap: 12,
         paddingBottom: 12,
@@ -83,6 +85,7 @@ export function AppNav({ role, active }: Props) {
             gap: 8,
             textDecoration: "none",
             flexShrink: 0,
+            whiteSpace: "nowrap",
           }}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
