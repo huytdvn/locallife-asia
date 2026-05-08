@@ -3,25 +3,25 @@ id: 01KPYX8RY9ZYV06BCASQY2QDWZ
 title: Chương Trình Đối Tác 2026
 owner: ops@locallife.asia
 audience:
-- employee
-- lead
+  - employee
+  - lead
 sensitivity: internal
 tags:
-- b2b2c
-- b2b_distribution
-- itinerary_builder
-- local_experiences
-- partnership_program
-- tourism_solutions
-- travel_agency_solutions
-- travel_platform
+  - b2b2c
+  - b2b_distribution
+  - itinerary_builder
+  - local_experiences
+  - partnership_program
+  - tourism_solutions
+  - travel_agency_solutions
+  - travel_platform
 source:
-- type: pdf
-  path: raw-ulid/01KPYX5RBMX3HC0R31CV8195VE.pdf
-  captured_at: '2026-04-24'
-last_reviewed: '2026-04-24'
+  - type: pdf
+    path: raw-ulid/01KPYX5RBMX3HC0R31CV8195VE.pdf
+    captured_at: '2026-04-24'
+last_reviewed: '2026-05-08'
 reviewer: ops@locallife.asia
-status: draft
+status: approved
 related: []
 ---
 
