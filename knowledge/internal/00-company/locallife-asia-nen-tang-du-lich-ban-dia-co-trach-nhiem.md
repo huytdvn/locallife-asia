@@ -3,25 +3,25 @@ id: 01KPYX9F77VMBZ08K7H4YB5NWE
 title: 'LocalLife Asia: Nền Tảng Du Lịch Bản Địa Có Trách Nhiệm'
 owner: ops@locallife.asia
 audience:
-- employee
-- lead
-- admin
+  - employee
+  - lead
+  - admin
 sensitivity: internal
 tags:
-- community
-- local
-- southeast asia
-- southeast_asia
-- sustainable
-- tourism
-- vietnam
+  - community
+  - local
+  - southeast asia
+  - southeast_asia
+  - sustainable
+  - tourism
+  - vietnam
 source:
-- type: pdf
-  path: raw-ulid/01KPYX5RT43S8HWH48AWAS6XT1.pdf
-  captured_at: '2026-04-24'
+  - type: pdf
+    path: raw-ulid/01KPYX5RT43S8HWH48AWAS6XT1.pdf
+    captured_at: '2026-04-24'
 last_reviewed: '2026-04-24'
 reviewer: ops@locallife.asia
-status: draft
+status: approved
 related: []
 ---
 
