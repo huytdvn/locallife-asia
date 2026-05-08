@@ -3,22 +3,22 @@ id: 01KPYX66AD3TFPY43MX3W69VTV
 title: Giấy ủy quyền xử lý tài khoản kinh doanh PayPal
 owner: ops@locallife.asia
 audience:
-- lead
-- admin
+  - lead
+  - admin
 sensitivity: restricted
 tags:
-- authorization
-- business_account
-- company_account
-- paypal
-- triptech_solutions
+  - authorization
+  - business_account
+  - company_account
+  - paypal
+  - triptech_solutions
 source:
-- type: pdf
-  path: raw-ulid/01KPYX5QQ68SE44PCXMCD5QWHJ.pdf
-  captured_at: '2026-04-24'
-last_reviewed: '2026-04-24'
+  - type: pdf
+    path: raw-ulid/01KPYX5QQ68SE44PCXMCD5QWHJ.pdf
+    captured_at: '2026-04-24'
+last_reviewed: '2026-05-08'
 reviewer: ops@locallife.asia
-status: draft
+status: approved
 related: []
 ---
 
