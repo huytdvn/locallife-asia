@@ -3,23 +3,23 @@ id: 01KPYXATPJCY9X97JP43VQEJVY
 title: Tiêu chuẩn Du lịch Cộng đồng ASEAN
 owner: ops@locallife.asia
 audience:
-- employee
-- lead
-- admin
+  - employee
+  - lead
+  - admin
 sensitivity: internal
 tags:
-- asean
-- certification
-- community_based_tourism
-- guidelines
-- tourism_standards
+  - asean
+  - certification
+  - community_based_tourism
+  - guidelines
+  - tourism_standards
 source:
-- type: pdf
-  path: raw-ulid/01KPYX5RXTCFY276F7AEFWT7XT.pdf
-  captured_at: '2026-04-24'
-last_reviewed: '2026-04-24'
+  - type: pdf
+    path: raw-ulid/01KPYX5RXTCFY276F7AEFWT7XT.pdf
+    captured_at: '2026-04-24'
+last_reviewed: '2026-05-08'
 reviewer: ops@locallife.asia
-status: draft
+status: approved
 related: []
 ---
 
