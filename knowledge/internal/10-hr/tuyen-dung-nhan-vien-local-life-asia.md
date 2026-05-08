@@ -1,26 +1,26 @@
 ---
 id: 01KPYX8HZZCCRHPXRQDBDZP533
-title: Tuyển dụng nhân viên Local Life Asia
+title: Tuyển dụng nhân viên Local Life Asia - Phát triển kinh doanh
 owner: ops@locallife.asia
 audience:
-- employee
-- lead
-- admin
+  - employee
+  - lead
+  - admin
 sensitivity: internal
 tags:
-- content_creation
-- customer_service
-- human_resources
-- job_description
-- local_tourism
-- recruitment
+  - content_creation
+  - customer_service
+  - human_resources
+  - job_description
+  - local_tourism
+  - recruitment
 source:
-- type: pdf
-  path: raw-ulid/01KPYX5R8A66S6NC7BEQZNDM5V.pdf
-  captured_at: '2026-04-24'
+  - type: pdf
+    path: raw-ulid/01KPYX5R8A66S6NC7BEQZNDM5V.pdf
+    captured_at: '2026-04-24'
 last_reviewed: '2026-04-24'
 reviewer: ops@locallife.asia
-status: draft
+status: approved
 related: []
 ---
 
