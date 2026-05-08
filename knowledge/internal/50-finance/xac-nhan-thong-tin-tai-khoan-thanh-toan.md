@@ -3,25 +3,25 @@ id: 01KPYX67FYTNYBYTFS23AV476A
 title: Xác nhận thông tin tài khoản thanh toán
 owner: ops@locallife.asia
 audience:
-- lead
-- admin
+  - lead
+  - admin
 sensitivity: restricted
 tags:
-- account_confirmation
-- bank_account
-- company_finance
-- company_info
-- corporate_document
-- customer_data
-- payment_information
-- techcombank
+  - account_confirmation
+  - bank_account
+  - company_finance
+  - company_info
+  - corporate_document
+  - customer_data
+  - payment_information
+  - techcombank
 source:
-- type: pdf
-  path: raw-ulid/01KPYX5QQC5CHX3VVBT613HC0M.pdf
-  captured_at: '2026-04-24'
-last_reviewed: '2026-04-24'
+  - type: pdf
+    path: raw-ulid/01KPYX5QQC5CHX3VVBT613HC0M.pdf
+    captured_at: '2026-04-24'
+last_reviewed: '2026-05-08'
 reviewer: ops@locallife.asia
-status: draft
+status: approved
 related: []
 ---
 
