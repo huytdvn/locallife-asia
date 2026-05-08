@@ -31,12 +31,30 @@ export function knowledgeRoot(): string {
   return candidates[0];
 }
 
+/**
+ * Cache key = max mtime across `root` and its immediate subdirs. Touching
+ * only the parent (e.g. when sync runs at a different mount path than the
+ * loader's KNOWLEDGE_DIR) does not bump children's mtimes; previous
+ * single-stat strategy missed those updates and served stale data. Reading
+ * a handful of dir stats per request is cheap.
+ */
+function rootMtime(root: string): number {
+  let max = fs.statSync(root).mtimeMs;
+  for (const e of fs.readdirSync(root, { withFileTypes: true })) {
+    if (!e.isDirectory()) continue;
+    if (e.name.startsWith(".")) continue;
+    const m = fs.statSync(path.join(root, e.name)).mtimeMs;
+    if (m > max) max = m;
+  }
+  return max;
+}
+
 export function loadKnowledge(force = false): LoadedDoc[] {
   const root = knowledgeRoot();
   if (!fs.existsSync(root)) {
     throw new Error(`knowledge dir not found: ${root}`);
   }
-  const mtime = fs.statSync(root).mtimeMs;
+  const mtime = rootMtime(root);
   if (!force && cache && cache.mtime === mtime) return cache.docs;
 
   const files = walk(root).filter(

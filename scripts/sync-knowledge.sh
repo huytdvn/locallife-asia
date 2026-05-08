@@ -26,10 +26,56 @@ REMOTE_URL="https://${auth_prefix}github.com/${OWNER}/${REPO}.git"
 
 log() { printf '[sync-knowledge] %s\n' "$*" >&2; }
 
+# Optional sparse-checkout: only materialise this subdir of the repo into
+# the work tree. Saves disk + makes the KB subdir the only thing readers
+# see when they walk the volume root. Empty/unset = full repo (legacy).
+SPARSE_PATH="${KNOWLEDGE_REPO_SUBDIR:-knowledge}"
+
+# Touch the volume root AND the sparse subdir so web's loader cache
+# invalidates regardless of whether KNOWLEDGE_DIR is the volume root or the
+# nested KB subdir. (Touching a parent does not bump children's mtime.)
+touch_kb() {
+  touch "$KB_DIR" 2>/dev/null || true
+  if [[ -n "$SPARSE_PATH" && -d "$KB_DIR/$SPARSE_PATH" ]]; then
+    touch "$KB_DIR/$SPARSE_PATH" 2>/dev/null || true
+  fi
+}
+
+apply_sparse_checkout() {
+  if [[ -z "$SPARSE_PATH" ]]; then return 0; fi
+  git config core.sparseCheckout true
+  printf '/%s/\n' "$SPARSE_PATH" > .git/info/sparse-checkout
+}
+
 if [[ ! -d "$KB_DIR/.git" ]]; then
-  log "init: clone $OWNER/$REPO@$BRANCH -> $KB_DIR"
-  mkdir -p "$(dirname "$KB_DIR")"
-  git clone --branch "$BRANCH" --depth 50 "$REMOTE_URL" "$KB_DIR"
+  log "init: $OWNER/$REPO@$BRANCH -> $KB_DIR (sparse=${SPARSE_PATH:-<full>})"
+  mkdir -p "$KB_DIR"
+  if [[ -n "$(ls -A "$KB_DIR" 2>/dev/null)" ]]; then
+    # Dir was seeded by docker cp / volume init but never `git clone`. Plain
+    # `git clone` refuses non-empty target, so bootstrap as a repo in place.
+    log "init: $KB_DIR has files but no .git — bootstrapping in place"
+    cd "$KB_DIR"
+    git init -q -b "$BRANCH"
+    git remote add origin "$REMOTE_URL"
+    apply_sparse_checkout
+    git fetch --depth 50 origin "$BRANCH"
+    git reset --hard "origin/${BRANCH}"
+    # Drop legacy non-sparse files that were docker-cp'd at the volume root.
+    if [[ -n "$SPARSE_PATH" ]]; then
+      git clean -fd >/dev/null 2>&1 || true
+    fi
+    touch_kb
+    exit 0
+  fi
+  if [[ -n "$SPARSE_PATH" ]]; then
+    git clone --no-checkout --branch "$BRANCH" --depth 50 "$REMOTE_URL" "$KB_DIR"
+    cd "$KB_DIR"
+    apply_sparse_checkout
+    git checkout "$BRANCH"
+  else
+    git clone --branch "$BRANCH" --depth 50 "$REMOTE_URL" "$KB_DIR"
+  fi
+  touch_kb
   exit 0
 fi
 
@@ -59,6 +105,7 @@ fi
 log "fast-forward $LOCAL_HEAD -> $REMOTE_HEAD"
 git reset --hard "origin/${BRANCH}"
 
-# Touch marker file để retrieval loader invalidate cache mtime.
-touch "$KB_DIR"
+# Touch marker file để retrieval loader invalidate cache mtime — both
+# volume root and sparse subdir (the loader may watch either path).
+touch_kb
 log "done"
