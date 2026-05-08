@@ -373,7 +373,12 @@ export function DocsManager({ canEdit }: Props) {
             }}
           />
         ) : (
-          <EmptyState stats={stats} onOpenTree={() => setTreeOpen(true)} />
+          <EmptyState
+            stats={stats}
+            docs={docs ?? []}
+            onSelect={navigate}
+            onOpenTree={() => setTreeOpen(true)}
+          />
         )}
       </main>
 
@@ -425,6 +430,8 @@ function StatChip({
 
 function EmptyState({
   stats,
+  docs,
+  onSelect,
   onOpenTree,
 }: {
   stats: {
@@ -433,6 +440,8 @@ function EmptyState({
     draft: number;
     restricted: number;
   } | null;
+  docs: DocMeta[];
+  onSelect: (id: string) => void;
   onOpenTree: () => void;
 }) {
   if (!stats) {
@@ -544,6 +553,8 @@ function EmptyState({
             <ZoneCard key={zone} zone={zone} count={count} />
           ))}
       </div>
+
+      <DocsQuickViews docs={docs} onSelect={onSelect} />
 
       <section
         style={{
@@ -689,4 +700,228 @@ function zoneOf(path: string): string {
   if (["internal", "host", "lok", "public"].includes(p)) return p;
   if (p === "inbox") return "inbox";
   return "internal";
+}
+
+/**
+ * Three quick-view stacks rendered above the audit log when no doc is
+ * selected. Each list is clickable — clicking an item opens that doc
+ * (same `navigate` path the tree uses, including history + URL sync).
+ *
+ *   - "Cần duyệt"  → docs with status='draft' (admin's review queue)
+ *   - "Mới cập nhật" → top 5 by last_reviewed (desc)
+ *   - "Mới tạo"    → top 5 by ULID timestamp prefix (desc)
+ *
+ * ULID first 10 chars = Crockford-base32 of the create-time milliseconds;
+ * lexicographic sort matches numeric sort, so localeCompare on the slice
+ * is the cheapest way to order without parsing.
+ */
+function DocsQuickViews({
+  docs,
+  onSelect,
+}: {
+  docs: DocMeta[];
+  onSelect: (id: string) => void;
+}) {
+  const drafts = useMemo(
+    () => docs.filter((d) => d.status === "draft").slice(0, 8),
+    [docs]
+  );
+  const recentlyUpdated = useMemo(
+    () =>
+      [...docs]
+        .filter((d) => d.status !== "deprecated" && d.last_reviewed)
+        .sort((a, b) => b.last_reviewed.localeCompare(a.last_reviewed))
+        .slice(0, 5),
+    [docs]
+  );
+  const recentlyCreated = useMemo(
+    () =>
+      [...docs]
+        .filter((d) => d.status !== "deprecated")
+        .sort((a, b) => b.id.slice(0, 10).localeCompare(a.id.slice(0, 10)))
+        .slice(0, 5),
+    [docs]
+  );
+
+  return (
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+        gap: 12,
+      }}
+    >
+      <QuickViewCard
+        title="Cần duyệt"
+        emoji="📝"
+        accent="var(--ll-orange)"
+        emptyHint="Không còn doc draft nào — sạch bong!"
+        items={drafts}
+        countSuffix={`/${docs.filter((d) => d.status === "draft").length}`}
+        onSelect={onSelect}
+        renderMeta={(d) => (
+          <span style={{ color: "#c07600" }}>draft</span>
+        )}
+      />
+      <QuickViewCard
+        title="Mới cập nhật"
+        emoji="✏️"
+        accent="var(--ll-green-bright)"
+        emptyHint="Chưa có hoạt động cập nhật."
+        items={recentlyUpdated}
+        onSelect={onSelect}
+        renderMeta={(d) => <span>{d.last_reviewed}</span>}
+      />
+      <QuickViewCard
+        title="Mới tạo"
+        emoji="✨"
+        accent="var(--ll-zone-public)"
+        emptyHint="Chưa có doc mới."
+        items={recentlyCreated}
+        onSelect={onSelect}
+        renderMeta={(d) => <span>{ulidToDate(d.id)}</span>}
+      />
+    </div>
+  );
+}
+
+function QuickViewCard({
+  title,
+  emoji,
+  accent,
+  emptyHint,
+  items,
+  countSuffix,
+  onSelect,
+  renderMeta,
+}: {
+  title: string;
+  emoji: string;
+  accent: string;
+  emptyHint: string;
+  items: DocMeta[];
+  countSuffix?: string;
+  onSelect: (id: string) => void;
+  renderMeta: (d: DocMeta) => React.ReactNode;
+}) {
+  return (
+    <section
+      style={{
+        padding: 14,
+        background: "white",
+        border: "1px solid var(--ll-border)",
+        borderRadius: "var(--ll-radius-md)",
+        borderLeft: `4px solid ${accent}`,
+        display: "flex",
+        flexDirection: "column",
+        gap: 8,
+        minWidth: 0,
+      }}
+    >
+      <header
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          fontSize: 12,
+          color: "var(--ll-muted)",
+          textTransform: "uppercase",
+          letterSpacing: "0.05em",
+          fontWeight: 700,
+        }}
+      >
+        <span aria-hidden style={{ fontSize: 14 }}>
+          {emoji}
+        </span>
+        <span style={{ color: "var(--ll-green-dark)" }}>{title}</span>
+        <span style={{ marginLeft: "auto", color: "var(--ll-muted)" }}>
+          {items.length}
+          {countSuffix ?? ""}
+        </span>
+      </header>
+      {items.length === 0 ? (
+        <div style={{ fontSize: 12, color: "var(--ll-muted)", padding: "8px 0" }}>
+          {emptyHint}
+        </div>
+      ) : (
+        <ul
+          style={{
+            listStyle: "none",
+            margin: 0,
+            padding: 0,
+            display: "flex",
+            flexDirection: "column",
+            gap: 2,
+          }}
+        >
+          {items.map((d) => (
+            <li key={d.id}>
+              <button
+                type="button"
+                onClick={() => onSelect(d.id)}
+                style={{
+                  width: "100%",
+                  textAlign: "left",
+                  padding: "6px 8px",
+                  border: "none",
+                  background: "transparent",
+                  borderRadius: 6,
+                  fontSize: 13,
+                  color: "var(--ll-ink)",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  fontFamily: "inherit",
+                }}
+                onMouseOver={(e) =>
+                  (e.currentTarget.style.background = "var(--ll-surface-soft)")
+                }
+                onMouseOut={(e) =>
+                  (e.currentTarget.style.background = "transparent")
+                }
+                title={d.path}
+              >
+                <span
+                  style={{
+                    flex: 1,
+                    minWidth: 0,
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {d.title}
+                </span>
+                <span
+                  style={{
+                    fontSize: 11,
+                    color: "var(--ll-muted)",
+                    flexShrink: 0,
+                  }}
+                >
+                  {renderMeta(d)}
+                </span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
+/** ULID first 10 chars = Crockford base32 of ms-since-epoch. Decode → date. */
+function ulidToDate(id: string): string {
+  if (!/^[0-9A-Z]{26}$/.test(id)) return "—";
+  const alphabet = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
+  let ms = 0;
+  for (const c of id.slice(0, 10)) {
+    const v = alphabet.indexOf(c);
+    if (v < 0) return "—";
+    ms = ms * 32 + v;
+  }
+  const d = new Date(ms);
+  if (isNaN(d.getTime())) return "—";
+  return d.toISOString().slice(0, 10);
 }
