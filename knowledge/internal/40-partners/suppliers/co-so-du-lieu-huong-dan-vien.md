@@ -3,26 +3,26 @@ id: 01KPYX8T215GV40Z50RQM99V4S
 title: Cơ Sở Dữ Liệu Hướng Dẫn Viên
 owner: ops@locallife.asia
 audience:
-- employee
-- lead
-- admin
+  - employee
+  - lead
+  - admin
 sensitivity: internal
 tags:
-- contact_list
-- employee_information
-- guide_database
-- human_resources
-- partner_contact
-- resource_database
-- supplier_list
-- tour_guide
+  - contact_list
+  - employee_information
+  - guide_database
+  - human_resources
+  - partner_contact
+  - resource_database
+  - supplier_list
+  - tour_guide
 source:
-- type: xlsx
-  path: raw-ulid/01KPYX5RBXAJ123G3DDQBZMEHC.xlsx
-  captured_at: '2026-04-24'
-last_reviewed: '2026-04-24'
+  - type: xlsx
+    path: raw-ulid/01KPYX5RBXAJ123G3DDQBZMEHC.xlsx
+    captured_at: '2026-04-24'
+last_reviewed: '2026-05-08'
 reviewer: ops@locallife.asia
-status: draft
+status: approved
 related: []
 ---
 
