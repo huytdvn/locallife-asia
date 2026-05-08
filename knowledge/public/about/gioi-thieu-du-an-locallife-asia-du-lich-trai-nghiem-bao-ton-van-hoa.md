@@ -3,28 +3,25 @@ id: 01KPYX8WRATGS6GRM3JGN6S767
 title: 'Giới thiệu dự án LocalLife.Asia: Du lịch trải nghiệm, bảo tồn văn hóa'
 owner: ops@locallife.asia
 audience:
-- employee
-- lead
-- admin
-- host
-- lok
-- guest
+  - employee
+  - lead
+  - admin
 sensitivity: public
 tags:
-- community_development
-- cultural_heritage
-- experiential_travel
-- local_tourism
-- partner_outreach
-- project_introduction
-- sustainable_tourism
+  - community_development
+  - cultural_heritage
+  - experiential_travel
+  - local_tourism
+  - partner_outreach
+  - project_introduction
+  - sustainable_tourism
 source:
-- type: pdf
-  path: raw-ulid/01KPYX5RCS8Q01AD3GHR2HHDW7.pdf
-  captured_at: '2026-04-24'
+  - type: pdf
+    path: raw-ulid/01KPYX5RCS8Q01AD3GHR2HHDW7.pdf
+    captured_at: '2026-04-24'
 last_reviewed: '2026-04-24'
 reviewer: ops@locallife.asia
-status: draft
+status: approved
 related: []
 ---
 
