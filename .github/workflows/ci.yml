@@ -1,10 +1,25 @@
 name: CI
 
 on:
+  # Direct pushes to main come from two places:
+  #   1. PR merges — these always touch app code, run full CI.
+  #   2. Admin UI saves (commitUpdateDirect) — message starts with
+  #      "Edit via admin UI: ..." and only ever touches knowledge/*.md.
+  #      No code change → no point running typecheck / build / eval.
+  # Filter out (2) by ignoring knowledge-only pushes. Eval drift from KB
+  # content is caught instead by the weekly schedule below.
   push:
     branches: [main]
+    paths-ignore:
+      - 'knowledge/**'
   pull_request:
     branches: [main]
+  # Weekly safety net: even with knowledge/** ignored on push, run the
+  # gold eval so KB drift surfaces eventually instead of silently rotting
+  # until someone touches code.
+  schedule:
+    - cron: '0 1 * * 1' # Mon 01:00 UTC = Mon 08:00 ICT
+  workflow_dispatch:
 
 jobs:
   web:
