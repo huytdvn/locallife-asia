@@ -1,31 +1,32 @@
 ---
 id: 01KPYX85Z8BD8S6YJK7M3VNNHK
-title: Hợp đồng hợp tác giữa LocalLife.Asia và đơn vị cung cấp dịch vụ truyền thông
+title: >-
+  Hợp đồng hợp tác giữa LocalLife.Asia và đơn vị cung cấp dịch vụ truyền thông
   LOK
 owner: ops@locallife.asia
 audience:
-- lead
-- admin
+  - lead
+  - admin
 sensitivity: restricted
 tags:
-- affiliate_program
-- content_creation
-- finance_terms
-- influencer_collaboration
-- kol_agreement
-- legal_document
-- local_opinion_kol
-- lok_agreement
-- marketing_affiliate
-- media_services
-- partnership_contract
+  - affiliate_program
+  - content_creation
+  - finance_terms
+  - influencer_collaboration
+  - kol_agreement
+  - legal_document
+  - local_opinion_kol
+  - lok_agreement
+  - marketing_affiliate
+  - media_services
+  - partnership_contract
 source:
-- type: docx
-  path: raw-ulid/01KPYX5QSXCZ1GXMV81B7MSJHJ.docx
-  captured_at: '2026-04-24'
-last_reviewed: '2026-04-24'
+  - type: docx
+    path: raw-ulid/01KPYX5QSXCZ1GXMV81B7MSJHJ.docx
+    captured_at: '2026-04-24'
+last_reviewed: '2026-05-08'
 reviewer: ops@locallife.asia
-status: draft
+status: approved
 related: []
 ---
 
