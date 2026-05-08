@@ -3,27 +3,27 @@ id: 01KPYX6XM560VANZDKWRDBFZQK
 title: Đề xuất hợp tác quảng bá du lịch Đà Nẵng
 owner: ops@locallife.asia
 audience:
-- lead
-- admin
+  - lead
+  - admin
 sensitivity: restricted
 tags:
-- collaboration
-- digital_platform
-- government_partnership
-- kol_koc
-- marketing
-- marketing_strategy
-- promotion
-- strategic_collaboration
-- tourism
-- tourism_promotion
+  - collaboration
+  - digital_platform
+  - government_partnership
+  - kol_koc
+  - marketing
+  - marketing_strategy
+  - promotion
+  - strategic_collaboration
+  - tourism
+  - tourism_promotion
 source:
-- type: pdf
-  path: raw-ulid/01KPYX5QR7H2M6KQB1K4DSND3J.pdf
-  captured_at: '2026-04-24'
-last_reviewed: '2026-04-24'
+  - type: pdf
+    path: raw-ulid/01KPYX5QR7H2M6KQB1K4DSND3J.pdf
+    captured_at: '2026-04-24'
+last_reviewed: '2026-05-08'
 reviewer: ops@locallife.asia
-status: draft
+status: approved
 related: []
 ---
 
