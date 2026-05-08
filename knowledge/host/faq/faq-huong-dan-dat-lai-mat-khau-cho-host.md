@@ -19,8 +19,11 @@ source:
     sha256: 99a3a8d3dd9c25f0e5a292b7239d3afdaa5b114c7f0f3f97e6b071f7b46cac79
 last_reviewed: '2026-04-24'
 reviewer: ops@locallife.asia
-status: approved
+status: deprecated
 related: []
 ---
 
 FAQ mới cho host: làm sao reset password? Vào settings > security > change password.
+
+
+> **Deprecated** — 2026-05-08: Ok
