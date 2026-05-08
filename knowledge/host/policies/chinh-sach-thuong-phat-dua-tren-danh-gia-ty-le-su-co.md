@@ -19,7 +19,7 @@ source:
     captured_at: '2026-04-24'
 last_reviewed: '2026-05-08'
 reviewer: ops@locallife.asia
-status: approved
+status: draft
 related: []
 ---
 # Chính Sách Thưởng – Phạt Dựa Trên Đánh Giá & Tỷ Lệ Sự Cố
