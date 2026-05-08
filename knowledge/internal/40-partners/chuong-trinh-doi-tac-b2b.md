@@ -3,29 +3,29 @@ id: 01KPYX8AVBJMHVT4PKF6HVW4CZ
 title: Chương Trình Đối Tác B2B
 owner: ops@locallife.asia
 audience:
-- employee
-- lead
-- admin
+  - employee
+  - lead
+  - admin
 sensitivity: internal
 tags:
-- b2b_partnership
-- commission_program
-- distribution
-- distribution_partners
-- itinerary builder
-- local experiences
-- local_experiences
-- partner program
-- partner_program
-- travel tech
-- travel_technology
+  - b2b_partnership
+  - commission_program
+  - distribution
+  - distribution_partners
+  - itinerary builder
+  - local experiences
+  - local_experiences
+  - partner program
+  - partner_program
+  - travel tech
+  - travel_technology
 source:
-- type: pdf
-  path: raw-ulid/01KPYX5QYHE4R3X6RVABP8XZXT.pdf
-  captured_at: '2026-04-24'
+  - type: pdf
+    path: raw-ulid/01KPYX5QYHE4R3X6RVABP8XZXT.pdf
+    captured_at: '2026-04-24'
 last_reviewed: '2026-04-24'
 reviewer: ops@locallife.asia
-status: draft
+status: approved
 related: []
 ---
 
