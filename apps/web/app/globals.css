@@ -352,6 +352,10 @@ a.ll-card:hover,
   border-collapse: collapse;
   margin: 10px 0;
   font-size: 13px;
+  display: block;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  max-width: 100%;
 }
 .ll-md th,
 .ll-md td {
@@ -473,7 +477,7 @@ a.ll-card:hover,
 /* ── 900px: medium screens — 2-col grid collapses ── */
 @media (max-width: 900px) {
   .ll-grid-2col {
-    grid-template-columns: 1fr !important;
+    grid-template-columns: minmax(0, 1fr) !important;
   }
 }
 
@@ -496,6 +500,7 @@ a.ll-card:hover,
   main {
     padding-left: 14px !important;
     padding-right: 14px !important;
+    padding-top: 16px !important;
   }
 
   /* Nav: hide desktop links, show hamburger */

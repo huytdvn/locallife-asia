@@ -77,9 +77,42 @@ export default async function AdminOnboardingPage() {
 
       <div style={{ maxWidth: 1024, margin: "0 auto", padding: "32px 16px" }}>
         <h1 style={{ fontSize: 28, marginBottom: 4 }}>Onboarding Dashboard</h1>
-        <p style={{ color: "var(--ll-muted)", fontSize: 14, marginBottom: 24 }}>
+        <p style={{ color: "var(--ll-muted)", fontSize: 14, marginBottom: 16 }}>
           Tuần <strong>{week}</strong> · {teamRows.length} nhân viên active.
         </p>
+        {role === "admin" && (
+          <div style={{ display: "flex", gap: 10, marginBottom: 24, flexWrap: "wrap" }}>
+            <Link
+              href="/admin/onboarding/new"
+              style={{
+                padding: "10px 16px",
+                borderRadius: 10,
+                background: "var(--ll-green)",
+                color: "white",
+                fontWeight: 600,
+                fontSize: 14,
+                textDecoration: "none",
+              }}
+            >
+              ✨ Tạo lộ trình onboarding mới
+            </Link>
+            <Link
+              href="/admin/training/new"
+              style={{
+                padding: "10px 16px",
+                borderRadius: 10,
+                background: "white",
+                color: "var(--ll-green-dark)",
+                border: "1px solid var(--ll-green-dark)",
+                fontWeight: 600,
+                fontSize: 14,
+                textDecoration: "none",
+              }}
+            >
+              🎯 Tạo training mới
+            </Link>
+          </div>
+        )}
 
         <SectionHeader title="📊 Team focus tuần này" subtitle="" />
         {teamRows.length === 0 ? (
