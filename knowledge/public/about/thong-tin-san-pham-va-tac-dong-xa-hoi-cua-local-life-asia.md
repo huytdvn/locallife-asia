@@ -3,26 +3,23 @@ id: 01KPYX984YA0JGEX3XMZ5B5C9J
 title: Thông tin sản phẩm và tác động xã hội của Local Life Asia
 owner: ops@locallife.asia
 audience:
-- employee
-- lead
-- admin
-- host
-- lok
-- guest
+  - employee
+  - lead
+  - admin
 sensitivity: public
 tags:
-- community_tourism
-- local_experience
-- social_impact
-- sustainable_tourism
-- tourism_platform
+  - community_tourism
+  - local_experience
+  - social_impact
+  - sustainable_tourism
+  - tourism_platform
 source:
-- type: pdf
-  path: raw-ulid/01KPYX5RQG1STZW1HW811DY3T7.pdf
-  captured_at: '2026-04-24'
+  - type: pdf
+    path: raw-ulid/01KPYX5RQG1STZW1HW811DY3T7.pdf
+    captured_at: '2026-04-24'
 last_reviewed: '2026-04-24'
 reviewer: ops@locallife.asia
-status: draft
+status: approved
 related: []
 ---
 
