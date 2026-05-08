@@ -20,8 +20,11 @@ source:
     sha256: 9c7850e5a15b988022168ba046ff90047f6327ff398f53b75ee213f9aaf5bb93
 last_reviewed: '2026-05-08'
 reviewer: ops@locallife.asia
-status: approved
+status: deprecated
 related: []
 ---
 
 SOP dedup fresh 1777011679822442000
+
+
+> **Deprecated** — 2026-05-08: a
