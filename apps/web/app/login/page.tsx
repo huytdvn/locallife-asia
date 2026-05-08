@@ -1,8 +1,41 @@
 import { signIn } from "@/lib/auth";
+import { AuthError } from "next-auth";
+import { redirect } from "next/navigation";
+import { isRedirectError } from "next/dist/client/components/redirect-error";
 
 export const dynamic = "force-dynamic";
 
 const IS_PROD = process.env.NODE_ENV === "production";
+
+/**
+ * Auth.js v5 throws on `signIn()`:
+ *   - success → throws NEXT_REDIRECT (via internal redirect()) — must be re-thrown
+ *   - bad credentials → throws CredentialsSignin (subclass of AuthError)
+ *   - other auth issues → throws AuthError of various types
+ *
+ * Without this wrapper the AuthError bubbles to the page render and the
+ * user gets the generic "Application error: a server-side exception".
+ * Wrap, classify, and redirect back to /login with `?error=<type>` so the
+ * existing inline error banner in this page can show a friendly message.
+ */
+async function signInOrRedirectWithError(
+  provider: Parameters<typeof signIn>[0],
+  options: Parameters<typeof signIn>[1],
+  nextPath: string
+): Promise<never> {
+  try {
+    await signIn(provider, options);
+  } catch (err) {
+    if (isRedirectError(err)) throw err;
+    if (err instanceof AuthError) {
+      const params = new URLSearchParams({ error: err.type, next: nextPath });
+      redirect(`/login?${params.toString()}`);
+    }
+    throw err;
+  }
+  // signIn always either redirects (success) or throws — we never reach here.
+  throw new Error("unreachable");
+}
 
 export default async function LoginPage({
   searchParams,
@@ -98,7 +131,11 @@ export default async function LoginPage({
         <form
           action={async () => {
             "use server";
-            await signIn("google", { redirectTo: nextPath });
+            await signInOrRedirectWithError(
+              "google",
+              { redirectTo: nextPath },
+              nextPath
+            );
           }}
           style={{ marginTop: 8 }}
         >
@@ -151,11 +188,11 @@ export default async function LoginPage({
             "use server";
             const email = String(formData.get("email") ?? "").trim();
             const password = String(formData.get("password") ?? "");
-            await signIn("password", {
-              email,
-              password,
-              redirectTo: nextPath,
-            });
+            await signInOrRedirectWithError(
+              "password",
+              { email, password, redirectTo: nextPath },
+              nextPath
+            );
           }}
           style={{ display: "flex", flexDirection: "column", gap: 10 }}
         >
@@ -228,10 +265,11 @@ export default async function LoginPage({
                   key={role}
                   action={async () => {
                     "use server";
-                    await signIn("dev", {
-                      role,
-                      redirectTo: nextPath,
-                    });
+                    await signInOrRedirectWithError(
+                      "dev",
+                      { role, redirectTo: nextPath },
+                      nextPath
+                    );
                   }}
                   style={{ flex: 1 }}
                 >
