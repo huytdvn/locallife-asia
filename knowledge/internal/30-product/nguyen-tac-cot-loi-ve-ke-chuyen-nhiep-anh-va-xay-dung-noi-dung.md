@@ -1,26 +1,26 @@
 ---
 id: 01KPYX9J2J4TN0XDXRB4N8F1X5
-title: Nguyên tắc cốt lõi về kể chuyện, nhiếp ảnh và xây dựng nội dung
+title: 'Nguyên tắc cốt lõi về kể chuyện, nhiếp ảnh và xây dựng nội dung'
 owner: ops@locallife.asia
 audience:
-- employee
-- lead
+  - employee
+  - lead
 sensitivity: internal
 tags:
-- brand_guidelines
-- content_creation
-- content_standards
-- cultural_authenticity
-- local_culture
-- photography
-- storytelling
+  - brand_guidelines
+  - content_creation
+  - content_standards
+  - cultural_authenticity
+  - local_culture
+  - photography
+  - storytelling
 source:
-- type: pdf
-  path: raw-ulid/01KPYX5RVC10YC52EBFHQ02C66.pdf
-  captured_at: '2026-04-24'
-last_reviewed: '2026-04-24'
+  - type: pdf
+    path: raw-ulid/01KPYX5RVC10YC52EBFHQ02C66.pdf
+    captured_at: '2026-04-24'
+last_reviewed: '2026-05-08'
 reviewer: ops@locallife.asia
-status: draft
+status: approved
 related: []
 ---
 
