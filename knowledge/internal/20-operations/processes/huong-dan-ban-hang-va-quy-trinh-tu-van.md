@@ -3,27 +3,27 @@ id: 01KPYXAC2CS5J0CF7HV9S2WZCZ
 title: Hướng dẫn bán hàng và quy trình tư vấn
 owner: ops@locallife.asia
 audience:
-- employee
-- lead
+  - employee
+  - lead
 sensitivity: internal
 tags:
-- affiliate
-- affiliate_program
-- consultation_process
-- customer_service
-- guideline
-- lla_products
-- product_knowledge
-- sales
-- sales_guide
-- sales_operations
+  - affiliate
+  - affiliate_program
+  - consultation_process
+  - customer_service
+  - guideline
+  - lla_products
+  - product_knowledge
+  - sales
+  - sales_guide
+  - sales_operations
 source:
-- type: docx
-  path: raw-ulid/01KPYX5RXK62R8NBRCMCZPXJ9D.docx
-  captured_at: '2026-04-24'
-last_reviewed: '2026-04-24'
+  - type: docx
+    path: raw-ulid/01KPYX5RXK62R8NBRCMCZPXJ9D.docx
+    captured_at: '2026-04-24'
+last_reviewed: '2026-05-08'
 reviewer: ops@locallife.asia
-status: draft
+status: approved
 related: []
 ---
 
