@@ -28,9 +28,12 @@ ENV HOSTNAME=0.0.0.0
 # Knowledge mount (tier 2 local server read). Override bằng -v.
 ENV KNOWLEDGE_DIR=/app/knowledge
 
-# Copy standalone output + static assets + knowledge seed
+# Copy standalone output + static assets + public assets + knowledge seed.
+# Next.js standalone does NOT bundle apps/web/public — must copy explicitly,
+# else /mascot.webp etc. 404 in production.
 COPY --from=builder /repo/apps/web/.next/standalone ./
 COPY --from=builder /repo/apps/web/.next/static ./apps/web/.next/static
+COPY --from=builder /repo/apps/web/public ./apps/web/public
 COPY --from=builder /repo/knowledge ./knowledge
 
 RUN addgroup -g 1001 -S nodejs && adduser -S nextjs -u 1001 && chown -R nextjs:nodejs /app
