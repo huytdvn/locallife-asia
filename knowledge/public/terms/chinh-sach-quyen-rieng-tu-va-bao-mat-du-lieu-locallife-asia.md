@@ -3,26 +3,23 @@ id: 01KPYXB959R9QTG90H7Y0E3DP7
 title: Chính sách quyền riêng tư và bảo mật dữ liệu LocalLife.Asia
 owner: ops@locallife.asia
 audience:
-- employee
-- lead
-- admin
-- host
-- lok
-- guest
+  - employee
+  - lead
+  - admin
 sensitivity: public
 tags:
-- data_processing
-- data_security
-- legal_compliance
-- personal_data
-- privacy_policy
+  - data_processing
+  - data_security
+  - legal_compliance
+  - personal_data
+  - privacy_policy
 source:
-- type: docx
-  path: raw-ulid/01KPYX5RYNAQXPPNBMQ41KT62W.docx
-  captured_at: '2026-04-24'
+  - type: docx
+    path: raw-ulid/01KPYX5RYNAQXPPNBMQ41KT62W.docx
+    captured_at: '2026-04-24'
 last_reviewed: '2026-04-24'
 reviewer: ops@locallife.asia
-status: draft
+status: approved
 related: []
 ---
 
