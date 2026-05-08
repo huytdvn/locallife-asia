@@ -3,24 +3,24 @@ id: 01KPYX7QYXZ42X7BFPVGH1PKXS
 title: Hợp đồng hợp tác kinh doanh lĩnh vực du lịch và truyền thông
 owner: ops@locallife.asia
 audience:
-- lead
-- admin
+  - lead
+  - admin
 sensitivity: restricted
 tags:
-- business_cooperation
-- contract
-- host_partner
-- legal_document
-- media
-- partnership_agreement
-- tourism
+  - business_cooperation
+  - contract
+  - host_partner
+  - legal_document
+  - media
+  - partnership_agreement
+  - tourism
 source:
-- type: docx
-  path: raw-ulid/01KPYX5QSDFQ164AK42KRY2CAX.docx
-  captured_at: '2026-04-24'
-last_reviewed: '2026-04-24'
+  - type: docx
+    path: raw-ulid/01KPYX5QSDFQ164AK42KRY2CAX.docx
+    captured_at: '2026-04-24'
+last_reviewed: '2026-05-08'
 reviewer: ops@locallife.asia
-status: draft
+status: approved
 related: []
 ---
 
