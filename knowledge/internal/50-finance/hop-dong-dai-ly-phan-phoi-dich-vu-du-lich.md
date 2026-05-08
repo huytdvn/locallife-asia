@@ -3,27 +3,27 @@ id: 01KPYX83GN4M7HSF9X9NHBGQJY
 title: Hợp Đồng Đại Lý Phân Phối Dịch Vụ Du Lịch
 owner: ops@locallife.asia
 audience:
-- lead
-- admin
+  - lead
+  - admin
 sensitivity: restricted
 tags:
-- agency
-- agency_contract
-- agreement
-- commission_agreement
-- distribution
-- legal_document
-- service
-- service_distribution
-- travel
-- travel_partner
+  - agency
+  - agency_contract
+  - agreement
+  - commission_agreement
+  - distribution
+  - legal_document
+  - service
+  - service_distribution
+  - travel
+  - travel_partner
 source:
-- type: docx
-  path: raw-ulid/01KPYX5QSQK3V1PD250M4FHJSA.docx
-  captured_at: '2026-04-24'
-last_reviewed: '2026-04-24'
+  - type: docx
+    path: raw-ulid/01KPYX5QSQK3V1PD250M4FHJSA.docx
+    captured_at: '2026-04-24'
+last_reviewed: '2026-05-08'
 reviewer: ops@locallife.asia
-status: draft
+status: approved
 related: []
 ---
 
