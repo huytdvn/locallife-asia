@@ -3,28 +3,28 @@ id: 01KPYXBQD9HSG08MQPHTKM3NAQ
 title: Danh sách địa điểm du lịch văn hóa và thiên nhiên miền Trung
 owner: ops@locallife.asia
 audience:
-- employee
-- lead
+  - employee
+  - lead
 sensitivity: internal
 tags:
-- central_vietnam
-- cultural_places
-- da_nang
-- du_lich
-- experiences
-- hue
-- natural_spots
-- quang_nam
-- thien_nhien
-- van_hoa
-- vietnam_travel
+  - central_vietnam
+  - cultural_places
+  - da_nang
+  - du_lich
+  - experiences
+  - hue
+  - natural_spots
+  - quang_nam
+  - thien_nhien
+  - van_hoa
+  - vietnam_travel
 source:
-- type: manual
-  path: raw-ulid/01KPYX5RZFT5PVK6CZ9P47RQGA.csv
-  captured_at: '2026-04-24'
-last_reviewed: '2026-04-24'
+  - type: manual
+    path: raw-ulid/01KPYX5RZFT5PVK6CZ9P47RQGA.csv
+    captured_at: '2026-04-24'
+last_reviewed: '2026-05-08'
 reviewer: ops@locallife.asia
-status: draft
+status: approved
 related: []
 ---
 
