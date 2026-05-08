@@ -18,12 +18,12 @@ source:
   - type: docx
     path: raw-ulid/01KPYX5RXYJHASCGA08AG5DNTA.docx
     captured_at: '2026-04-24'
-last_reviewed: '2026-04-24'
+last_reviewed: '2026-05-08'
 reviewer: ops@locallife.asia
 status: approved
 related: []
 ---
-
+```markdown
 # Tiêu Chuẩn Sản Phẩm Và Dịch Vụ Dành Cho Host
 
 ## ĐIỀU KIỆN SẢN PHẨM/DỊCH VỤ TRÊN NỀN TẢNG LOCALLIFE.ASIA
@@ -34,161 +34,162 @@ related: []
 
 Sản phẩm/dịch vụ phải đáp ứng ít nhất 1 trong 5 tiêu chí sau:
 
--   **Nguồn gốc địa phương**: được sản xuất, tạo ra hoặc vận hành bởi người dân thuộc khu vực địa phương.
+-   **Nguồn gốc địa phương**: được sản xuất, chế tác hoặc vận hành bởi người dân tại khu vực địa phương.
 -   Mang **giá trị văn hóa bản sắc**: liên quan đến phong tục, lễ hội, làng nghề, ẩm thực, nghệ thuật dân gian, trang phục truyền thống…
--   Thể hiện **nghề truyền thống**: dệt, mộc, gốm, rèn, đan lát, nông nghiệp, ẩm thực bản địa…
--   **Trải nghiệm cuộc sống bản địa**: sinh hoạt, sản xuất, lao động, nghề nghiệp thường ngày.
--   Không phải **sản phẩm công nghiệp hàng loạt**: không chấp nhận hàng nhập sỉ từ chợ đầu mối, hàng OEM, hàng sản xuất đại trà.
+-   Thể hiện các **nghề truyền thống đặc trưng**: dệt, mộc, gốm, rèn, đan lát, nông nghiệp, ẩm thực bản địa…
+-   Cung cấp **trải nghiệm cuộc sống bản địa**: thể hiện sinh hoạt, sản xuất, lao động, nghề nghiệp thường ngày của cộng đồng.
+-   Không phải **sản phẩm công nghiệp hàng loạt**: không chấp nhận hàng nhập sỉ, hàng OEM, hoặc sản phẩm sản xuất đại trà.
 
-> Không đáp ứng những yếu tố trên → không được phê duyệt.
+> Sản phẩm/dịch vụ không đáp ứng các tiêu chí trên sẽ không được phê duyệt.
 
 ### 2. Tính trung thực & minh bạch nội dung
 
-Host phải đảm bảo:
+Host có trách nhiệm đảm bảo:
 
--   Ảnh/video **tự chụp** hoặc sở hữu **bản quyền**.
--   Ảnh/video phải **phản ánh đúng thực tế** ≥ 85% (không chỉnh sửa màu sắc/hình dáng quá mức).
+-   Ảnh/video do Host **tự chụp** hoặc sở hữu **bản quyền hợp pháp**.
+-   Ảnh/video phải **phản ánh chân thực** về sản phẩm/dịch vụ (không chỉnh sửa màu sắc, hình dáng quá mức hoặc gây hiểu lầm).
 
-Mô tả phải gồm:
+Mô tả sản phẩm/dịch vụ phải bao gồm các thông tin sau:
 
 -   Tên sản phẩm/dịch vụ
--   Nguồn gốc
+-   Nguồn gốc/xuất xứ
 -   Nguyên liệu/chất liệu
--   Công dụng hoặc trải nghiệm
+-   Công dụng hoặc trải nghiệm chính
 -   Thời lượng, quy trình, nội dung chi tiết (đối với trải nghiệm)
 
--   Giá bán ghi rõ **đơn vị tính**, **giá từng loại**, **phụ thu** (nếu có).
--   Không đăng sản phẩm/dịch vụ **không tồn tại** hoặc **chưa sẵn sàng cung cấp**.
+-   Giá bán phải được niêm yết rõ ràng, bao gồm **đơn vị tính**, **giá cho từng loại/gói sản phẩm**, và các khoản **phụ thu** (nếu có).
+-   Không đăng tải sản phẩm/dịch vụ **không tồn tại** hoặc **chưa sẵn sàng cung cấp** tại thời điểm đăng.
 
-> Phát hiện gian lận → khóa sản phẩm hoặc khóa tài khoản.
+> Mọi hành vi gian lận thông tin sẽ dẫn đến việc khóa sản phẩm hoặc khóa tài khoản của Host.
 
 ### 3. Yêu cầu về an toàn (Safety Requirements)
 
-Áp dụng cho tất cả sản phẩm & dịch vụ:
+Các sản phẩm và dịch vụ được cung cấp trên LocalLife.Asia phải tuân thủ nghiêm ngặt các yêu cầu về an toàn sau:
 
 ### 3.1. An toàn thực phẩm (nếu là ẩm thực/nông sản/đặc sản)
 
--   **Nguyên liệu sạch**, không hóa chất cấm, sản xuất tại địa phương.
--   Có khu vực chế biến đảm bảo **vệ sinh tối thiểu**.
--   Nếu là thực phẩm đóng gói → cần **nhãn**, **hạn sử dụng**, **thành phần rõ ràng**, đầy đủ.
--   Nếu là quán ăn/ẩm thực nấu tại chỗ → đảm bảo **dụng cụ sạch**, khu bếp không gây mất vệ sinh.
+-   Sử dụng **nguyên liệu sạch**, có nguồn gốc rõ ràng, không chứa hóa chất cấm hoặc chất gây hại, ưu tiên sản phẩm được sản xuất tại địa phương.
+-   Khu vực chế biến phải đảm bảo **vệ sinh an toàn thực phẩm tối thiểu**, tránh nhiễm bẩn.
+-   Đối với thực phẩm đóng gói: cần có **nhãn mác**, thông tin **hạn sử dụng**, **thành phần rõ ràng**, đầy đủ theo quy định.
+-   Đối với dịch vụ ẩm thực tại chỗ: đảm bảo **dụng cụ chế biến, ăn uống sạch sẽ** và khu vực bếp đạt tiêu chuẩn vệ sinh, không gây mất an toàn thực phẩm.
 
 ### 3.2. An toàn cho trải nghiệm, tour, workshop
 
--   Có **hướng dẫn viên** hoặc người phụ trách hiểu rõ hoạt động.
--   Đối với trải nghiệm có **yếu tố nguy cơ** (leo núi, chèo thuyền, vượt suối, săn mây…):
-    -   Phải thông báo rõ **rủi ro**.
-    -   Có **phương án hỗ trợ** và liên lạc.
-    -   Có **thiết bị cơ bản** nếu cần (áo phao, mũ bảo hộ…).
--   Không tổ chức hoạt động nguy hiểm cho trẻ nhỏ nếu không đủ điều kiện.
+-   Phải có **hướng dẫn viên** hoặc người phụ trách có chuyên môn, hiểu rõ về hoạt động và kỹ năng xử lý tình huống.
+-   Đối với trải nghiệm có **yếu tố nguy hiểm hoặc rủi ro cao** (ví dụ: leo núi, chèo thuyền, vượt suối, săn mây…):
+    -   Phải thông báo rõ ràng về các **rủi ro tiềm ẩn** cho khách hàng trước khi tham gia.
+    -   Có **phương án hỗ trợ khẩn cấp** và kênh liên lạc hiệu quả.
+    -   Cung cấp **đầy đủ thiết bị bảo hộ cơ bản** theo yêu cầu của hoạt động (ví dụ: áo phao, mũ bảo hộ, dây an toàn…).
+-   Không tổ chức các hoạt động nguy hiểm cho trẻ nhỏ nếu không đảm bảo đủ điều kiện an toàn và sự giám sát chặt chẽ của người lớn.
 
 ### 3.3. An toàn trong homestay/lưu trú
 
--   Giường, chăn, nệm **sạch** (thay 1 ngày/lần hoặc sau mỗi khách).
--   Nhà vệ sinh sử dụng tốt, có **nước sạch**.
--   Không có nguy cơ **điện giật**, **trượt ngã**, công trình **xuống cấp**.
+-   Giường, chăn, nệm phải được **vệ sinh sạch sẽ** (thay mới sau mỗi khách hoặc tối thiểu 1 ngày/lần đối với lưu trú dài ngày).
+-   Nhà vệ sinh hoạt động tốt, đảm bảo vệ sinh, có **nguồn nước sạch ổn định**.
+-   Không tồn tại các nguy cơ về **điện giật**, **trượt ngã** hoặc các yếu tố gây mất an toàn do **công trình xuống cấp**.
 
 ## II. ĐIỀU KIỆN RIÊNG THEO LOẠI SẢN PHẨM
 
 ### 4. Đối với trải nghiệm/dịch vụ du lịch cộng đồng
 
-Sản phẩm phải mô tả đầy đủ:
+Sản phẩm/dịch vụ phải được mô tả đầy đủ các thông tin sau:
 
--   **Thời gian** (bắt đầu – kết thúc)
--   **Địa điểm chính xác**
+-   **Thời gian diễn ra** (thời điểm bắt đầu – kết thúc)
+-   **Địa điểm thực hiện chi tiết và chính xác**
 -   **Lịch trình chi tiết** từng bước
--   **Khả năng tiếp nhận khách** (số lượng tối đa/ngày)
--   **Yêu cầu thể lực** (nếu có)
--   Những gì đã **bao gồm & chưa bao gồm**
--   **Điều kiện thời tiết** ảnh hưởng đến hoạt động
--   **Ngôn ngữ hỗ trợ** (Việt/Anh/Khác)
+-   **Khả năng tiếp nhận khách** (số lượng tối đa/lượt hoặc /ngày)
+-   **Yêu cầu về sức khỏe/thể lực** (nếu có)
+-   Các hạng mục đã **bao gồm & chưa bao gồm** trong giá.
+-   Các **điều kiện thời tiết** hoặc yếu tố tự nhiên có thể ảnh hưởng đến hoạt động.
+-   **Ngôn ngữ được hỗ trợ** (Ví dụ: Tiếng Việt, Tiếng Anh, Tiếng dân tộc thiểu số…).
 
-Trải nghiệm phải:
+Đặc biệt, trải nghiệm phải:
 
--   Do chính **cộng đồng** hoặc **người dân bản địa** tổ chức.
--   Không lấy lại nội dung từ **đơn vị khác** để đăng.
--   Không “nói quá”, không cam kết những điều **không thể thực hiện**.
+-   Được tổ chức trực tiếp bởi chính **cộng đồng** hoặc **người dân bản địa**.
+-   Không **sao chép** hoặc sử dụng lại nội dung từ các đơn vị cung cấp khác.
+-   Không quảng cáo “**nói quá**”, cường điệu hoặc cam kết những điều không thể thực hiện.
 
 ### 5. Đối với homestay / lưu trú
 
-Homestay cần đáp ứng:
+Homestay/cơ sở lưu trú phải đáp ứng các tiêu chí sau:
 
--   Có **chỗ ngủ riêng tư** hoặc bán riêng tư, sạch sẽ.
--   Có **khu vệ sinh hoạt động tốt** (không rò rỉ, không tắc, nước sạch).
--   Có **ảnh thật toàn cảnh** (tối thiểu 5 ảnh):
-    -   Mặt trước nhà
-    -   Phòng ngủ
-    -   Khu vệ sinh
-    -   Khu sinh hoạt chung
-    -   Không gian xung quanh
-    -   Trải nghiệm đi kèm (nếu có)
--   Có **quy định nhà rõ ràng**: giờ tắt đèn, vật nuôi, hút thuốc, tiếng ồn…
--   Có **người trực** để hỗ trợ khách.
+-   Có **không gian ngủ riêng tư** hoặc bán riêng tư, đảm bảo vệ sinh sạch sẽ.
+-   Có **khu vệ sinh hoạt động tốt**, đảm bảo vệ sinh (không rò rỉ, không tắc nghẽn, có nước sạch ổn định).
+-   Cung cấp **ảnh thật toàn cảnh** (tối thiểu 5 ảnh chất lượng cao) bao gồm:
+    -   Mặt tiền/ngoại thất của homestay.
+    -   Phòng ngủ/khu vực lưu trú chính.
+    -   Khu vực vệ sinh.
+    -   Khu vực sinh hoạt chung (nếu có).
+    -   Không gian xung quanh (vườn, cảnh quan…).
+    -   Các trải nghiệm hoặc tiện ích đi kèm (nếu có).
+-   Có **quy định nội quy nhà rõ ràng** cho khách (ví dụ: giờ tắt đèn, chính sách về vật nuôi, hút thuốc, tiếng ồn, sử dụng tiện ích chung…).
+-   Có **người quản lý hoặc đại diện túc trực/sẵn sàng hỗ trợ** khách khi cần.
 
 ### 6. Đối với sản phẩm thủ công, quà lưu niệm, hàng hóa địa phương
 
-Sản phẩm phải:
+Sản phẩm phải đáp ứng các tiêu chí sau:
 
--   Do chính **gia đình/cộng đồng/làng nghề** làm ra.
--   Không dùng **nguyên liệu độc hại** (sơn chì, phẩm màu cấm…).
+-   Được **chế tác thủ công** bởi chính gia đình, cộng đồng hoặc làng nghề tại địa phương.
+-   Không sử dụng **nguyên liệu độc hại**, hóa chất cấm (ví dụ: sơn chì, phẩm màu công nghiệp độc hại…).
 
-Ghi rõ:
+Phải ghi rõ các thông tin sau:
 
--   **Chất liệu**
--   **Kích thước**
--   **Thời gian sản xuất**
--   **Cách bảo quản**
+-   **Chất liệu**/vật liệu chính.
+-   **Kích thước**/trọng lượng.
+-   **Quy trình/thời gian sản xuất** đặc trưng (nếu có).
+-   **Hướng dẫn sử dụng và bảo quản**.
 
--   **Giá bán hợp lý**, không tăng giá bất thường cho khách du lịch.
+-   **Giá bán hợp lý**, minh bạch và không có sự phân biệt giá bất thường đối với khách du lịch.
 
-Không chấp nhận:
+LocalLife.Asia không chấp nhận các sản phẩm sau:
 
--   **Hàng chợ nhập** từ nơi khác.
--   **Hàng “giả bản địa”**, hàng Trung Quốc đội lốt hàng thủ công vùng cao.
+-   **Hàng hóa nhập khẩu** từ nơi khác không mang tính bản địa.
+-   **Hàng “giả bản địa”**, hàng nhái hoặc hàng sản xuất công nghiệp mạo danh sản phẩm thủ công địa phương.
 
 ## III. ĐIỀU KIỆN DÀNH CHO HOST (NHÀ CUNG CẤP)
 
 ### 7. Hồ sơ xác minh danh tính
 
-Host phải cung cấp:
+Để xác minh danh tính và đảm bảo tính hợp pháp, Host phải cung cấp đầy đủ các thông tin và giấy tờ sau:
 
--   **CCCD/CMND/Hộ chiếu** (ảnh rõ).
--   Thông tin liên hệ chính xác.
--   Địa chỉ nơi cung cấp dịch vụ.
--   Nếu là hộ kinh doanh/HTX/doanh nghiệp → cung cấp **giấy đăng ký**.
--   Cung cấp giấy tờ liên quan nếu sản phẩm thuộc ngành nghề phải có chứng nhận (ATTP cho ẩm thực đóng gói, Bảo hiểm an toàn cho hoạt động thể thao mạo hiểm,…).
+-   Bản chụp **CCCD/CMND/Hộ chiếu còn hiệu lực** (ảnh rõ nét, không bị mờ, mất góc).
+-   **Thông tin liên hệ chính xác** và đang hoạt động (số điện thoại, email…).
+-   **Địa chỉ cụ thể** nơi cung cấp sản phẩm/dịch vụ.
+-   Đối với hộ kinh doanh/Hợp tác xã/doanh nghiệp: cung cấp **Giấy chứng nhận đăng ký kinh doanh/đăng ký hợp tác xã**.
+-   Cung cấp các **giấy phép, chứng nhận liên quan** theo quy định pháp luật nếu sản phẩm/dịch vụ thuộc ngành nghề yêu cầu (ví dụ: Giấy chứng nhận An toàn thực phẩm cho ẩm thực đóng gói, Giấy phép tổ chức tour mạo hiểm, Bảo hiểm an toàn cho hoạt động thể thao mạo hiểm…).
 
 ### 8. Trách nhiệm khi đón khách
 
--   Có mặt hoặc cử người đại diện đón khách **đúng giờ**.
--   Thực hiện **đúng những gì đã công bố**.
--   Không thu thêm phí “ngoài thỏa thuận” nếu **không nêu trước**.
--   **Hỗ trợ khách** khi gặp sự cố.
+-   Có mặt hoặc cử người đại diện có trách nhiệm để đón tiếp khách **đúng giờ** theo lịch trình đã thỏa thuận.
+-   Thực hiện **đúng và đầy đủ những gì đã công bố**/cam kết trên nền tảng.
+-   Không thu thêm bất kỳ khoản phí nào “**ngoài thỏa thuận**” nếu không được thông báo rõ ràng và khách hàng đồng ý trước.
+-   **Sẵn sàng hỗ trợ khách hàng kịp thời và hiệu quả** khi gặp sự cố hoặc phát sinh vấn đề trong quá trình sử dụng dịch vụ.
 
 ### 9. Xử lý khi có phản hồi hoặc khiếu nại
 
--   Phải **phản hồi khách** trong vòng **24 giờ**.
--   **Hợp tác với nền tảng** trong quá trình xác minh sự cố.
+-   Phải **phản hồi khách hàng trong vòng 24 giờ** kể từ khi nhận được phản hồi hoặc khiếu nại.
+-   **Tích cực hợp tác với LocalLife.Asia** trong quá trình xác minh thông tin và giải quyết các sự cố/khiếu nại.
 
-> Nếu vi phạm nhiều lần → khóa sản phẩm hoặc khóa tài khoản.
+> Việc vi phạm các điều khoản này nhiều lần có thể dẫn đến việc khóa sản phẩm hoặc khóa tài khoản vĩnh viễn.
 
 ## IV. ĐIỀU KIỆN VỀ TÍNH BỀN VỮNG & BẢO TỒN VĂN HÓA
 
-LocalLife.Asia ưu tiên sản phẩm:
+LocalLife.Asia cam kết thúc đẩy du lịch và sản phẩm bản địa bền vững. Chúng tôi ưu tiên các sản phẩm/dịch vụ đáp ứng các tiêu chí sau:
 
--   Hạn chế **rác thải nhựa**
--   **Thân thiện môi trường**
--   Góp phần **giữ gìn văn hóa bản địa**
--   Không xâm phạm **đời sống riêng tư** của cộng đồng
--   Không phá hoại **hệ sinh thái** (chặt cây, săn bắt, xả rác…)
+-   **Hạn chế tối đa rác thải nhựa**.
+-   **Thân thiện với môi trường tự nhiên**, sử dụng tài nguyên có trách nhiệm.
+-   Góp phần **bảo tồn và phát huy giá trị văn hóa bản địa**.
+-   **Tôn trọng và không xâm phạm đời sống riêng tư**, phong tục tập quán của cộng đồng địa phương.
+-   Không gây **phá hoại hệ sinh thái tự nhiên** (ví dụ: chặt cây, săn bắt động vật hoang dã, xả rác bừa bãi…).
 
-> Sản phẩm/dịch vụ có dấu hiệu ảnh hưởng tiêu cực → không được phép hoạt động.
+> Các sản phẩm/dịch vụ có dấu hiệu ảnh hưởng tiêu cực đến tính bền vững hoặc văn hóa bản địa sẽ không được phép hoạt động trên nền tảng.
 
 ## V. KIỂM DUYỆT SẢN PHẨM TRƯỚC KHI HIỂN THỊ
 
-Trước khi được bán trên nền tảng:
+Để đảm bảo chất lượng và tuân thủ các tiêu chuẩn, tất cả sản phẩm/dịch vụ phải trải qua quy trình kiểm duyệt trước khi hiển thị và được bán trên nền tảng LocalLife.Asia:
 
--   Sản phẩm phải được LocalLife.Asia **duyệt thủ công** hoặc **duyệt tự động**.
--   Có thể yêu cầu **bổ sung ảnh**, **bổ sung thông tin**, hoặc **điều chỉnh nội dung**.
+-   Sản phẩm/dịch vụ sẽ được LocalLife.Asia **kiểm duyệt thủ công** hoặc thông qua hệ thống tự động.
+-   LocalLife.Asia có quyền yêu cầu Host **bổ sung hình ảnh**, **thông tin** hoặc **điều chỉnh nội dung** để phù hợp với tiêu chuẩn.
 
-> Sản phẩm không đáp ứng tiêu chí sẽ bị từ chối.
+> Sản phẩm/dịch vụ không đáp ứng đầy đủ các tiêu chí đã nêu sẽ bị từ chối phê duyệt.
+```
