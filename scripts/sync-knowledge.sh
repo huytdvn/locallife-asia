@@ -31,6 +31,16 @@ log() { printf '[sync-knowledge] %s\n' "$*" >&2; }
 # see when they walk the volume root. Empty/unset = full repo (legacy).
 SPARSE_PATH="${KNOWLEDGE_REPO_SUBDIR:-knowledge}"
 
+# Touch the volume root AND the sparse subdir so web's loader cache
+# invalidates regardless of whether KNOWLEDGE_DIR is the volume root or the
+# nested KB subdir. (Touching a parent does not bump children's mtime.)
+touch_kb() {
+  touch "$KB_DIR" 2>/dev/null || true
+  if [[ -n "$SPARSE_PATH" && -d "$KB_DIR/$SPARSE_PATH" ]]; then
+    touch "$KB_DIR/$SPARSE_PATH" 2>/dev/null || true
+  fi
+}
+
 apply_sparse_checkout() {
   if [[ -z "$SPARSE_PATH" ]]; then return 0; fi
   git config core.sparseCheckout true
@@ -54,7 +64,7 @@ if [[ ! -d "$KB_DIR/.git" ]]; then
     if [[ -n "$SPARSE_PATH" ]]; then
       git clean -fd >/dev/null 2>&1 || true
     fi
-    touch "$KB_DIR"
+    touch_kb
     exit 0
   fi
   if [[ -n "$SPARSE_PATH" ]]; then
@@ -65,7 +75,7 @@ if [[ ! -d "$KB_DIR/.git" ]]; then
   else
     git clone --branch "$BRANCH" --depth 50 "$REMOTE_URL" "$KB_DIR"
   fi
-  touch "$KB_DIR"
+  touch_kb
   exit 0
 fi
 
@@ -95,6 +105,7 @@ fi
 log "fast-forward $LOCAL_HEAD -> $REMOTE_HEAD"
 git reset --hard "origin/${BRANCH}"
 
-# Touch marker file để retrieval loader invalidate cache mtime.
-touch "$KB_DIR"
+# Touch marker file để retrieval loader invalidate cache mtime — both
+# volume root and sparse subdir (the loader may watch either path).
+touch_kb
 log "done"
