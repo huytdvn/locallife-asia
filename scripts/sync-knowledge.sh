@@ -27,9 +27,22 @@ REMOTE_URL="https://${auth_prefix}github.com/${OWNER}/${REPO}.git"
 log() { printf '[sync-knowledge] %s\n' "$*" >&2; }
 
 if [[ ! -d "$KB_DIR/.git" ]]; then
-  log "init: clone $OWNER/$REPO@$BRANCH -> $KB_DIR"
-  mkdir -p "$(dirname "$KB_DIR")"
+  log "init: $OWNER/$REPO@$BRANCH -> $KB_DIR"
+  mkdir -p "$KB_DIR"
+  if [[ -n "$(ls -A "$KB_DIR" 2>/dev/null)" ]]; then
+    # Dir was seeded by docker cp / volume init but never `git clone`. Plain
+    # `git clone` refuses non-empty target, so bootstrap as a repo in place.
+    log "init: $KB_DIR has files but no .git — bootstrapping in place"
+    cd "$KB_DIR"
+    git init -q -b "$BRANCH"
+    git remote add origin "$REMOTE_URL"
+    git fetch --depth 50 origin "$BRANCH"
+    git reset --hard "origin/${BRANCH}"
+    touch "$KB_DIR"
+    exit 0
+  fi
   git clone --branch "$BRANCH" --depth 50 "$REMOTE_URL" "$KB_DIR"
+  touch "$KB_DIR"
   exit 0
 fi
 

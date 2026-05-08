@@ -1,0 +1,32 @@
+# Enforce LF for shell scripts and text files so Windows-checkout doesn't
+# ship CRLF into Linux container images. CRLF in a bash script becomes
+# `option\r` for `set -o pipefail`-style invocations and the script aborts
+# with `invalid option name`. See sync-knowledge.sh incident 2026-05-08.
+
+* text=auto eol=lf
+
+*.sh        text eol=lf
+*.py        text eol=lf
+*.yml       text eol=lf
+*.yaml      text eol=lf
+*.json      text eol=lf
+*.md        text eol=lf
+*.ts        text eol=lf
+*.tsx       text eol=lf
+*.css       text eol=lf
+Dockerfile  text eol=lf
+.env*       text eol=lf
+
+# Windows-native should keep CRLF
+*.bat       text eol=crlf
+*.ps1       text eol=crlf
+*.cmd       text eol=crlf
+
+# Binary — no normalization
+*.png       binary
+*.jpg       binary
+*.jpeg      binary
+*.webp      binary
+*.pdf       binary
+*.docx      binary
+*.zip       binary
