@@ -3,31 +3,30 @@ id: 01KPYX6SBJX1N0KBM1W45AFRFJ
 title: Sổ Tay Quy Trình Vận Hành Và Đào Tạo LOK
 owner: ops@locallife.asia
 audience:
-- lok
-- employee
-- lead
-- admin
+  - employee
+  - lead
+  - admin
 sensitivity: internal
 tags:
-- affiliate
-- affiliate_program
-- chat_luong
-- content_creation
-- dao_tao
-- lok
-- lok_partner
-- noi_dung
-- operation_procedures
-- quality_standards
-- quy_trinh_van_hanh
-- training
+  - affiliate
+  - affiliate_program
+  - chat_luong
+  - content_creation
+  - dao_tao
+  - lok
+  - lok_partner
+  - noi_dung
+  - operation_procedures
+  - quality_standards
+  - quy_trinh_van_hanh
+  - training
 source:
-- type: docx
-  path: raw-ulid/01KPYX5QQVKFXA6M0ZCAG5BJZM.docx
-  captured_at: '2026-04-24'
+  - type: docx
+    path: raw-ulid/01KPYX5QQVKFXA6M0ZCAG5BJZM.docx
+    captured_at: '2026-04-24'
 last_reviewed: '2026-04-24'
 reviewer: ops@locallife.asia
-status: draft
+status: approved
 related: []
 ---
 
