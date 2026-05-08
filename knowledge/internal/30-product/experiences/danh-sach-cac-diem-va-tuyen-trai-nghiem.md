@@ -3,24 +3,24 @@ id: 01KPYX8MC0E0PGRV5JQP6CTW87
 title: Danh sách các điểm và tuyến trải nghiệm
 owner: ops@locallife.asia
 audience:
-- employee
-- lead
-- admin
+  - employee
+  - lead
+  - admin
 sensitivity: internal
 tags:
-- cultural_heritage
-- experience
-- local_craft
-- tourist_attraction
-- traditional_craft
-- workshop
+  - cultural_heritage
+  - experience
+  - local_craft
+  - tourist_attraction
+  - traditional_craft
+  - workshop
 source:
-- type: xlsx
-  path: raw-ulid/01KPYX5RA18Z1CFT70Q2WP2PXB.xlsx
-  captured_at: '2026-04-24'
+  - type: xlsx
+    path: raw-ulid/01KPYX5RA18Z1CFT70Q2WP2PXB.xlsx
+    captured_at: '2026-04-24'
 last_reviewed: '2026-04-24'
 reviewer: ops@locallife.asia
-status: draft
+status: deprecated
 related: []
 ---
 
@@ -71,3 +71,6 @@ related: []
 | CS07 | **Địa điểm**: Chiếu Chị Công.<br>**Time option**:<br>- Buổi sáng: 09:00 (Khởi hành từ Đà Nẵng 07:30)<br>- Buổi chiều: 14:00 (Khởi hành từ Đà Nẵng 12:30).<br>**Trải nghiệm**: Khách xem đầy đủ quy trình làm chiếu thủ công gồm chẻ cói, phơi cói, nhuộm sợi, dệt chiếu; trực tiếp thử dệt trên khung; hoặc tham gia làm sản phẩm thủ công nhỏ từ sợi cói như lồng đèn, lót ly.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |                 | https://maps.app.goo.gl/J8GagaBruy2Fa7rE9 | 50.0              | 50.0                     |
 
 ## Link video
+
+
+> **Deprecated** — 2026-05-08: a
