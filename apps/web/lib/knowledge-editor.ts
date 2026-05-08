@@ -72,7 +72,14 @@ export function buildDocUpdate(
     source: prevSource,  // preserve source refs untouched
   };
 
-  const content = matter.stringify(updates.body.trimEnd() + "\n", newFM);
+  // gray-matter v4's `matter.stringify(string, data)` re-parses the string
+  // through `matter()` first — which means an AI-generated body that starts
+  // with a `---`-fenced block (preamble, accidental FM echo) trips a
+  // YAML "expected document separator" error before our FM ever gets
+  // serialized. Strip any leading FM block defensively. Regex-only — no
+  // YAML parser involved, so malformed YAML can't throw here.
+  const safeBody = stripLeadingFmBlock(updates.body).trimEnd() + "\n";
+  const content = matter.stringify(safeBody, newFM);
   const preview: DocMeta = {
     ...current.meta,
     title: updates.fm.title,
@@ -128,6 +135,20 @@ function validateFM(fm: EditableFM): void {
 }
 
 export class EditorError extends Error {}
+
+/**
+ * Remove a leading `---\n...\n---\n` block from `body` if present. Used to
+ * defang AI-generated content that starts with a fenced section, which would
+ * otherwise be re-parsed as front-matter by `matter.stringify()` and crash
+ * with a YAML error when the block is malformed YAML. Regex-only; never
+ * throws.
+ */
+function stripLeadingFmBlock(body: string): string {
+  if (!body.startsWith("---")) return body;
+  const match = body.match(/^---\s*\r?\n[\s\S]*?\r?\n---\s*(?:\r?\n|$)/);
+  if (!match) return body;
+  return body.slice(match[0].length).replace(/^\s*\r?\n/, "");
+}
 
 /**
  * Verify supervisor password — constant-time compare SHA-256 hash.
@@ -203,7 +224,9 @@ export function buildCreateDoc(input: CreateDocInput): BuiltUpdate {
     ...input.fm,
     source: [],
   };
-  const content = matter.stringify(input.body.trimEnd() + "\n", fm);
+  // See note in buildDocUpdate — strip any leading FM block from body.
+  const safeBody = stripLeadingFmBlock(input.body).trimEnd() + "\n";
+  const content = matter.stringify(safeBody, fm);
   const preview: DocMeta = {
     id: newId,
     title: input.fm.title,
