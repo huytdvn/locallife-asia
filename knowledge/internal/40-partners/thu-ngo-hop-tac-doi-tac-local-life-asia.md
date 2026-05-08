@@ -3,26 +3,26 @@ id: 01KPYX779ZYCNAGPBMHJMGE7NC
 title: Thư Ngỏ Hợp Tác Đối Tác Local Life Asia
 owner: ops@locallife.asia
 audience:
-- lead
-- admin
+  - lead
+  - admin
 sensitivity: internal
 tags:
-- business opportunity
-- business_development
-- collaboration
-- experience_partnerships
-- local experience
-- local_tourism
-- partner_outreach
-- partnership
-- travel
+  - business opportunity
+  - business_development
+  - collaboration
+  - experience_partnerships
+  - local experience
+  - local_tourism
+  - partner_outreach
+  - partnership
+  - travel
 source:
-- type: image
-  path: raw-ulid/01KPYX5QRTAHC8S0YK4JXFERKN.png
-  captured_at: '2026-04-24'
-last_reviewed: '2026-04-24'
+  - type: image
+    path: raw-ulid/01KPYX5QRTAHC8S0YK4JXFERKN.png
+    captured_at: '2026-04-24'
+last_reviewed: '2026-05-08'
 reviewer: ops@locallife.asia
-status: draft
+status: approved
 related: []
 ---
 
