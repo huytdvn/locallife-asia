@@ -1,0 +1,29 @@
+# Never ship host-installed deps into the build context — they have host-OS
+# resolved symlinks (esp. on Windows) and clobber the Linux node_modules from
+# the `deps` stage. Re-installs happen inside the image.
+**/node_modules
+**/.next
+**/dist
+**/build
+
+# VCS / IDE
+.git
+.github
+.vscode
+.idea
+
+# Local env / secrets
+.env
+.env.local
+.env.*.local
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Logs / temp
+*.log
+.pnpm-debug.log*
+.npm
+.cache
+tmp
