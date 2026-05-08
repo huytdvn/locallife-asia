@@ -3,24 +3,23 @@ id: 01KPYXBAJEHT4GRZYWGRSDC2M9
 title: Chính Sách Thưởng – Phạt Dựa Trên Đánh Giá & Tỷ Lệ Sự Cố
 owner: ops@locallife.asia
 audience:
-- host
-- lead
-- admin
+  - lead
+  - admin
 sensitivity: restricted
 tags:
-- host_guidelines
-- incentives
-- partner_policy
-- penalties
-- performance_management
-- quality_control
+  - host_guidelines
+  - incentives
+  - partner_policy
+  - penalties
+  - performance_management
+  - quality_control
 source:
-- type: docx
-  path: raw-ulid/01KPYX5RYR09MF1GX893EPMNEX.docx
-  captured_at: '2026-04-24'
+  - type: docx
+    path: raw-ulid/01KPYX5RYR09MF1GX893EPMNEX.docx
+    captured_at: '2026-04-24'
 last_reviewed: '2026-04-24'
 reviewer: ops@locallife.asia
-status: draft
+status: approved
 related: []
 ---
 
