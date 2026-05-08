@@ -23,7 +23,7 @@ source:
     captured_at: '2026-04-24'
 last_reviewed: '2026-04-24'
 reviewer: huytd@gmail.com
-status: approved
+status: deprecated
 related: []
 ---
 
@@ -54,3 +54,6 @@ Sứ mệnh của **Local Life Asia** là bảo tồn văn hóa, gìn giữ thi�
 -   **Email:** hr@bestrip.asia hoặc partner@locallife.asia
 -   **Địa chỉ:** 63 Nguyễn Hiến Lê, TP Đà Nẵng
 -   **Điện thoại:** 0977544899 - Ms Huyền
+
+
+> **Deprecated** — 2026-05-08: a
