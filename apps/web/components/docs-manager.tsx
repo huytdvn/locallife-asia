@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { DocsTree, type DocNode } from "@/components/docs-tree";
 import { DocPane } from "@/components/doc-pane";
 import { AuditLog } from "@/components/audit-log";
+import { CrossDocAiPanel } from "@/components/cross-doc-ai-panel";
 
 type RoleStr = "employee" | "lead" | "admin" | "host" | "lok" | "guest";
 
@@ -33,12 +34,18 @@ export function DocsManager({ canEdit }: Props) {
   const [treeOpen, setTreeOpen] = useState(false);
   const [history, setHistory] = useState<string[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
+  const [aiOpen, setAiOpen] = useState(false);
 
-  useEffect(() => {
+  const reloadDocs = () => {
     fetch("/api/admin/docs")
       .then((r) => r.json())
       .then((d) => setDocs(d.docs ?? []))
       .catch((e) => setError(String(e)));
+  };
+
+  useEffect(() => {
+    reloadDocs();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const navigate = (id: string | null) => {
@@ -241,6 +248,31 @@ export function DocsManager({ canEdit }: Props) {
               background: "var(--ll-surface-soft)",
             }}
           />
+          {canEdit && (
+            <button
+              type="button"
+              onClick={() => setAiOpen(true)}
+              title="AI tổng thể — chỉnh sửa nhất quán cross-doc từ 1 yêu cầu"
+              style={{
+                padding: "9px 12px",
+                borderRadius: 8,
+                border: "1px solid var(--ll-green)",
+                background:
+                  "linear-gradient(135deg, var(--ll-green) 0%, var(--ll-green-dark) 100%)",
+                color: "white",
+                fontSize: 13,
+                fontWeight: 600,
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                width: "100%",
+                justifyContent: "center",
+              }}
+            >
+              <span aria-hidden>✨</span> AI tổng thể
+            </button>
+          )}
           {stats && (
             <div
               style={{
@@ -344,6 +376,14 @@ export function DocsManager({ canEdit }: Props) {
           <EmptyState stats={stats} onOpenTree={() => setTreeOpen(true)} />
         )}
       </main>
+
+      {canEdit && (
+        <CrossDocAiPanel
+          open={aiOpen}
+          onClose={() => setAiOpen(false)}
+          onApplied={reloadDocs}
+        />
+      )}
     </div>
   );
 }
