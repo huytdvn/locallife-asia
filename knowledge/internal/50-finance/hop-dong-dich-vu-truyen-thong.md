@@ -3,22 +3,22 @@ id: 01KPYX81BM0EATW60FEJ6X9703
 title: Hợp Đồng Dịch Vụ Truyền Thông
 owner: ops@locallife.asia
 audience:
-- lead
-- admin
+  - lead
+  - admin
 sensitivity: restricted
 tags:
-- communication_service_agreement
-- contract
-- legal_document
-- media_services
-- payment_terms
+  - communication_service_agreement
+  - contract
+  - legal_document
+  - media_services
+  - payment_terms
 source:
-- type: docx
-  path: raw-ulid/01KPYX5QSJWR9HANXFRXZ8BMNN.docx
-  captured_at: '2026-04-24'
+  - type: docx
+    path: raw-ulid/01KPYX5QSJWR9HANXFRXZ8BMNN.docx
+    captured_at: '2026-04-24'
 last_reviewed: '2026-04-24'
 reviewer: ops@locallife.asia
-status: draft
+status: approved
 related: []
 ---
 
