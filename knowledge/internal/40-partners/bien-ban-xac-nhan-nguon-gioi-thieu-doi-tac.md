@@ -3,26 +3,26 @@ id: 01KPYX7HA9N7R19D62JDYZZB47
 title: Biên Bản Xác Nhận Nguồn Giới Thiệu Đối Tác
 owner: ops@locallife.asia
 audience:
-- lead
-- admin
+  - lead
+  - admin
 sensitivity: restricted
 tags:
-- collaboration_agreement
-- confirmation_record
-- data_management
-- internal_management
-- legal_document
-- lok_partner
-- partner_management
-- partner_referral
-- source_verification
+  - collaboration_agreement
+  - confirmation_record
+  - data_management
+  - internal_management
+  - legal_document
+  - lok_partner
+  - partner_management
+  - partner_referral
+  - source_verification
 source:
-- type: docx
-  path: raw-ulid/01KPYX5QS59HF61EZTF5WQJG4W.docx
-  captured_at: '2026-04-24'
-last_reviewed: '2026-04-24'
+  - type: docx
+    path: raw-ulid/01KPYX5QS59HF61EZTF5WQJG4W.docx
+    captured_at: '2026-04-24'
+last_reviewed: '2026-05-08'
 reviewer: ops@locallife.asia
-status: draft
+status: approved
 related: []
 ---
 
