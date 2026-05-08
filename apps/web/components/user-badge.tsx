@@ -1,16 +1,20 @@
 import { auth } from "@/lib/auth";
 import { signOutAction } from "@/lib/auth-actions";
 import Link from "next/link";
+import { ProfileMenu, type ProfileMenuItem } from "@/components/profile-menu";
+
+interface Props {
+  /** Items hiển thị trong dropdown — manage + preview groups gộp vào đây. */
+  menuItems?: ProfileMenuItem[];
+}
 
 /**
- * Thanh user nhỏ ở góc header — email + role + logout (+ switch account khi
- * không có đủ quyền).
- *
- * Server action được import từ module riêng (`lib/auth-actions.ts`) thay vì
- * inline, để Next.js có thể serialize cho các client-component ancestor mà
- * không vi phạm rule "inline server action trong client component".
+ * Header user badge: chưa đăng nhập = button "Đăng nhập"; đã đăng nhập =
+ * avatar/role chip có dropdown chứa account info, các link quản trị, và nút
+ * Đăng xuất. Các link "tương tác hằng ngày" KHÔNG xuất hiện ở đây — chúng
+ * thuộc top nav của <AppNav>.
  */
-export async function UserBadge() {
+export async function UserBadge({ menuItems = [] }: Props) {
   const session = await auth();
   const email = session?.user?.email;
   const role = session?.role ?? "employee";
@@ -35,43 +39,11 @@ export async function UserBadge() {
   }
 
   return (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: 12,
-        fontSize: 13,
-        color: "var(--ll-muted)",
-      }}
-    >
-      <span>
-        <strong style={{ color: "var(--ll-ink)" }}>{email}</strong>{" "}
-        <span
-          className="ll-badge"
-          style={{
-            background: `var(--ll-role-${role})`,
-            color: "#111",
-            marginLeft: 4,
-          }}
-        >
-          {role}
-        </span>
-      </span>
-      <form action={signOutAction.bind(null, "/login")}>
-        <button
-          type="submit"
-          style={{
-            padding: "4px 10px",
-            borderRadius: 6,
-            border: "1px solid var(--ll-border)",
-            background: "white",
-            cursor: "pointer",
-            fontSize: 12,
-          }}
-        >
-          Đăng xuất
-        </button>
-      </form>
-    </div>
+    <ProfileMenu
+      email={email}
+      role={role}
+      items={menuItems}
+      signOutAction={signOutAction.bind(null, "/login")}
+    />
   );
 }
