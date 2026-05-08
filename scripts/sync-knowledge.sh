@@ -26,8 +26,19 @@ REMOTE_URL="https://${auth_prefix}github.com/${OWNER}/${REPO}.git"
 
 log() { printf '[sync-knowledge] %s\n' "$*" >&2; }
 
+# Optional sparse-checkout: only materialise this subdir of the repo into
+# the work tree. Saves disk + makes the KB subdir the only thing readers
+# see when they walk the volume root. Empty/unset = full repo (legacy).
+SPARSE_PATH="${KNOWLEDGE_REPO_SUBDIR:-knowledge}"
+
+apply_sparse_checkout() {
+  if [[ -z "$SPARSE_PATH" ]]; then return 0; fi
+  git config core.sparseCheckout true
+  printf '/%s/\n' "$SPARSE_PATH" > .git/info/sparse-checkout
+}
+
 if [[ ! -d "$KB_DIR/.git" ]]; then
-  log "init: $OWNER/$REPO@$BRANCH -> $KB_DIR"
+  log "init: $OWNER/$REPO@$BRANCH -> $KB_DIR (sparse=${SPARSE_PATH:-<full>})"
   mkdir -p "$KB_DIR"
   if [[ -n "$(ls -A "$KB_DIR" 2>/dev/null)" ]]; then
     # Dir was seeded by docker cp / volume init but never `git clone`. Plain
@@ -36,12 +47,24 @@ if [[ ! -d "$KB_DIR/.git" ]]; then
     cd "$KB_DIR"
     git init -q -b "$BRANCH"
     git remote add origin "$REMOTE_URL"
+    apply_sparse_checkout
     git fetch --depth 50 origin "$BRANCH"
     git reset --hard "origin/${BRANCH}"
+    # Drop legacy non-sparse files that were docker-cp'd at the volume root.
+    if [[ -n "$SPARSE_PATH" ]]; then
+      git clean -fd >/dev/null 2>&1 || true
+    fi
     touch "$KB_DIR"
     exit 0
   fi
-  git clone --branch "$BRANCH" --depth 50 "$REMOTE_URL" "$KB_DIR"
+  if [[ -n "$SPARSE_PATH" ]]; then
+    git clone --no-checkout --branch "$BRANCH" --depth 50 "$REMOTE_URL" "$KB_DIR"
+    cd "$KB_DIR"
+    apply_sparse_checkout
+    git checkout "$BRANCH"
+  else
+    git clone --branch "$BRANCH" --depth 50 "$REMOTE_URL" "$KB_DIR"
+  fi
   touch "$KB_DIR"
   exit 0
 fi
