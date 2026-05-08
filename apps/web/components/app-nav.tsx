@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { UserBadge } from "@/components/user-badge";
 import { MobileNavDrawer, type NavLinkData } from "@/components/mobile-nav-drawer";
+import type { ProfileMenuItem } from "@/components/profile-menu";
 import type { Role } from "@/lib/rbac";
 
 type NavKey =
@@ -17,39 +18,37 @@ type NavKey =
   | "lok"
   | "public";
 
-type NavGroup = "primary" | "manage" | "preview";
-
 interface Props {
   role: Role;
   active: NavKey;
 }
 
-interface LinkSpec {
+interface TopbarLink {
   href: string;
   label: string;
   key: NavKey;
-  group: NavGroup;
 }
 
 /**
- * Shared top nav (server component). Smart grouping per-role:
- * - "primary" — daily tasks, ordered by usage frequency.
- * - "manage" — staff/admin tools (lead + admin only).
- * - "preview" — admin-only role-switch preview.
+ * Shared top nav. Layout split:
+ * - Top bar (luôn hiển thị): chỉ "tương tác hằng ngày" (chat / dashboard /
+ *   training / onboarding tuỳ role).
+ * - Profile dropdown (xổ từ avatar phải): chứa các link quản trị + xem dưới
+ *   role khác + Đăng xuất. Tham chiếu thiết kế: ngăn người dùng phải scan
+ *   qua mọi tool admin mỗi lần — chúng nằm gọn trong 1 menu xổ dọc.
  *
- * Visual: desktop separates groups by faded dot; mobile drawer shows
- * group label headings.
+ * Mobile drawer chỉ liệt kê top-bar items (manage/preview đã có chỗ trong
+ * profile dropdown — dropdown hoạt động cả mobile + desktop).
  */
 export function AppNav({ role, active }: Props) {
-  const specs: LinkSpec[] = buildLinksForRole(role);
+  const { topbar, menuItems } = buildLinksForRole(role);
 
-  const navLinks: NavLinkData[] = specs.map((s) => ({
+  const navLinks: NavLinkData[] = topbar.map((s) => ({
     href: s.href,
     label: s.label,
     key: s.key,
-    subtle: s.group !== "primary",
-    group: s.group,
     active: active === s.key,
+    group: "primary",
   }));
 
   return (
@@ -86,7 +85,6 @@ export function AppNav({ role, active }: Props) {
             flexShrink: 0,
           }}
         >
-          {/* mascot 3:4 — image is 360×480, never force square */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/mascot.webp"
@@ -103,16 +101,22 @@ export function AppNav({ role, active }: Props) {
           style={{
             display: "flex",
             alignItems: "center",
-            gap: 16,
+            gap: 18,
             minWidth: 0,
             overflowX: "auto",
             overflowY: "hidden",
+            paddingLeft: 8,
           }}
         >
-          <span style={{ color: "var(--ll-border)", flexShrink: 0 }} aria-hidden>
-            ·
-          </span>
-          {renderDesktopWithSeparators(navLinks)}
+          {navLinks.map((l) => (
+            <NavLink
+              key={`${l.key}-${l.href}`}
+              href={l.href}
+              active={l.active}
+            >
+              {l.label}
+            </NavLink>
+          ))}
         </div>
       </div>
 
@@ -124,7 +128,7 @@ export function AppNav({ role, active }: Props) {
           flexShrink: 0,
         }}
       >
-        <UserBadge />
+        <UserBadge menuItems={menuItems} />
         <MobileNavDrawer links={navLinks} />
       </div>
     </nav>
@@ -138,125 +142,86 @@ function homeForRole(role: Role): string {
   return "/dashboard";
 }
 
-function buildLinksForRole(role: Role): LinkSpec[] {
+interface BuiltLinks {
+  topbar: TopbarLink[];
+  menuItems: ProfileMenuItem[];
+}
+
+function buildLinksForRole(role: Role): BuiltLinks {
   const isInternal = role === "employee" || role === "lead" || role === "admin";
   const isStaff = role === "admin" || role === "lead";
   const isAdmin = role === "admin";
 
-  const out: LinkSpec[] = [];
+  const topbar: TopbarLink[] = [];
+  const menuItems: ProfileMenuItem[] = [];
 
-  // ─── PRIMARY: daily tasks ───
+  // ─── TOP BAR: tương tác hằng ngày ───
   if (isInternal) {
-    // Order by usage frequency: dashboard landing → chat (most used)
-    // → onboarding (curated weekly) → training (full library).
-    out.push({ href: "/dashboard", label: "Tổng quan", key: "dashboard", group: "primary" });
-    out.push({ href: "/", label: "Trợ lý AI", key: "home", group: "primary" });
-    out.push({ href: "/onboarding", label: "Onboarding", key: "onboarding", group: "primary" });
-    out.push({ href: "/training", label: "Training", key: "training", group: "primary" });
+    topbar.push({ href: "/dashboard", label: "Tổng quan", key: "dashboard" });
+    topbar.push({ href: "/", label: "Trợ lý AI", key: "home" });
+    topbar.push({ href: "/onboarding", label: "Onboarding", key: "onboarding" });
+    topbar.push({ href: "/training", label: "Training", key: "training" });
   } else if (role === "host") {
-    out.push({ href: "/host", label: "Cổng Host", key: "host", group: "primary" });
-    out.push({ href: "/", label: "Trợ lý AI", key: "home", group: "primary" });
-    out.push({ href: "/training", label: "Training", key: "training", group: "primary" });
+    topbar.push({ href: "/host", label: "Cổng Host", key: "host" });
+    topbar.push({ href: "/", label: "Trợ lý AI", key: "home" });
+    topbar.push({ href: "/training", label: "Training", key: "training" });
   } else if (role === "lok") {
-    out.push({ href: "/lok", label: "Cổng LOK", key: "lok", group: "primary" });
-    out.push({ href: "/", label: "Trợ lý AI", key: "home", group: "primary" });
-    out.push({ href: "/training", label: "Training", key: "training", group: "primary" });
+    topbar.push({ href: "/lok", label: "Cổng LOK", key: "lok" });
+    topbar.push({ href: "/", label: "Trợ lý AI", key: "home" });
+    topbar.push({ href: "/training", label: "Training", key: "training" });
   } else {
-    // guest
-    out.push({ href: "/public", label: "Trang công khai", key: "public", group: "primary" });
-    out.push({ href: "/training", label: "Training", key: "training", group: "primary" });
+    topbar.push({ href: "/public", label: "Trang công khai", key: "public" });
+    topbar.push({ href: "/training", label: "Training", key: "training" });
   }
 
-  // ─── MANAGE: staff/admin tools ───
+  // ─── PROFILE MENU: quản trị ───
   if (isStaff) {
-    // Order by frequency of admin work: overview → docs (most edited)
-    // → onboarding (weekly review) → training report (occasional).
-    out.push({ href: "/admin", label: "Admin", key: "admin", group: "manage" });
-    out.push({ href: "/admin/docs", label: "Tài liệu", key: "admin-docs", group: "manage" });
-    out.push({
+    menuItems.push({ href: "/admin", label: "Admin (tổng quan)", group: "manage" });
+    menuItems.push({ href: "/admin/docs", label: "Tài liệu", group: "manage" });
+    menuItems.push({
       href: "/admin/onboarding",
       label: "Onboarding admin",
-      key: "admin-onboarding",
       group: "manage",
     });
-    out.push({
+    menuItems.push({
       href: "/admin/training-report",
       label: "Training report",
-      key: "admin-report",
       group: "manage",
     });
     if (isAdmin) {
-      out.push({
+      menuItems.push({
         href: "/admin/users",
         label: "Quản lý user",
-        key: "admin-users",
         group: "manage",
       });
     }
   }
 
-  // ─── PREVIEW: role-switch (admin only) ───
+  // ─── PROFILE MENU: xem dưới role khác (admin only) ───
   if (isAdmin) {
-    out.push({ href: "/host", label: "Xem dưới Host", key: "host", group: "preview" });
-    out.push({ href: "/lok", label: "Xem dưới LOK", key: "lok", group: "preview" });
+    menuItems.push({ href: "/host", label: "Xem dưới Host", group: "preview" });
+    menuItems.push({ href: "/lok", label: "Xem dưới LOK", group: "preview" });
   }
 
-  return out;
-}
-
-function renderDesktopWithSeparators(links: NavLinkData[]): React.ReactNode {
-  const result: React.ReactNode[] = [];
-  let prevGroup: NavGroup | null = null;
-  for (const l of links) {
-    const grp = (l.group ?? "primary") as NavGroup;
-    if (prevGroup !== null && grp !== prevGroup) {
-      result.push(
-        <span
-          key={`sep-${grp}`}
-          style={{ color: "var(--ll-border)", flexShrink: 0, fontSize: 11, opacity: 0.6 }}
-          aria-hidden
-        >
-          •
-        </span>
-      );
-    }
-    result.push(
-      <NavLink
-        key={`${l.key}-${l.href}`}
-        href={l.href}
-        active={l.active}
-        subtle={l.subtle}
-      >
-        {l.label}
-      </NavLink>
-    );
-    prevGroup = grp;
-  }
-  return result;
+  return { topbar, menuItems };
 }
 
 function NavLink({
   href,
   active,
-  subtle,
   children,
 }: {
   href: string;
   active: boolean;
-  subtle?: boolean;
   children: React.ReactNode;
 }) {
   return (
     <Link
       href={href}
       style={{
-        fontSize: subtle ? 13 : 14,
-        fontWeight: active ? 600 : 400,
-        color: active
-          ? "var(--ll-green-dark)"
-          : subtle
-            ? "var(--ll-muted)"
-            : "var(--ll-ink-soft)",
+        fontSize: 14,
+        fontWeight: active ? 600 : 500,
+        color: active ? "var(--ll-green-dark)" : "var(--ll-ink-soft)",
         textDecoration: "none",
         padding: "4px 2px",
         borderBottom: active
