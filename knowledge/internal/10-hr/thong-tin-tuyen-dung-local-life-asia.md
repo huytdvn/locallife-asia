@@ -1,29 +1,29 @@
 ---
 id: 01KPYX8K8B39WRKCQPPZPRAA7H
-title: Thông tin tuyển dụng Local Life Asia
-owner: ops@locallife.asia
+title: Thông tin tuyển dụng Local Life Asia Phát triển kinh doanh vùng
+owner: huytd@gmail.com
 audience:
-- employee
-- lead
-- admin
+  - employee
+  - lead
+  - admin
 sensitivity: internal
 tags:
-- career_opportunity
-- company_values
-- hr_document
-- job description
-- job_description
-- local culture
-- recruitment
-- storytelling
-- travel
+  - career_opportunity
+  - company_values
+  - hr_document
+  - job description
+  - job_description
+  - local culture
+  - recruitment
+  - storytelling
+  - travel
 source:
-- type: pdf
-  path: raw-ulid/01KPYX5R9PD7628NHNTNX0RAZG.pdf
-  captured_at: '2026-04-24'
+  - type: pdf
+    path: raw-ulid/01KPYX5R9PD7628NHNTNX0RAZG.pdf
+    captured_at: '2026-04-24'
 last_reviewed: '2026-04-24'
-reviewer: ops@locallife.asia
-status: draft
+reviewer: huytd@gmail.com
+status: deprecated
 related: []
 ---
 
@@ -54,3 +54,6 @@ Sứ mệnh của **Local Life Asia** là bảo tồn văn hóa, gìn giữ thi�
 -   **Email:** hr@bestrip.asia hoặc partner@locallife.asia
 -   **Địa chỉ:** 63 Nguyễn Hiến Lê, TP Đà Nẵng
 -   **Điện thoại:** 0977544899 - Ms Huyền
+
+
+> **Deprecated** — 2026-05-08: a

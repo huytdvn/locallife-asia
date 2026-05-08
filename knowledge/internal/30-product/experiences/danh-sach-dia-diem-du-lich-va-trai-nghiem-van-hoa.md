@@ -3,29 +3,29 @@ id: 01KPYXBV7YCDW9ZNNR59E2CWFY
 title: Danh sách địa điểm du lịch và trải nghiệm văn hóa
 owner: ops@locallife.asia
 audience:
-- employee
-- lead
+  - employee
+  - lead
 sensitivity: internal
 tags:
-- central_vietnam
-- cultural_experiences
-- da nang
-- du lich
-- hue
-- location_list
-- product_research
-- quang nam
-- tourism_spots
-- trai nghiem
-- travel_destinations
-- van hoa
+  - central_vietnam
+  - cultural_experiences
+  - da nang
+  - du lich
+  - hue
+  - location_list
+  - product_research
+  - quang nam
+  - tourism_spots
+  - trai nghiem
+  - travel_destinations
+  - van hoa
 source:
-- type: xlsx
-  path: raw-ulid/01KPYX5RZQTZ86JN2VAW4VNW52.xlsx
-  captured_at: '2026-04-24'
+  - type: xlsx
+    path: raw-ulid/01KPYX5RZQTZ86JN2VAW4VNW52.xlsx
+    captured_at: '2026-04-24'
 last_reviewed: '2026-04-24'
 reviewer: ops@locallife.asia
-status: draft
+status: deprecated
 related: []
 ---
 
@@ -61,3 +61,6 @@ related: []
 | True | 20 | **Suối Lạc** (Đà Nẵng) | Đà Nẵng | Miễn phí | **Suối Lạc** giống như một khoảng lặng mà núi rừng dành riêng cho những ai biết dừng lại. Nước chảy qua đá không vội, như thể cũng đang tận hưởng hành trình của mình. Ngồi bên suối, bạn sẽ nghe thấy nhiều thứ hơn tiếng nước – đó là tiếng gió, tiếng lá, và cả sự tĩnh lặng bên trong chính mình. Thiên nhiên ở đây không hùng vĩ để gây choáng ngợp, mà dịu dàng để giữ chân. | Từ tháng 2 - tháng 10 | Trekking, Tắm suối, BBQ | Nên mang theo thuốc xịt côn trùng, băng cá nhân. Đường đi có thể trơn trượt, hãy cẩn thận khi di chuyển trên các tảng đá. | https://maps.app.goo.gl/CBuucGVwiQ3veGWQ7 | Suối Lạc (Đà Nẵng) | |
 | True | 21 | **Suối Khe Đào** (Đà Nẵng) | Đà Nẵng | Miễn phí | **Suối Khe Đào** mang một vẻ đẹp gai góc hơn, nơi dòng nước không chỉ chảy mà còn va, đập, len lỏi qua từng khe đá. Nó giống như một câu chuyện về sự bền bỉ – nước mềm, nhưng không ngừng tiến về phía trước. Những người tìm đến đây thường không chỉ để ngắm, mà để thử thách chính mình. Và rồi, giữa tiếng nước ầm ào, họ tìm thấy một sự rõ ràng hiếm có trong suy nghĩ. | Nên đi vào mùa khô (tháng 3-10) | Trekking, Tắm suối, BBQ | Tháng 9 - 11 là mùa mưa, cần tránh để đảm bảo an toàn. Chú ý các khu vực nước sâu, chảy xiết vào mùa mưa. | https://maps.app.goo.gl/qatVCAD2dGVEhz597 | Suối Khe Đào (Đà Nẵng) | |
 | True | 22 | **Bãi Đá Đen** (Đà Nẵng) | | Giữ xe | **Bãi Đá Đen** là nơi thờ | | | | | | |
+
+
+> **Deprecated** — 2026-05-08: a

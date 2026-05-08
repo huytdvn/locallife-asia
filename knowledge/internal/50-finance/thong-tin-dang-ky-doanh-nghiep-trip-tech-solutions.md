@@ -3,22 +3,22 @@ id: 01KPYX6478QFZYJCQTSQE3CZ10
 title: Thông tin đăng ký doanh nghiệp Trip Tech Solutions
 owner: ops@locallife.asia
 audience:
-- lead
-- admin
+  - lead
+  - admin
 sensitivity: restricted
 tags:
-- business_registration
-- company_information
-- legal_entity
-- trip_tech_solutions
-- vietnam
+  - business_registration
+  - company_information
+  - legal_entity
+  - trip_tech_solutions
+  - vietnam
 source:
-- type: pdf
-  path: raw-ulid/01KPYX5QPXKYHH0XAXSQWT9GGQ.pdf
-  captured_at: '2026-04-24'
-last_reviewed: '2026-04-24'
+  - type: pdf
+    path: raw-ulid/01KPYX5QPXKYHH0XAXSQWT9GGQ.pdf
+    captured_at: '2026-04-24'
+last_reviewed: '2026-05-08'
 reviewer: ops@locallife.asia
-status: draft
+status: approved
 related: []
 ---
 

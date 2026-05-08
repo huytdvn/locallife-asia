@@ -3,23 +3,23 @@ id: 01KPYXAXA0Z1VJC4W7B2QDBB1X
 title: Danh sách đối tác trong và ngoài nước
 owner: ops@locallife.asia
 audience:
-- employee
-- lead
-- admin
+  - employee
+  - lead
+  - admin
 sensitivity: internal
 tags:
-- contact_information
-- domestic_partners
-- international_partners
-- partner_list
-- travel_industry
+  - contact_information
+  - domestic_partners
+  - international_partners
+  - partner_list
+  - travel_industry
 source:
-- type: xlsx
-  path: raw-ulid/01KPYX5RY017H8J183S4EHK9M6.xlsx
-  captured_at: '2026-04-24'
-last_reviewed: '2026-04-24'
+  - type: xlsx
+    path: raw-ulid/01KPYX5RY017H8J183S4EHK9M6.xlsx
+    captured_at: '2026-04-24'
+last_reviewed: '2026-05-08'
 reviewer: ops@locallife.asia
-status: draft
+status: approved
 related: []
 ---
 

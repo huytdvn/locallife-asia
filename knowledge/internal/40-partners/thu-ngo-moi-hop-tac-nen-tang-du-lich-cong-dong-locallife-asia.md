@@ -3,28 +3,28 @@ id: 01KPYX89EG7YM1NA1W81WRP98T
 title: Thư Ngỏ Mời Hợp Tác Nền Tảng Du Lịch Cộng Đồng LocalLife.Asia
 owner: ops@locallife.asia
 audience:
-- lead
-- admin
+  - lead
+  - admin
 sensitivity: internal
 tags:
-- api_integration
-- community tourism
-- community_tourism
-- digital platform
-- digital_platform
-- local experiences
-- local_experiences
-- ota
-- ota_collaboration
-- partnership
-- partnership_invitation
+  - api_integration
+  - community tourism
+  - community_tourism
+  - digital platform
+  - digital_platform
+  - local experiences
+  - local_experiences
+  - ota
+  - ota_collaboration
+  - partnership
+  - partnership_invitation
 source:
-- type: pdf
-  path: raw-ulid/01KPYX5QW08MC010ZA2S8TFR4E.pdf
-  captured_at: '2026-04-24'
-last_reviewed: '2026-04-24'
+  - type: pdf
+    path: raw-ulid/01KPYX5QW08MC010ZA2S8TFR4E.pdf
+    captured_at: '2026-04-24'
+last_reviewed: '2026-05-08'
 reviewer: ops@locallife.asia
-status: draft
+status: approved
 related: []
 ---
 

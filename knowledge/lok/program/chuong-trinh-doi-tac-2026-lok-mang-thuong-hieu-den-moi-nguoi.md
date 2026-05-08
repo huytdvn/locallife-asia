@@ -3,30 +3,29 @@ id: 01KPYX9E0BP6GW0ZADC2DS9JNM
 title: 'Chương trình Đối tác 2026: LOK - Mang thương hiệu đến mọi người'
 owner: ops@locallife.asia
 audience:
-- lok
-- lead
-- admin
+  - lead
+  - admin
 sensitivity: restricted
 tags:
-- brand collaboration
-- brand_promotion
-- content creation
-- content_creators
-- host_benefits
-- influencer marketing
-- koc
-- kol
-- lok
-- lok_program
-- marketing_strategy
-- partner_program
+  - brand collaboration
+  - brand_promotion
+  - content creation
+  - content_creators
+  - host_benefits
+  - influencer marketing
+  - koc
+  - kol
+  - lok
+  - lok_program
+  - marketing_strategy
+  - partner_program
 source:
-- type: pdf
-  path: raw-ulid/01KPYX5RSZ4JDV74CPR6FHS0JS.pdf
-  captured_at: '2026-04-24'
-last_reviewed: '2026-04-24'
+  - type: pdf
+    path: raw-ulid/01KPYX5RSZ4JDV74CPR6FHS0JS.pdf
+    captured_at: '2026-04-24'
+last_reviewed: '2026-05-08'
 reviewer: ops@locallife.asia
-status: draft
+status: approved
 related: []
 ---
 

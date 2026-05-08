@@ -3,23 +3,23 @@ id: 01KPYXAB16Q2D65TQ7SRKKQH6G
 title: Hướng dẫn thực hành kinh doanh nhà hàng và dịch vụ ăn uống
 owner: ops@locallife.asia
 audience:
-- employee
-- lead
-- admin
+  - employee
+  - lead
+  - admin
 sensitivity: internal
 tags:
-- food_service
-- management
-- operations
-- restaurant_business
-- training_guide
+  - food_service
+  - management
+  - operations
+  - restaurant_business
+  - training_guide
 source:
-- type: pdf
-  path: raw-ulid/01KPYX5RXHNBXM590S4G8XE3PR.pdf
-  captured_at: '2026-04-24'
-last_reviewed: '2026-04-24'
+  - type: pdf
+    path: raw-ulid/01KPYX5RXHNBXM590S4G8XE3PR.pdf
+    captured_at: '2026-04-24'
+last_reviewed: '2026-05-08'
 reviewer: ops@locallife.asia
-status: draft
+status: approved
 related: []
 ---
 

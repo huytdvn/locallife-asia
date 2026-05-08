@@ -3,29 +3,28 @@ id: 01KPYX6R4MMPBDHMSH5MTEWV36
 title: Onboarding Đại Sứ Du Lịch Bản Địa (LOK)
 owner: ops@locallife.asia
 audience:
-- lok
-- employee
-- lead
-- admin
+  - employee
+  - lead
+  - admin
 sensitivity: internal
 tags:
-- ambassador
-- community_tourism
-- content
-- creator
-- local
-- local_ambassador
-- lok_program
-- onboarding
-- partner_guidelines
-- tourism
+  - ambassador
+  - community_tourism
+  - content
+  - creator
+  - local
+  - local_ambassador
+  - lok_program
+  - onboarding
+  - partner_guidelines
+  - tourism
 source:
-- type: docx
-  path: raw-ulid/01KPYX5QQSQEFE0Q7A54H681KE.docx
-  captured_at: '2026-04-24'
+  - type: docx
+    path: raw-ulid/01KPYX5QQSQEFE0Q7A54H681KE.docx
+    captured_at: '2026-04-24'
 last_reviewed: '2026-04-24'
 reviewer: ops@locallife.asia
-status: draft
+status: approved
 related: []
 ---
 

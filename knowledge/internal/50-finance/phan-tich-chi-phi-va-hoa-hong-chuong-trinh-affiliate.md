@@ -3,22 +3,22 @@ id: 01KPYX99D3A9XWHXPKDAT9QS3M
 title: Phân tích chi phí và hoa hồng chương trình Affiliate
 owner: ops@locallife.asia
 audience:
-- lead
-- admin
+  - lead
+  - admin
 sensitivity: restricted
 tags:
-- affiliate_program
-- commission_structure
-- cost_analysis
-- testing_affiliate
-- voucher_affiliate
+  - affiliate_program
+  - commission_structure
+  - cost_analysis
+  - testing_affiliate
+  - voucher_affiliate
 source:
-- type: xlsx
-  path: raw-ulid/01KPYX5RQQ5K46RZBN9232KYZM.xlsx
-  captured_at: '2026-04-24'
-last_reviewed: '2026-04-24'
+  - type: xlsx
+    path: raw-ulid/01KPYX5RQQ5K46RZBN9232KYZM.xlsx
+    captured_at: '2026-04-24'
+last_reviewed: '2026-05-08'
 reviewer: ops@locallife.asia
-status: draft
+status: approved
 related: []
 ---
 

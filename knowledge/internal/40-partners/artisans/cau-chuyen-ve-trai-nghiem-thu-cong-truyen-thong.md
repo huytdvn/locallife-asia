@@ -3,22 +3,22 @@ id: 01KPYXAY98E84HPH39M1H7HEYR
 title: Câu chuyện về trải nghiệm thủ công truyền thống
 owner: ops@locallife.asia
 audience:
-- employee
-- lead
+  - employee
+  - lead
 sensitivity: internal
 tags:
-- craftsmanship
-- cultural_experience
-- heritage
-- local_artisans
-- traditional_crafts
+  - craftsmanship
+  - cultural_experience
+  - heritage
+  - local_artisans
+  - traditional_crafts
 source:
-- type: xlsx
-  path: raw-ulid/01KPYX5RY2JTB79QH9CRMFATB0.xlsx
-  captured_at: '2026-04-24'
-last_reviewed: '2026-04-24'
+  - type: xlsx
+    path: raw-ulid/01KPYX5RY2JTB79QH9CRMFATB0.xlsx
+    captured_at: '2026-04-24'
+last_reviewed: '2026-05-08'
 reviewer: ops@locallife.asia
-status: draft
+status: approved
 related: []
 ---
 

@@ -3,26 +3,26 @@ id: 01KPYXB3XED5RFX3SR9M7B9JHC
 title: Quy Tắc Hướng Dẫn Kinh Doanh Có Trách Nhiệm Vì Người Tiêu Dùng TMĐT
 owner: ops@locallife.asia
 audience:
-- employee
-- lead
-- admin
+  - employee
+  - lead
+  - admin
 sensitivity: internal
 tags:
-- consumer_protection
-- e_commerce
-- legal_compliance
-- responsible_business
-- seller_guidelines
-- undp
-- vietnam
-- vietnam_context
+  - consumer_protection
+  - e_commerce
+  - legal_compliance
+  - responsible_business
+  - seller_guidelines
+  - undp
+  - vietnam
+  - vietnam_context
 source:
-- type: pdf
-  path: raw-ulid/01KPYX5RYCXR69R2PV1SSK460G.pdf
-  captured_at: '2026-04-24'
+  - type: pdf
+    path: raw-ulid/01KPYX5RYCXR69R2PV1SSK460G.pdf
+    captured_at: '2026-04-24'
 last_reviewed: '2026-04-24'
 reviewer: ops@locallife.asia
-status: draft
+status: approved
 related: []
 ---
 

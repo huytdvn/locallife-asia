@@ -3,22 +3,22 @@ id: 01KPYXBKY6HHSSJTQZJ550AQ9G
 title: Bảng phân tích chi tiết doanh thu và lợi nhuận booking
 owner: ops@locallife.asia
 audience:
-- lead
-- admin
+  - lead
+  - admin
 sensitivity: restricted
 tags:
-- booking_analysis
-- commission_structure
-- profit_margin
-- revenue_report
-- voucher_details
+  - booking_analysis
+  - commission_structure
+  - profit_margin
+  - revenue_report
+  - voucher_details
 source:
-- type: xlsx
-  path: raw-ulid/01KPYX5RZ68Z94HHTZZ15V5HS1.xlsx
-  captured_at: '2026-04-24'
+  - type: xlsx
+    path: raw-ulid/01KPYX5RZ68Z94HHTZZ15V5HS1.xlsx
+    captured_at: '2026-04-24'
 last_reviewed: '2026-04-24'
 reviewer: ops@locallife.asia
-status: draft
+status: deprecated
 related: []
 ---
 
@@ -43,3 +43,6 @@ related: []
 |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  | Public |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
 |  |  |  |  |  |  |  |  |  |  |  |  |  |  | 6000000 | 7200000 | 1200000 |  |  |  |  |  |  |  | 960000 | 684000 |  |  |  |  |  |  |  |  |  |  |  |  |  |
 |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  | 9.5 |  |  |  |  |  |  |  |  |  |  |  |  |  |
+
+
+> **Deprecated** — 2026-05-08: a

@@ -3,23 +3,23 @@ id: 01KPYX65EQ2N7H6M97VTK79J0S
 title: Thư ủy quyền quản lý tài khoản PayPal
 owner: ops@locallife.asia
 audience:
-- employee
-- lead
-- admin
+  - employee
+  - lead
+  - admin
 sensitivity: restricted
 tags:
-- account_management
-- authorization_letter
-- business_account
-- company_authorization
-- paypal
+  - account_management
+  - authorization_letter
+  - business_account
+  - company_authorization
+  - paypal
 source:
-- type: pdf
-  path: raw-ulid/01KPYX5QQ2QJM5BG0FC38M48E2.pdf
-  captured_at: '2026-04-24'
-last_reviewed: '2026-04-24'
+  - type: pdf
+    path: raw-ulid/01KPYX5QQ2QJM5BG0FC38M48E2.pdf
+    captured_at: '2026-04-24'
+last_reviewed: '2026-05-08'
 reviewer: ops@locallife.asia
-status: draft
+status: approved
 related: []
 ---
 

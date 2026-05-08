@@ -11,7 +11,7 @@ tags:
   - ai-drafted
 last_reviewed: '2026-05-04'
 reviewer: admin-dev@locallife.asia
-status: draft
+status: approved
 source: []
 ---
 # Hướng Dẫn Quy Trình Hoàn Tiền: Nâng Cao Trải Nghiệm Khách Hàng Tại Local Life Asia

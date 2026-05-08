@@ -3,28 +3,28 @@ id: 01KPYXA7046B1ZM09Z9HPEXHEN
 title: Thư Giới Thiệu Hợp Tác KOL/KOC Với Đối Tác
 owner: ops@locallife.asia
 audience:
-- lead
-- admin
+  - lead
+  - admin
 sensitivity: internal
 tags:
-- collaboration
-- da_nang
-- danang
-- koc
-- kol
-- kol_koc
-- marketing
-- marketing_campaign
-- partner_outreach
-- tourism
-- tourism_promotion
+  - collaboration
+  - da_nang
+  - danang
+  - koc
+  - kol
+  - kol_koc
+  - marketing
+  - marketing_campaign
+  - partner_outreach
+  - tourism
+  - tourism_promotion
 source:
-- type: docx
-  path: raw-ulid/01KPYX5RX9X1DZ305C39FY5RZD.docx
-  captured_at: '2026-04-24'
-last_reviewed: '2026-04-24'
+  - type: docx
+    path: raw-ulid/01KPYX5RX9X1DZ305C39FY5RZD.docx
+    captured_at: '2026-04-24'
+last_reviewed: '2026-05-08'
 reviewer: ops@locallife.asia
-status: draft
+status: approved
 related: []
 ---
 

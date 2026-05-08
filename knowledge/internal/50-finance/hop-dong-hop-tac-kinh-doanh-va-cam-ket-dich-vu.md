@@ -3,23 +3,23 @@ id: 01KPYX82C113HC0191T3M3TNKC
 title: Hợp đồng hợp tác kinh doanh và cam kết dịch vụ
 owner: ops@locallife.asia
 audience:
-- lead
-- admin
+  - lead
+  - admin
 sensitivity: restricted
 tags:
-- business_cooperation
-- cancellation_policy
-- partnership
-- payment_terms
-- revenue_sharing
-- service_agreement
+  - business_cooperation
+  - cancellation_policy
+  - partnership
+  - payment_terms
+  - revenue_sharing
+  - service_agreement
 source:
-- type: docx
-  path: raw-ulid/01KPYX5QSN6HB1R1MHBY9TFS9N.docx
-  captured_at: '2026-04-24'
-last_reviewed: '2026-04-24'
+  - type: docx
+    path: raw-ulid/01KPYX5QSN6HB1R1MHBY9TFS9N.docx
+    captured_at: '2026-04-24'
+last_reviewed: '2026-05-08'
 reviewer: ops@locallife.asia
-status: draft
+status: approved
 related: []
 ---
 

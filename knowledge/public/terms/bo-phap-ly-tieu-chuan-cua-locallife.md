@@ -3,26 +3,23 @@ id: 01KPYXB0KGWM8XGF7QQK6J99Y8
 title: Bộ Pháp lý Tiêu chuẩn của LocalLife
 owner: ops@locallife.asia
 audience:
-- employee
-- lead
-- admin
-- host
-- lok
-- guest
+  - employee
+  - lead
+  - admin
 sensitivity: public
 tags:
-- legal
-- platform_rules
-- privacy_policy
-- terms_of_service
-- user_agreement
+  - legal
+  - platform_rules
+  - privacy_policy
+  - terms_of_service
+  - user_agreement
 source:
-- type: docx
-  path: raw-ulid/01KPYX5RY7Y401VH1Z90102N10.docx
-  captured_at: '2026-04-24'
+  - type: docx
+    path: raw-ulid/01KPYX5RY7Y401VH1Z90102N10.docx
+    captured_at: '2026-04-24'
 last_reviewed: '2026-04-24'
 reviewer: ops@locallife.asia
-status: draft
+status: approved
 related: []
 ---
 

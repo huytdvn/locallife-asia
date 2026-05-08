@@ -3,28 +3,27 @@ id: 01KPYXB7NG5GD9PFYJFZVA3H4C
 title: Chính Sách Hủy Hoàn Đổi Dịch Vụ
 owner: ops@locallife.asia
 audience:
-- host
-- employee
-- lead
-- admin
+  - employee
+  - lead
+  - admin
 sensitivity: internal
 tags:
-- booking_terms
-- cancellation_policy
-- customer_rights
-- exchange_policy
-- host_guidelines
-- local_experience
-- refund_policy
-- rescheduling
-- service_terms
+  - booking_terms
+  - cancellation_policy
+  - customer_rights
+  - exchange_policy
+  - host_guidelines
+  - local_experience
+  - refund_policy
+  - rescheduling
+  - service_terms
 source:
-- type: docx
-  path: raw-ulid/01KPYX5RYKSP2F1GWZFK0DWDJP.docx
-  captured_at: '2026-04-24'
+  - type: docx
+    path: raw-ulid/01KPYX5RYKSP2F1GWZFK0DWDJP.docx
+    captured_at: '2026-04-24'
 last_reviewed: '2026-04-24'
 reviewer: ops@locallife.asia
-status: draft
+status: approved
 related: []
 ---
 

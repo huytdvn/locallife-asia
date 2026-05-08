@@ -3,26 +3,26 @@ id: 01KPYX96TTHN95X8RWMWKR6H2Q
 title: Hướng Dẫn Lựa Chọn Sản Phẩm Lên Nền Tảng
 owner: ops@locallife.asia
 audience:
-- employee
-- lead
+  - employee
+  - lead
 sensitivity: internal
 tags:
-- content_evaluation
-- internal_guideline
-- onboarding_process
-- operations_readiness
-- platform_guidelines
-- platform_onboarding
-- product_selection
-- quality_criteria
-- vendor_assessment
+  - content_evaluation
+  - internal_guideline
+  - onboarding_process
+  - operations_readiness
+  - platform_guidelines
+  - platform_onboarding
+  - product_selection
+  - quality_criteria
+  - vendor_assessment
 source:
-- type: docx
-  path: raw-ulid/01KPYX5RPA9K6622FC2QH3WQDW.docx
-  captured_at: '2026-04-24'
-last_reviewed: '2026-04-24'
+  - type: docx
+    path: raw-ulid/01KPYX5RPA9K6622FC2QH3WQDW.docx
+    captured_at: '2026-04-24'
+last_reviewed: '2026-05-08'
 reviewer: ops@locallife.asia
-status: draft
+status: approved
 related: []
 ---
 

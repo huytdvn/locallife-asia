@@ -3,23 +3,23 @@ id: 01KPYXA844D90VRV6ETFDC1XDR
 title: Thiết kế hệ thống hỗ trợ KOL kiếm tiền trên nền tảng LocalLife.Asia
 owner: ops@locallife.asia
 audience:
-- employee
-- lead
+  - employee
+  - lead
 sensitivity: internal
 tags:
-- affiliate_marketing
-- campaign_management
-- influencer
-- kol
-- monetization
-- platform
+  - affiliate_marketing
+  - campaign_management
+  - influencer
+  - kol
+  - monetization
+  - platform
 source:
-- type: docx
-  path: raw-ulid/01KPYX5RXC9QGEQT6DJEH5NJPS.docx
-  captured_at: '2026-04-24'
-last_reviewed: '2026-04-24'
+  - type: docx
+    path: raw-ulid/01KPYX5RXC9QGEQT6DJEH5NJPS.docx
+    captured_at: '2026-04-24'
+last_reviewed: '2026-05-08'
 reviewer: ops@locallife.asia
-status: draft
+status: approved
 related: []
 ---
 

@@ -3,27 +3,24 @@ id: 01KPYX877WV7MNHKCVRA1T48RK
 title: 'Giới Thiệu Local Life Asia: Nền Tảng Du Lịch Bền Vững'
 owner: ops@locallife.asia
 audience:
-- employee
-- lead
-- admin
-- host
-- lok
-- guest
+  - employee
+  - lead
+  - admin
 sensitivity: public
 tags:
-- community
-- experience
-- impact
-- local
-- sustainable
-- tourism
+  - community
+  - experience
+  - impact
+  - local
+  - sustainable
+  - tourism
 source:
-- type: pdf
-  path: raw-ulid/01KPYX5QVN5QW8SSTQR0XG0CQD.pdf
-  captured_at: '2026-04-24'
+  - type: pdf
+    path: raw-ulid/01KPYX5QVN5QW8SSTQR0XG0CQD.pdf
+    captured_at: '2026-04-24'
 last_reviewed: '2026-04-24'
 reviewer: ops@locallife.asia
-status: draft
+status: deprecated
 related: []
 ---
 
@@ -93,3 +90,6 @@ Website: locallife.asia
 Email: partner@locallife.asia
 VĂN PHÒNG:
 63 Nguyen Hien Le, Da Nang, Vietnam
+
+
+> **Deprecated** — 2026-05-08: a

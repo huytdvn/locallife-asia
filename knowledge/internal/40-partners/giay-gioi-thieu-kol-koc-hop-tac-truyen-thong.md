@@ -3,24 +3,24 @@ id: 01KPYX7GDEGVNY1HGN99GX905R
 title: Giấy giới thiệu KOL/KOC hợp tác truyền thông
 owner: ops@locallife.asia
 audience:
-- lead
-- admin
+  - lead
+  - admin
 sensitivity: restricted
 tags:
-- collaboration
-- external_partner
-- influencer_marketing
-- introduction_letter
-- kol_koc
-- media_collaboration
-- sun_media
+  - collaboration
+  - external_partner
+  - influencer_marketing
+  - introduction_letter
+  - kol_koc
+  - media_collaboration
+  - sun_media
 source:
-- type: docx
-  path: raw-ulid/01KPYX5QS2DVHA72PX06XJ6TJ5.docx
-  captured_at: '2026-04-24'
-last_reviewed: '2026-04-24'
+  - type: docx
+    path: raw-ulid/01KPYX5QS2DVHA72PX06XJ6TJ5.docx
+    captured_at: '2026-04-24'
+last_reviewed: '2026-05-08'
 reviewer: ops@locallife.asia
-status: draft
+status: approved
 related: []
 ---
 

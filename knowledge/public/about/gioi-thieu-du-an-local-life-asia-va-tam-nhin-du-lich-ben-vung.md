@@ -3,32 +3,29 @@ id: 01KPYX9B2V85FZ58FHV318RHH6
 title: Giới thiệu dự án Local Life Asia và tầm nhìn du lịch bền vững
 owner: ops@locallife.asia
 audience:
-- employee
-- lead
-- admin
-- host
-- lok
-- guest
+  - employee
+  - lead
+  - admin
 sensitivity: public
 tags:
-- ben_vung
-- community_impact
-- company_vision
-- cong_dong
-- du_lich
-- local_culture
-- locallife
-- partner_engagement
-- project_overview
-- sustainable_tourism
-- van_hoa_ban_dia
+  - ben_vung
+  - community_impact
+  - company_vision
+  - cong_dong
+  - du_lich
+  - local_culture
+  - locallife
+  - partner_engagement
+  - project_overview
+  - sustainable_tourism
+  - van_hoa_ban_dia
 source:
-- type: pdf
-  path: raw-ulid/01KPYX5RRHZYMRRAEHPXX7EQTQ.pdf
-  captured_at: '2026-04-24'
+  - type: pdf
+    path: raw-ulid/01KPYX5RRHZYMRRAEHPXX7EQTQ.pdf
+    captured_at: '2026-04-24'
 last_reviewed: '2026-04-24'
 reviewer: ops@locallife.asia
-status: draft
+status: deprecated
 related: []
 ---
 
@@ -131,3 +128,6 @@ Sự tin tưởng và hỗ trợ từ Quý vị chính là **nguồn động l�
 Rất mong được hợp tác cùng Quý Đối tác trong hành trình sắp tới, để cùng nhau tạo nên những dấu ấn ý nghĩa và bền vững.
 
 LocalLife.Asia
+
+
+> **Deprecated** — 2026-05-08: a

@@ -3,30 +3,30 @@ id: 01KPYXBN5SPVHXWB7VN8845JAS
 title: Sổ Tay Vận Hành & Tăng Trưởng 90 Ngày Của Local Life Asia
 owner: ops@locallife.asia
 audience:
-- employee
-- lead
-- admin
+  - employee
+  - lead
+  - admin
 sensitivity: internal
 tags:
-- ai agent setup
-- ai_setup
-- content marketing
-- growth strategy
-- growth_strategy
-- host_acquisition
-- influencer marketing
-- marketing strategy
-- marketing_strategy
-- operational playbook
-- operational_playbook
-- system_setup
+  - ai agent setup
+  - ai_setup
+  - content marketing
+  - growth strategy
+  - growth_strategy
+  - host_acquisition
+  - influencer marketing
+  - marketing strategy
+  - marketing_strategy
+  - operational playbook
+  - operational_playbook
+  - system_setup
 source:
-- type: docx
-  path: raw-ulid/01KPYX5RZ9DDSME7JX9KRBD79D.docx
-  captured_at: '2026-04-24'
+  - type: docx
+    path: raw-ulid/01KPYX5RZ9DDSME7JX9KRBD79D.docx
+    captured_at: '2026-04-24'
 last_reviewed: '2026-04-24'
 reviewer: ops@locallife.asia
-status: draft
+status: approved
 related: []
 ---
 

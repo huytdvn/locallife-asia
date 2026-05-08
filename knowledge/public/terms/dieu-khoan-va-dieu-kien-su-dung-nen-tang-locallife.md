@@ -3,26 +3,23 @@ id: 01KPYXBJDRHB9P1B1ZBV6S2ZB5
 title: Điều Khoản Và Điều Kiện Sử Dụng Nền Tảng Locallife
 owner: ops@locallife.asia
 audience:
-- employee
-- lead
-- admin
-- host
-- lok
-- guest
+  - employee
+  - lead
+  - admin
 sensitivity: public
 tags:
-- locallife_asia
-- platform_usage
-- terms_of_service
-- travel_services
-- user_agreement
+  - locallife_asia
+  - platform_usage
+  - terms_of_service
+  - travel_services
+  - user_agreement
 source:
-- type: docx
-  path: raw-ulid/01KPYX5RZ4KVPXGMHEY1JM8BVR.docx
-  captured_at: '2026-04-24'
+  - type: docx
+    path: raw-ulid/01KPYX5RZ4KVPXGMHEY1JM8BVR.docx
+    captured_at: '2026-04-24'
 last_reviewed: '2026-04-24'
 reviewer: ops@locallife.asia
-status: draft
+status: approved
 related: []
 ---
 

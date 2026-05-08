@@ -3,23 +3,23 @@ id: 01KPYX888NH43F1XP96KSWYAPK
 title: 'Thư Ngỏ Hợp Tác Chiến Lược 2026: Kiến Tạo Hệ Sinh Thái Du Lịch Bền Vững'
 owner: ops@locallife.asia
 audience:
-- lead
-- admin
+  - lead
+  - admin
 sensitivity: internal
 tags:
-- cooperation
-- local
-- partnership
-- strategy
-- sustainable
-- tourism
+  - cooperation
+  - local
+  - partnership
+  - strategy
+  - sustainable
+  - tourism
 source:
-- type: docx
-  path: raw-ulid/01KPYX5QVXWZMGQQWYEHKPEDFV.docx
-  captured_at: '2026-04-24'
-last_reviewed: '2026-04-24'
+  - type: docx
+    path: raw-ulid/01KPYX5QVXWZMGQQWYEHKPEDFV.docx
+    captured_at: '2026-04-24'
+last_reviewed: '2026-05-08'
 reviewer: ops@locallife.asia
-status: draft
+status: approved
 related: []
 ---
 

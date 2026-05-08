@@ -3,27 +3,24 @@ id: 01KPYX94GDV88GAPBQG6D9EFSV
 title: Giới Thiệu Về Local Life Asia - Nền Tảng Du Lịch Cộng Đồng
 owner: ops@locallife.asia
 audience:
-- employee
-- lead
-- admin
-- host
-- lok
-- guest
+  - employee
+  - lead
+  - admin
 sensitivity: public
 tags:
-- community_tourism
-- cultural_tourism
-- homestay
-- local_experience
-- social_impact
-- sustainable_tourism
+  - community_tourism
+  - cultural_tourism
+  - homestay
+  - local_experience
+  - social_impact
+  - sustainable_tourism
 source:
-- type: pdf
-  path: raw-ulid/01KPYX5RMNS1A3XRKYXJ6QEM2H.pdf
-  captured_at: '2026-04-24'
+  - type: pdf
+    path: raw-ulid/01KPYX5RMNS1A3XRKYXJ6QEM2H.pdf
+    captured_at: '2026-04-24'
 last_reviewed: '2026-04-24'
 reviewer: ops@locallife.asia
-status: approved
+status: deprecated
 related: []
 ---
 
@@ -125,3 +122,6 @@ Nền tảng du lịch cộng đồng
 **Website:** locallife.asia
 **Email:** partner@locallife.asia
 **Văn phòng:** 63 Nguyen Hien Le, Da Nang, Vietnam
+
+
+> **Deprecated** — 2026-05-08: a

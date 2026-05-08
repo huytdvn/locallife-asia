@@ -3,27 +3,26 @@ id: 01KPYXBPB7RG6S85J77TCKE0TK
 title: Biên Bản Bàn Giao Công Việc Và Tài Sản
 owner: ops@locallife.asia
 audience:
-- employee
-- lead
-- admin
+  - lead
+  - admin
 sensitivity: internal
 tags:
-- asset_transfer
-- company_policy
-- documentation
-- employee_handover
-- employee_offboarding
-- employee_transition
-- hr_form
-- internal_process
-- work_handover
+  - asset_transfer
+  - company_policy
+  - documentation
+  - employee_handover
+  - employee_offboarding
+  - employee_transition
+  - hr_form
+  - internal_process
+  - work_handover
 source:
-- type: docx
-  path: raw-ulid/01KPYX5RZCK6ACNQK101XPZFQB.docx
-  captured_at: '2026-04-24'
+  - type: docx
+    path: raw-ulid/01KPYX5RZCK6ACNQK101XPZFQB.docx
+    captured_at: '2026-04-24'
 last_reviewed: '2026-04-24'
 reviewer: ops@locallife.asia
-status: draft
+status: approved
 related: []
 ---
 

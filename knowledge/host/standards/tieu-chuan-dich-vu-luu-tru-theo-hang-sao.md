@@ -3,26 +3,24 @@ id: 01KPYXA5X0PD1M1FYZMBD5EB57
 title: Tiêu Chuẩn Dịch Vụ Lưu Trú Theo Hạng Sao
 owner: ops@locallife.asia
 audience:
-- host
-- employee
-- lead
-- admin
+  - lead
+  - admin
 sensitivity: internal
 tags:
-- accommodation_standards
-- guest_experience
-- hospitality
-- host_guidelines
-- service_levels
-- service_quality
-- star_ratings
+  - accommodation_standards
+  - guest_experience
+  - hospitality
+  - host_guidelines
+  - service_levels
+  - service_quality
+  - star_ratings
 source:
-- type: docx
-  path: raw-ulid/01KPYX5RX7VBNKHSABR16PRGRJ.docx
-  captured_at: '2026-04-24'
+  - type: docx
+    path: raw-ulid/01KPYX5RX7VBNKHSABR16PRGRJ.docx
+    captured_at: '2026-04-24'
 last_reviewed: '2026-04-24'
 reviewer: ops@locallife.asia
-status: draft
+status: approved
 related: []
 ---
 
