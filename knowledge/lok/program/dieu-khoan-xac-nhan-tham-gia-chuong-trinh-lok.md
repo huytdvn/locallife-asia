@@ -3,26 +3,25 @@ id: 01KPYX84P5TAKFMERXP5D9BQT6
 title: Điều Khoản Xác Nhận Tham Gia Chương Trình LOK
 owner: ops@locallife.asia
 audience:
-- lok
-- employee
-- lead
-- admin
+  - employee
+  - lead
+  - admin
 sensitivity: internal
 tags:
-- digital_confirmation
-- host_agreement
-- influencer_collaboration
-- kol_koc_commission
-- lok_program
-- partner_agreement
-- terms_and_conditions
+  - digital_confirmation
+  - host_agreement
+  - influencer_collaboration
+  - kol_koc_commission
+  - lok_program
+  - partner_agreement
+  - terms_and_conditions
 source:
-- type: docx
-  path: raw-ulid/01KPYX5QSTSWNGA73RVBWEPXMR.docx
-  captured_at: '2026-04-24'
-last_reviewed: '2026-04-24'
+  - type: docx
+    path: raw-ulid/01KPYX5QSTSWNGA73RVBWEPXMR.docx
+    captured_at: '2026-04-24'
+last_reviewed: '2026-05-08'
 reviewer: ops@locallife.asia
-status: draft
+status: approved
 related: []
 ---
 
