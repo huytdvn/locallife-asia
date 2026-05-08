@@ -3,28 +3,27 @@ id: 01KPYX8F1FX6TRW6Q1WB2PXZ9G
 title: Thông Báo Mở Khóa Dashboard Quỹ Đồng Hành & Lịch Trình LOK Trip Hằng Năm
 owner: ops@locallife.asia
 audience:
-- lok
-- employee
-- lead
+  - employee
+  - lead
 sensitivity: internal
 tags:
-- announcement
-- annual_trip
-- dashboard
-- dashboard_access
-- fund
-- fund_update
-- incentive
-- lok_program
-- partner_incentive
-- trip
+  - announcement
+  - annual_trip
+  - dashboard
+  - dashboard_access
+  - fund
+  - fund_update
+  - incentive
+  - lok_program
+  - partner_incentive
+  - trip
 source:
-- type: pdf
-  path: raw-ulid/01KPYX5R4F5FMM2CG6YWXCW4EN.pdf
-  captured_at: '2026-04-24'
-last_reviewed: '2026-04-24'
+  - type: pdf
+    path: raw-ulid/01KPYX5R4F5FMM2CG6YWXCW4EN.pdf
+    captured_at: '2026-04-24'
+last_reviewed: '2026-05-08'
 reviewer: ops@locallife.asia
-status: draft
+status: approved
 related: []
 ---
 
