@@ -3,24 +3,24 @@ id: 01KPYX6VFQBDMDFWWNG2BR98BR
 title: Thư mời hợp tác phát triển du lịch bền vững cùng LocalLife.Asia
 owner: ops@locallife.asia
 audience:
-- lead
-- admin
+  - lead
+  - admin
 sensitivity: internal
 tags:
-- community_based_tourism
-- community_tourism
-- eco_tourism
-- local_life
-- partner_acquisition
-- tourism_partnership
-- travel_platform
+  - community_based_tourism
+  - community_tourism
+  - eco_tourism
+  - local_life
+  - partner_acquisition
+  - tourism_partnership
+  - travel_platform
 source:
-- type: pdf
-  path: raw-ulid/01KPYX5QR1S2KKS55589JZR9MN.pdf
-  captured_at: '2026-04-24'
-last_reviewed: '2026-04-24'
+  - type: pdf
+    path: raw-ulid/01KPYX5QR1S2KKS55589JZR9MN.pdf
+    captured_at: '2026-04-24'
+last_reviewed: '2026-05-08'
 reviewer: ops@locallife.asia
-status: draft
+status: approved
 related: []
 ---
 
