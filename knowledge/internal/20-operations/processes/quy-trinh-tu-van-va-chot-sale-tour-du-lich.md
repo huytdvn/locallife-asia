@@ -3,25 +3,25 @@ id: 01KPYX9M5N3W7M2QH4BXX9WADK
 title: Quy Trình Tư Vấn Và Chốt Sale Tour Du Lịch
 owner: ops@locallife.asia
 audience:
-- employee
-- lead
+  - employee
+  - lead
 sensitivity: internal
 tags:
-- customer_consultation
-- deal_closing
-- follow_up
-- profit_management
-- sales_process
-- sales_technique
-- tour_booking
-- tour_sales
+  - customer_consultation
+  - deal_closing
+  - follow_up
+  - profit_management
+  - sales_process
+  - sales_technique
+  - tour_booking
+  - tour_sales
 source:
-- type: docx
-  path: raw-ulid/01KPYX5RWRGYGXNGTQPFXYZSVV.docx
-  captured_at: '2026-04-24'
+  - type: docx
+    path: raw-ulid/01KPYX5RWRGYGXNGTQPFXYZSVV.docx
+    captured_at: '2026-04-24'
 last_reviewed: '2026-04-24'
 reviewer: ops@locallife.asia
-status: draft
+status: approved
 related: []
 ---
 
