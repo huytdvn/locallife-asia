@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { UserBadge } from "@/components/user-badge";
-import { MobileNavDrawer, type NavLinkData } from "@/components/mobile-nav-drawer";
+import type { NavLinkData } from "@/components/mobile-nav-drawer";
 import type { ProfileMenuItem } from "@/components/profile-menu";
+import { NavIcon, ICON_ACCENTS, type NavIconKey } from "@/components/nav-icons";
 import type { Role } from "@/lib/rbac";
 
 type NavKey =
@@ -26,6 +27,8 @@ interface Props {
 interface TopbarLink {
   href: string;
   label: string;
+  /** SVG icon key (nav-icons.tsx). Mobile chỉ icon, desktop icon + label. */
+  iconKey: NavIconKey;
   key: NavKey;
 }
 
@@ -46,6 +49,7 @@ export function AppNav({ role, active }: Props) {
   const navLinks: NavLinkData[] = topbar.map((s) => ({
     href: s.href,
     label: s.label,
+    iconKey: s.iconKey,
     key: s.key,
     active: active === s.key,
     group: "primary",
@@ -76,27 +80,22 @@ export function AppNav({ role, active }: Props) {
       >
         <Link
           href={homeForRole(role)}
+          aria-label="Bé Tre — về trang chủ"
           style={{
-            fontWeight: 700,
-            color: "var(--ll-green-dark)",
-            fontSize: 17,
             display: "flex",
             alignItems: "center",
-            gap: 8,
             textDecoration: "none",
             flexShrink: 0,
-            whiteSpace: "nowrap",
           }}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/mascot.webp"
             alt="Bé Tre"
-            width={24}
-            height={32}
+            width={28}
+            height={36}
             style={{ borderRadius: 8, objectFit: "contain" }}
           />
-          Bé Tre
         </Link>
 
         <div
@@ -104,11 +103,11 @@ export function AppNav({ role, active }: Props) {
           style={{
             display: "flex",
             alignItems: "center",
-            gap: 18,
+            gap: 6,
             minWidth: 0,
             overflowX: "auto",
             overflowY: "hidden",
-            paddingLeft: 8,
+            paddingLeft: 4,
           }}
         >
           {navLinks.map((l) => (
@@ -116,9 +115,9 @@ export function AppNav({ role, active }: Props) {
               key={`${l.key}-${l.href}`}
               href={l.href}
               active={l.active}
-            >
-              {l.label}
-            </NavLink>
+              iconKey={l.iconKey}
+              label={l.label}
+            />
           ))}
         </div>
       </div>
@@ -132,7 +131,7 @@ export function AppNav({ role, active }: Props) {
         }}
       >
         <UserBadge menuItems={menuItems} />
-        <MobileNavDrawer links={navLinks} />
+        {/* MobileNavDrawer ẩn — nav links inline mọi viewport (icon-only mobile) */}
       </div>
     </nav>
   );
@@ -159,23 +158,32 @@ function buildLinksForRole(role: Role): BuiltLinks {
   const menuItems: ProfileMenuItem[] = [];
 
   // ─── TOP BAR: tương tác hằng ngày ───
+  // Internal có 2 layer onboarding/training:
+  //   - Legacy `/onboarding` `/training` (weekly_assignment + file-based)
+  //   - Mới `/onboarding/flows` `/training/quizzes` (admin builders)
+  // Topbar cho user thường (employee) trỏ thẳng vào layer mới — đó là nơi
+  // bài admin tạo qua /admin/onboarding/new sẽ hiển thị. Admin/lead vẫn
+  // dùng layer cũ làm dashboard, có shortcut tới layer mới ở trong page.
   if (isInternal) {
-    topbar.push({ href: "/dashboard", label: "Tổng quan", key: "dashboard" });
-    topbar.push({ href: "/", label: "Trợ lý AI", key: "home" });
-    topbar.push({ href: "/onboarding", label: "Onboarding", key: "onboarding" });
-    topbar.push({ href: "/training", label: "Training", key: "training" });
+    topbar.push({ href: "/dashboard", label: "Tổng quan", iconKey: "dashboard", key: "dashboard" });
+    topbar.push({ href: "/", label: "Trợ lý AI", iconKey: "chat", key: "home" });
+    topbar.push({ href: "/onboarding/flows", label: "Lộ trình", iconKey: "route", key: "onboarding" });
+    topbar.push({ href: "/training/quizzes", label: "Quiz", iconKey: "target", key: "training" });
   } else if (role === "host") {
-    topbar.push({ href: "/host", label: "Cổng Host", key: "host" });
-    topbar.push({ href: "/", label: "Trợ lý AI", key: "home" });
-    topbar.push({ href: "/training", label: "Training", key: "training" });
+    topbar.push({ href: "/host", label: "Cổng Host", iconKey: "home", key: "host" });
+    topbar.push({ href: "/", label: "Trợ lý AI", iconKey: "chat", key: "home" });
+    topbar.push({ href: "/training/quizzes", label: "Quiz", iconKey: "target", key: "training" });
   } else if (role === "lok") {
-    topbar.push({ href: "/lok", label: "Cổng LOK", key: "lok" });
-    topbar.push({ href: "/", label: "Trợ lý AI", key: "home" });
-    topbar.push({ href: "/training", label: "Training", key: "training" });
+    topbar.push({ href: "/lok", label: "Cổng LOK", iconKey: "star", key: "lok" });
+    topbar.push({ href: "/", label: "Trợ lý AI", iconKey: "chat", key: "home" });
+    topbar.push({ href: "/training/quizzes", label: "Quiz", iconKey: "target", key: "training" });
   } else {
-    topbar.push({ href: "/public", label: "Trang công khai", key: "public" });
-    topbar.push({ href: "/training", label: "Training", key: "training" });
+    topbar.push({ href: "/public", label: "Trang công khai", iconKey: "globe", key: "public" });
+    topbar.push({ href: "/training/quizzes", label: "Quiz", iconKey: "target", key: "training" });
   }
+
+  // ─── PROFILE MENU: tài khoản (mọi role login) ───
+  menuItems.push({ href: "/profile", label: "Hồ sơ", group: "account" });
 
   // ─── PROFILE MENU: quản trị ───
   if (isStaff) {
@@ -192,6 +200,16 @@ function buildLinksForRole(role: Role): BuiltLinks {
       group: "manage",
     });
     if (isAdmin) {
+      menuItems.push({
+        href: "/admin/onboarding/flows-list",
+        label: "📚 Quản lý lộ trình",
+        group: "manage",
+      });
+      menuItems.push({
+        href: "/admin/training",
+        label: "🎯 Quản lý quiz",
+        group: "manage",
+      });
       menuItems.push({
         href: "/admin/users",
         label: "Quản lý user",
@@ -212,30 +230,51 @@ function buildLinksForRole(role: Role): BuiltLinks {
 function NavLink({
   href,
   active,
-  children,
+  iconKey,
+  label,
 }: {
   href: string;
   active: boolean;
-  children: React.ReactNode;
+  iconKey?: NavIconKey;
+  label: string;
 }) {
+  const accent = iconKey ? ICON_ACCENTS[iconKey] : null;
+  // Active: icon nhuộm green-dark trên pill green-soft (LL primary).
+  // Inactive: icon nhuộm theo accent fg, pill nhẹ accent bg → đa sắc.
+  const iconColor = active ? "var(--ll-green-dark)" : accent?.fg ?? "var(--ll-ink-soft)";
+  const pillBg = active ? "var(--ll-green-soft)" : accent?.bg ?? "transparent";
   return (
     <Link
       href={href}
+      title={label}
+      aria-label={label}
+      className="ll-nav-link"
       style={{
         fontSize: 14,
         fontWeight: active ? 600 : 500,
         color: active ? "var(--ll-green-dark)" : "var(--ll-ink-soft)",
         textDecoration: "none",
-        padding: "4px 2px",
-        borderBottom: active
-          ? "2px solid var(--ll-green-bright)"
-          : "2px solid transparent",
-        transition: "color 120ms var(--ll-ease)",
+        padding: "6px 10px",
+        borderRadius: 10,
+        background: pillBg,
+        transition: "all 140ms var(--ll-ease)",
         whiteSpace: "nowrap",
         flexShrink: 0,
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 6,
       }}
     >
-      {children}
+      {iconKey && (
+        <span
+          className="ll-nav-link-icon"
+          style={{ display: "inline-flex", color: iconColor }}
+          aria-hidden
+        >
+          <NavIcon name={iconKey} />
+        </span>
+      )}
+      <span className="ll-nav-link-label">{label}</span>
     </Link>
   );
 }

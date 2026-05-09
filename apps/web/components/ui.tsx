@@ -1,10 +1,47 @@
 import type { ReactNode } from "react";
+import Link from "next/link";
 
 /* ─── Shared UI primitives — dùng chung 3 zones, giảm duplication. ─── */
 
+/** Back-link breadcrumb đặt trên SectionHeader cho trang sâu. Render nhẹ:
+ *  một chip "← Label" link về parent. Nếu cần multi-level, pass mảng items. */
+export function BackLink({
+  href,
+  label,
+}: {
+  href: string;
+  label: string;
+}) {
+  return (
+    <div style={{ marginBottom: 10 }}>
+      <Link
+        href={href}
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 6,
+          padding: "5px 12px",
+          borderRadius: 999,
+          background: "var(--ll-surface-soft)",
+          border: "1px solid var(--ll-border)",
+          color: "var(--ll-ink-soft)",
+          fontSize: 12,
+          textDecoration: "none",
+          fontWeight: 500,
+        }}
+      >
+        <span aria-hidden>←</span>
+        <span>{label}</span>
+      </Link>
+    </div>
+  );
+}
+
+// 1280 đồng bộ với chat AI page (`/`) — user navigate giữa AI ↔ admin pages
+// không bị co/giãn container.
 export function PageShell({
   children,
-  maxWidth = 1120,
+  maxWidth = 1280,
 }: {
   children: ReactNode;
   maxWidth?: number;

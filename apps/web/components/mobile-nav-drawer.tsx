@@ -6,6 +6,8 @@ import { useEffect, useRef, useState } from "react";
 export interface NavLinkData {
   href: string;
   label: string;
+  /** Key vào NAV_ICONS map trong components/nav-icons.tsx. */
+  iconKey?: import("@/components/nav-icons").NavIconKey;
   key: string;
   active: boolean;
   subtle?: boolean;

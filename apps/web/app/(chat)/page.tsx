@@ -42,7 +42,7 @@ export default async function ChatPage() {
           minHeight: 0,
         }}
       >
-        <Chat starterQuestions={questions} userName={displayName} />
+        <Chat starterQuestions={questions.slice(0, 4)} userName={displayName} />
 
         <aside
           style={{
@@ -124,7 +124,9 @@ export default async function ChatPage() {
               </li>
               <li>
                 Cần tự học có hệ thống?{" "}
-                <Link href="/training">Xem lộ trình training →</Link>
+                <Link href="/onboarding/flows">Mở lộ trình của bạn →</Link>
+                {" · "}
+                <Link href="/training/quizzes">Quiz</Link>
               </li>
             </ul>
           </section>

@@ -352,6 +352,10 @@ a.ll-card:hover,
   border-collapse: collapse;
   margin: 10px 0;
   font-size: 13px;
+  display: block;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  max-width: 100%;
 }
 .ll-md th,
 .ll-md td {
@@ -470,10 +474,21 @@ a.ll-card:hover,
   display: none;
 }
 
+/* Profile dropdown desktop — anchored phải avatar, fixed width
+ * không bị parent (.ll-app-nav justify-between) co lại. Mobile rule
+ * trong @media (max-width: 768px) override toàn bộ thành drawer. */
+.ll-profile-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 280px;
+  max-width: 320px;
+}
+
 /* ── 900px: medium screens — 2-col grid collapses ── */
 @media (max-width: 900px) {
   .ll-grid-2col {
-    grid-template-columns: 1fr !important;
+    grid-template-columns: minmax(0, 1fr) !important;
   }
 }
 
@@ -496,14 +511,64 @@ a.ll-card:hover,
   main {
     padding-left: 14px !important;
     padding-right: 14px !important;
+    padding-top: 16px !important;
   }
 
-  /* Nav: hide desktop links, show hamburger */
+  /* Users-admin form 4-cột → stack 1 cột mobile cho khỏi cắt */
+  .ll-users-form {
+    grid-template-columns: 1fr !important;
+  }
+  /* Doc-pane header — stack thành 3 row riêng để title không bị status switcher
+   * lấn ngang (mobile flex-wrap trong cùng row gây lệch). */
+  .ll-doc-pane-header {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+    padding: 10px 14px !important;
+  }
+  .ll-doc-pane-header > div:nth-child(2) {
+    /* Middle group (badges/title/path) — full width, badges xuống dòng nếu chật */
+    width: 100% !important;
+    flex: none !important;
+  }
+  .ll-doc-pane-header h2 {
+    font-size: 15px !important;
+    white-space: normal !important;
+    overflow: visible !important;
+  }
+  /* Users table giữ horizontal scroll, hint user vuốt ngang */
+  .ll-users-table-wrap {
+    position: relative;
+  }
+  .ll-users-table-wrap::after {
+    content: "← vuốt →";
+    position: absolute;
+    bottom: 4px;
+    right: 8px;
+    font-size: 10px;
+    color: var(--ll-muted);
+    pointer-events: none;
+    opacity: 0.6;
+  }
+
+  /* Nav: GIỮ inline links cả mobile, ẩn label chỉ còn icon. Hamburger ẩn. */
   .ll-nav-desktop {
-    display: none !important;
+    display: flex !important;
+    gap: 4px !important;
   }
   .ll-nav-mobile {
-    display: inline-flex !important;
+    display: none !important;
+  }
+  .ll-nav-link {
+    padding: 8px 10px !important;
+  }
+  .ll-nav-link-label {
+    display: none !important;
+  }
+  /* SVG icon scale hơn trên mobile cho dễ tap */
+  .ll-nav-link-icon svg {
+    width: 22px !important;
+    height: 22px !important;
   }
 
   /* Generic mobile/desktop toggles */
@@ -629,12 +694,19 @@ a.ll-card:hover,
   .ll-diff-pair {
     grid-template-columns: 1fr !important;
   }
-  /* Profile dropdown — sát mép viewport, dùng calc để không tràn */
+  /* Profile dropdown mobile — fixed sát mép phải dưới avatar, không bị parent
+   * clip. Top 56px = dưới header (~52px) + 4px gap. Không full-width vì user
+   * muốn gần avatar (góc trên phải) thay vì nằm xa. */
   .ll-profile-menu {
+    position: fixed !important;
+    top: 56px !important;
+    bottom: auto !important;
     right: 8px !important;
-    left: 8px !important;
-    min-width: 0 !important;
-    max-width: none !important;
+    left: auto !important;
+    min-width: 240px !important;
+    max-width: calc(100vw - 16px) !important;
+    max-height: 80vh;
+    overflow-y: auto;
   }
 
   /* Login: card co vừa viewport, padding nhỏ hơn, mascot scale nhỏ */

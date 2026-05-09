@@ -272,6 +272,7 @@ export function DocPane({
       }}
     >
       <header
+        className="ll-doc-pane-header"
         style={{
           padding: "14px 20px",
           borderBottom: "1px solid var(--ll-border)",
@@ -281,6 +282,7 @@ export function DocPane({
           gap: 12,
           background: "var(--ll-surface-soft)",
           flexShrink: 0,
+          flexWrap: "wrap",
         }}
       >
         <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
@@ -305,13 +307,14 @@ export function DocPane({
             →
           </button>
         </div>
-        <div style={{ minWidth: 0, flex: 1 }}>
+        <div style={{ minWidth: 0, flex: "1 1 180px" }}>
           <div
             style={{
               display: "flex",
               alignItems: "center",
               gap: 8,
               marginBottom: 2,
+              flexWrap: "wrap",
             }}
           >
             <span

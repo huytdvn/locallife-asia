@@ -217,11 +217,19 @@ export function TrainingReport() {
         </button>
       </div>
 
-      <div className="ll-card" style={{ padding: 0, overflow: "hidden" }}>
+      <div
+        className="ll-card"
+        style={{
+          padding: 0,
+          overflowX: "auto",
+          WebkitOverflowScrolling: "touch",
+        }}
+      >
         <div
           style={{
             display: "grid",
             gridTemplateColumns: "minmax(220px, 2fr) minmax(180px, 2fr) 140px 140px 110px 110px",
+            minWidth: 960,
             gap: 12,
             padding: "10px 16px",
             borderBottom: "1px solid var(--ll-border)",
@@ -240,7 +248,7 @@ export function TrainingReport() {
           <div>Trạng thái</div>
           <div>Cập nhật</div>
         </div>
-        <div style={{ maxHeight: "60vh", overflowY: "auto" }}>
+        <div style={{ maxHeight: "60vh", overflowY: "auto", minWidth: 960 }}>
           {filtered.length === 0 ? (
             <div style={{ padding: 20, textAlign: "center", color: "var(--ll-muted)" }}>
               Không có row nào khớp filter.

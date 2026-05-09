@@ -46,11 +46,15 @@ export function Chat({
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLTextAreaElement | null>(null);
 
-  // Auto-scroll to bottom when messages change or while streaming
+  // Auto-scroll to bottom when messages change or while streaming.
+  // Instant khi vừa gửi (snap về câu mới) → smooth ở các update sau (streaming).
+  const lastMsgCountRef = useRef(0);
   useEffect(() => {
+    const grew = messages.length > lastMsgCountRef.current;
+    lastMsgCountRef.current = messages.length;
     scrollRef.current?.scrollTo({
       top: scrollRef.current.scrollHeight,
-      behavior: "smooth",
+      behavior: grew ? "auto" : "smooth",
     });
   }, [messages]);
 
@@ -196,8 +200,11 @@ export function Chat({
         boxShadow: "var(--ll-shadow-sm)",
         display: "flex",
         flexDirection: "column",
-        height: "calc(100vh - 220px)",
-        minHeight: 500,
+        // dvh chính xác trên mobile (URL bar shrink); trừ ít để vừa 1 màn nhưng
+        // đủ chỗ AppNav + header.
+        height: "calc(100dvh - 160px)",
+        minHeight: 420,
+        maxHeight: "calc(100dvh - 120px)",
         overflow: "hidden",
       }}
     >
@@ -283,10 +290,11 @@ export function Chat({
             borderRadius: 10,
             border: "1px solid var(--ll-border)",
             fontFamily: "inherit",
-            fontSize: 15,
+            // 16px+ → iOS Safari KHÔNG auto-zoom khi focus textarea.
+            fontSize: 16,
             background: "white",
             resize: "none",
-            minHeight: 42,
+            minHeight: 44,
             maxHeight: 180,
             outline: "none",
             lineHeight: 1.4,
@@ -558,11 +566,12 @@ function EmptyState({
     >
       <div
         style={{
-          width: 90,
-          height: 120,
+          width: 120,
+          height: 160,
           display: "grid",
           placeItems: "center",
-          filter: "drop-shadow(0 6px 12px rgba(22,163,74,0.18))",
+          filter: "drop-shadow(0 8px 14px rgba(22,163,74,0.22))",
+          flexShrink: 0,
         }}
       >
         {/* mascot 3:4 — full body in welcome card */}
@@ -570,8 +579,8 @@ function EmptyState({
         <img
           src="/mascot.webp"
           alt="Bé Tre"
-          width={90}
-          height={120}
+          width={120}
+          height={160}
           style={{ width: "100%", height: "100%", objectFit: "contain" }}
         />
       </div>

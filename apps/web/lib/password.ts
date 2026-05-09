@@ -38,11 +38,15 @@ export async function hashPassword(pw: string): Promise<string> {
 /**
  * Set password for an email. ON CONFLICT updates hash + audit fields.
  * Returns true if updated, false if email không tồn tại trong `roles`.
+ *
+ * `mustChange` (default true khi admin set, false khi user tự đổi):
+ * bật → user bị middleware redirect /profile/change-password ở login tới.
  */
 export async function setPasswordForEmail(input: {
   email: string;
   newPassword: string;
   setByEmail: string;
+  mustChange?: boolean;
 }): Promise<boolean> {
   if (!isEnabled()) throw new Error("DATABASE_URL chưa set");
   const policy = validatePassword(input.newPassword);
@@ -50,16 +54,30 @@ export async function setPasswordForEmail(input: {
     throw new Error("Password không đạt yêu cầu: " + policy.errors.join("; "));
   }
   const hash = await hashPassword(input.newPassword);
+  // Default true: admin-initiated set → ép user đổi. User tự đổi → caller pass
+  // mustChange=false rõ ràng để clear flag.
+  const mustChange = input.mustChange ?? true;
   const rows = await query<{ email: string }>(
     `UPDATE roles
        SET password_hash = $2,
            password_set_at = now(),
-           password_set_by = $3
+           password_set_by = $3,
+           password_must_change = $4
      WHERE email = $1
      RETURNING email`,
-    [input.email, hash, input.setByEmail]
+    [input.email, hash, input.setByEmail, mustChange]
   );
   return rows.length > 0;
+}
+
+/** Returns true nếu user phải đổi password ngay (flag bật). */
+export async function passwordMustChange(email: string): Promise<boolean> {
+  if (!isEnabled()) return false;
+  const rows = await query<{ must: boolean }>(
+    `SELECT password_must_change AS must FROM roles WHERE email = $1`,
+    [email]
+  );
+  return rows[0]?.must === true;
 }
 
 /**

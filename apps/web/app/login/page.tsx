@@ -126,7 +126,11 @@ export default async function LoginPage({
           >
             {authError === "CredentialsSignin"
               ? "Email hoặc mật khẩu không đúng. Liên hệ admin nếu quên mật khẩu."
-              : `Đăng nhập thất bại: ${authError}`}
+              : authError === "OTP_REQUIRED"
+                ? "Tài khoản này đã bật OTP — nhập mã 6 số từ Authenticator vào ô bên dưới rồi gửi lại."
+                : authError === "OTP_INVALID"
+                  ? "Mã OTP sai hoặc hết hạn. Lấy mã mới từ Authenticator (đổi mỗi 30 giây) rồi thử lại."
+                  : `Đăng nhập thất bại: ${authError}`}
           </div>
         )}
 
@@ -190,9 +194,10 @@ export default async function LoginPage({
             "use server";
             const email = String(formData.get("email") ?? "").trim();
             const password = String(formData.get("password") ?? "");
+            const otp = String(formData.get("otp") ?? "").trim();
             await signInOrRedirectWithError(
               "password",
-              { email, password, redirectTo: nextPath },
+              { email, password, otp, redirectTo: nextPath },
               nextPath
             );
           }}
@@ -213,6 +218,21 @@ export default async function LoginPage({
             placeholder="Mật khẩu (≥10 ký tự)"
             autoComplete="current-password"
             style={inputStyle}
+          />
+          <input
+            name="otp"
+            type="text"
+            inputMode="numeric"
+            pattern="\d{6}"
+            maxLength={6}
+            autoComplete="one-time-code"
+            placeholder="Mã OTP (6 số) — bỏ trống nếu chưa kích hoạt"
+            style={{
+              ...inputStyle,
+              fontFamily: "ui-monospace, monospace",
+              letterSpacing: "0.2em",
+            }}
+            defaultValue=""
           />
           <button
             type="submit"
