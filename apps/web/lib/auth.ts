@@ -9,6 +9,7 @@ import {
   otpRequiredForRole,
   verifyEnrolledOtp,
 } from "@/lib/otp";
+import { passwordMustChange } from "@/lib/password";
 
 const ALLOWED_DOMAIN =
   process.env.ALLOWED_EMAIL_DOMAIN ?? "locallife.asia";
@@ -130,6 +131,9 @@ declare module "next-auth" {
      *  and their TOTP enrollment is missing or older than 30 days.
      *  Middleware redirects to /profile/otp-setup until cleared. */
     needsOtpSetup: boolean;
+    /** True when admin set/reset password — user phải đổi ngay khi login.
+     *  Middleware redirects to /profile/change-password tới khi user submit. */
+    needsPasswordChange: boolean;
   }
   interface User {
     role?: Role;
@@ -195,14 +199,26 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       } else {
         token.needsOtpSetup = false;
       }
+      // Track password_must_change flag — re-checked cùng TTL với role/OTP.
+      if (email) {
+        const pwCheckedAt = (token.pwCheckedAt as number | undefined) ?? 0;
+        if (!("needsPasswordChange" in token) || pwCheckedAt + ROLE_TTL < NOW) {
+          token.needsPasswordChange = await passwordMustChange(email);
+          token.pwCheckedAt = NOW;
+        }
+      } else {
+        token.needsPasswordChange = false;
+      }
       return token;
     },
     async session({ session, token }) {
       session.role = (token.role as Role | undefined) ?? "guest";
       session.needsOtpSetup = Boolean(token.needsOtpSetup);
+      session.needsPasswordChange = Boolean(token.needsPasswordChange);
       return session as DefaultSession & {
         role: Role;
         needsOtpSetup: boolean;
+        needsPasswordChange: boolean;
       };
     },
   },

@@ -33,11 +33,14 @@ const PUBLIC_BYPASS = [
 // before they're allowed back into the rest of the app. These paths
 // stay accessible so the redirect doesn't loop.
 const OTP_SETUP_BYPASS = [
-  /^\/profile/,                    // /profile + /profile/otp-setup
-  /^\/api\/profile\/otp\//,        // generate + verify-enroll
+  /^\/profile/,                    // /profile + /profile/otp-setup + change-password
+  /^\/api\/profile\//,             // OTP generate/verify-enroll + change-password
   /^\/login/,                      // signing out from setup mid-way
   /^\/api\/auth\//,                // sign out
 ];
+
+// Password change flow — same bypass list (đụng vào nhau, ưu tiên đổi pw trước OTP).
+const PW_CHANGE_BYPASS = OTP_SETUP_BYPASS;
 const IS_PROD = process.env.NODE_ENV === "production";
 
 export async function middleware(req: NextRequest) {
@@ -67,15 +70,30 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // OTP setup gate for internal staff. Any user whose JWT carries
-  // `needsOtpSetup: true` is bounced to /profile/otp-setup until they
-  // complete enrollment (or admin resets, after which they re-enroll).
-  if (!OTP_SETUP_BYPASS.some((r) => r.test(pathname))) {
+  // 2 gate liên tiếp: password change trước (cao priority — admin tạm), rồi OTP.
+  // Cùng bypass list — paths /profile/*, /api/profile/*, /login, /api/auth/*.
+  const inBypass =
+    OTP_SETUP_BYPASS.some((r) => r.test(pathname)) ||
+    PW_CHANGE_BYPASS.some((r) => r.test(pathname));
+
+  if (!inBypass) {
     try {
       const token = await getToken({
         req,
         secret: process.env.NEXTAUTH_SECRET,
       });
+      if (token?.needsPasswordChange) {
+        if (pathname.startsWith("/api/")) {
+          return NextResponse.json(
+            { error: "password_change_required" },
+            { status: 403 }
+          );
+        }
+        const url = req.nextUrl.clone();
+        url.pathname = "/profile/change-password";
+        url.search = "";
+        return NextResponse.redirect(url);
+      }
       if (token?.needsOtpSetup) {
         if (pathname.startsWith("/api/")) {
           return NextResponse.json(

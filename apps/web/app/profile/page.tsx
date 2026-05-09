@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth";
 import { AppNav } from "@/components/app-nav";
 import { PageShell, SectionHeader } from "@/components/ui";
 import { getOtpStatus, otpRequiredForRole } from "@/lib/otp";
+import { hasPassword } from "@/lib/password";
 import { isInternal, type Role } from "@/lib/rbac";
 
 export const dynamic = "force-dynamic";
@@ -15,9 +16,10 @@ export default async function ProfilePage() {
   const email = session.user.email;
   const otpApplies = otpRequiredForRole(role);
   const otp = otpApplies ? await getOtpStatus(email) : null;
+  const userHasPw = await hasPassword(email);
 
   return (
-    <PageShell maxWidth={720}>
+    <PageShell>
       <AppNav role={role} active="dashboard" />
       <SectionHeader title="Hồ sơ của bạn" subtitle={email} />
 
@@ -43,6 +45,43 @@ export default async function ProfilePage() {
         {!isInternal(role) && (
           <p style={{ marginTop: 12, fontSize: 13, color: "var(--ll-muted)" }}>
             Tài khoản external (host/lok/guest) — không yêu cầu OTP.
+          </p>
+        )}
+      </section>
+
+      <section
+        style={{
+          background: "var(--ll-surface)",
+          border: "1px solid var(--ll-border)",
+          borderRadius: "var(--ll-radius-md)",
+          padding: 20,
+          marginBottom: 16,
+        }}
+      >
+        <h3 style={{ margin: "0 0 12px", fontSize: 14 }}>🔑 Mật khẩu</h3>
+        {userHasPw ? (
+          <>
+            <p style={{ fontSize: 13, color: "var(--ll-muted)", margin: "0 0 12px" }}>
+              Tài khoản đang dùng mật khẩu để đăng nhập. Đổi định kỳ để bảo mật.
+            </p>
+            <Link
+              href="/profile/change-password"
+              style={{
+                display: "inline-block",
+                padding: "8px 14px",
+                borderRadius: 8,
+                border: "1px solid var(--ll-border)",
+                fontSize: 13,
+                color: "var(--ll-ink)",
+                textDecoration: "none",
+              }}
+            >
+              Đổi mật khẩu
+            </Link>
+          </>
+        ) : (
+          <p style={{ fontSize: 13, color: "var(--ll-muted)", margin: 0 }}>
+            Tài khoản đang đăng nhập qua Google SSO — không có mật khẩu cục bộ.
           </p>
         )}
       </section>
