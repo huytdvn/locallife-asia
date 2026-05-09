@@ -39,12 +39,24 @@ export function gradeAnswer(
   };
 }
 
+export interface QuestionGrade {
+  question_id: number;
+  correct: boolean;
+  /** Đáp án đúng nếu MC, null nếu keyword. */
+  answer_idx: number | null;
+  /** User chọn (MC) hoặc text (keyword). */
+  user_answer: string | number | null;
+  explanation: string | null;
+}
+
 export interface StepGrade {
   step_id: number;
   questions_total: number;
   questions_passed: number;
   score_pct: number;
   passed: boolean;
+  /** Per-question detail để UI render checkmark + giải thích sau chấm. */
+  question_grades: QuestionGrade[];
 }
 
 export interface FlowGrade {
@@ -53,25 +65,53 @@ export interface FlowGrade {
   step_results: StepGrade[];
 }
 
+export interface FlowQuestionInput {
+  question_id: number;
+  /** MC: index user chọn (number). Keyword: text user gõ (string). null = bỏ trắng. */
+  answer: string | number | null;
+  /** MC fields (preferred). Nếu cả 2 NULL → fallback keyword. */
+  choices?: string[] | null;
+  answer_idx?: number | null;
+  explanation?: string | null;
+  /** Keyword fallback. */
+  expected_keywords?: string[];
+  min_keywords?: number;
+}
+
 export function gradeFlow(params: {
   passThreshold: number;
   steps: Array<{
     step_id: number;
     pass_threshold_pct?: number;
-    questions: Array<{
-      expected_keywords: string[];
-      min_keywords: number;
-      answer: string;
-    }>;
+    questions: FlowQuestionInput[];
   }>;
 }): FlowGrade {
   const stepResults: StepGrade[] = [];
   for (const step of params.steps) {
     let passedCount = 0;
+    const qGrades: QuestionGrade[] = [];
     for (const q of step.questions) {
-      if (gradeAnswer(q.answer, q.expected_keywords, q.min_keywords).passed) {
-        passedCount++;
+      const isMC = q.choices && q.choices.length > 0 && q.answer_idx !== null && q.answer_idx !== undefined;
+      let correct = false;
+      if (isMC) {
+        const userIdx = typeof q.answer === "number" ? q.answer : Number(q.answer);
+        correct = Number.isFinite(userIdx) && userIdx === q.answer_idx;
+      } else {
+        const userText = typeof q.answer === "string" ? q.answer : "";
+        correct = gradeAnswer(
+          userText,
+          q.expected_keywords ?? [],
+          q.min_keywords ?? 1
+        ).passed;
       }
+      if (correct) passedCount++;
+      qGrades.push({
+        question_id: q.question_id,
+        correct,
+        answer_idx: q.answer_idx ?? null,
+        user_answer: q.answer,
+        explanation: q.explanation ?? null,
+      });
     }
     const total = step.questions.length;
     const pct = total > 0 ? Math.round((passedCount / total) * 100) : 0;
@@ -82,6 +122,7 @@ export function gradeFlow(params: {
       questions_passed: passedCount,
       score_pct: pct,
       passed: pct >= stepPassThreshold,
+      question_grades: qGrades,
     });
   }
   const passedSteps = stepResults.filter((s) => s.passed).length;

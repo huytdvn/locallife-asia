@@ -134,7 +134,11 @@ export function OnboardingBuilderWizard({ adminEmail }: { adminEmail: string }) 
       const r = await fetch("/api/admin/onboarding/flows", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ draft, brief: brief.trim() }),
+        body: JSON.stringify({
+          draft,
+          brief: brief.trim(),
+          audienceRole, // để server gen review quiz đi kèm
+        }),
       });
       const j = await r.json();
       if (!r.ok) throw new Error(j.error ?? `HTTP ${r.status}`);

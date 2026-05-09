@@ -14,6 +14,11 @@ interface DocRef {
 interface Question {
   id: number;
   prompt: string;
+  // MC fields (preferred)
+  choices: string[] | null;
+  answer_idx: number | null;
+  explanation: string | null;
+  // Legacy keyword
   expected_keywords: string[];
   min_keywords: number;
 }
@@ -34,6 +39,15 @@ interface Flow {
   motto: string | null;
   pass_threshold: number;
   steps: Step[];
+  review_quiz_id?: number | null;
+}
+
+interface QuestionGrade {
+  question_id: number;
+  correct: boolean;
+  answer_idx: number | null;
+  user_answer: string | number | null;
+  explanation: string | null;
 }
 
 interface SubmitResult {
@@ -44,22 +58,48 @@ interface SubmitResult {
     step_id: number;
     score_pct: number;
     passed: boolean;
+    question_grades: QuestionGrade[];
   }>;
+  review_quiz_id: number | null;
 }
+
+// Palette vibrant cho từng step — rotate qua list để mỗi step có màu riêng
+const STEP_PALETTE = [
+  { bg: "linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)", accent: "#d97706", emoji: "🌱" },
+  { bg: "linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)", accent: "#2563eb", emoji: "🌊" },
+  { bg: "linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%)", accent: "#db2777", emoji: "🌸" },
+  { bg: "linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%)", accent: "#059669", emoji: "🍀" },
+  { bg: "linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%)", accent: "#7c3aed", emoji: "🔮" },
+];
+
+const ENCOURAGE = [
+  "Đi thôi nào, từng bước một! 💪",
+  "Bạn đang làm tốt lắm 🌟",
+  "Đọc kỹ tài liệu là pass dễ thôi 📖",
+  "Suy nghĩ chậm cũng được, không vội ☕",
+  "Sai cũng không sao — học được là chính 🎯",
+];
 
 export function FlowTaker({ flow }: { flow: Flow }) {
   const router = useRouter();
   const [stepIdx, setStepIdx] = useState(0);
-  const [answers, setAnswers] = useState<Record<number, string>>({});
+  // answer: number (MC index) hoặc string (free text)
+  const [answers, setAnswers] = useState<Record<number, number | string>>({});
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<SubmitResult | null>(null);
 
   const step = flow.steps[stepIdx];
   const isLast = stepIdx === flow.steps.length - 1;
+  const palette = STEP_PALETTE[stepIdx % STEP_PALETTE.length];
+  const encourage = ENCOURAGE[stepIdx % ENCOURAGE.length];
 
-  function setAnswer(qid: number, val: string) {
+  function setAnswer(qid: number, val: number | string) {
     setAnswers((cur) => ({ ...cur, [qid]: val }));
+  }
+
+  function isMC(q: Question): boolean {
+    return Array.isArray(q.choices) && q.choices.length > 0 && q.answer_idx !== null;
   }
 
   async function submit() {
@@ -70,7 +110,7 @@ export function FlowTaker({ flow }: { flow: Flow }) {
         s.questions.map((q) => ({
           step_id: s.id,
           question_id: q.id,
-          answer: answers[q.id] ?? "",
+          answer: answers[q.id] ?? null,
         }))
       );
       const r = await fetch(`/api/onboarding/flows/${flow.id}/submit`, {
@@ -81,6 +121,7 @@ export function FlowTaker({ flow }: { flow: Flow }) {
       const j = await r.json();
       if (!r.ok) throw new Error(j.error ?? `HTTP ${r.status}`);
       setResult(j as SubmitResult);
+      window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
@@ -92,34 +133,92 @@ export function FlowTaker({ flow }: { flow: Flow }) {
     const passedSteps = result.step_results.filter((s) => s.passed).length;
     return (
       <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-        <div className="ll-card" style={{ ...cardStyle, textAlign: "center" }}>
-          <div style={{ fontSize: 42, marginBottom: 8 }}>
+        <div className="ll-card" style={{ ...cardStyle, textAlign: "center", background: result.passed ? "linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%)" : "linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)" }}>
+          <div style={{ fontSize: 56, marginBottom: 8 }}>
             {result.passed ? "🎉" : "💪"}
           </div>
-          <h2 style={{ margin: "0 0 6px", color: result.passed ? "var(--ll-green-dark)" : "#c07600" }}>
+          <h2 style={{ margin: "0 0 6px", color: result.passed ? "#059669" : "#c07600" }}>
             {result.passed ? "Pass rồi! Tuyệt vời." : "Chưa pass — nhưng còn cơ hội"}
           </h2>
-          <p style={{ margin: 0, fontSize: 14, color: "var(--ll-muted)" }}>
+          <p style={{ margin: 0, fontSize: 14, color: "var(--ll-ink-soft)" }}>
             Bạn đạt <strong>{result.score_pct}%</strong> ({passedSteps}/{result.step_results.length} bước pass).
             Cần ≥ {flow.pass_threshold}% để pass tổng.
           </p>
         </div>
 
+        {result.review_quiz_id && result.passed && (
+          <div className="ll-card" style={{ ...cardStyle, background: "linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%)", borderColor: "#7c3aed" }}>
+            <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+              <div style={{ fontSize: 36 }}>🔁</div>
+              <div style={{ flex: 1 }}>
+                <strong style={{ color: "#5b21b6", fontSize: 15 }}>Ôn lại trong tuần</strong>
+                <p style={{ margin: "2px 0 8px", fontSize: 13, color: "var(--ll-ink-soft)" }}>
+                  Đã có quiz ngắn để ôn lại nội dung vừa học. Làm lại trong tuần để khắc sâu kiến thức.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => router.push(`/training/quizzes/${result.review_quiz_id}`)}
+                  style={{
+                    padding: "8px 14px",
+                    borderRadius: 8,
+                    background: "#7c3aed",
+                    color: "white",
+                    border: "none",
+                    fontWeight: 600,
+                    fontSize: 13,
+                    cursor: "pointer",
+                  }}
+                >
+                  ✨ Mở quiz ôn lại
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="ll-card" style={cardStyle}>
-          <h3 style={{ margin: "0 0 10px", fontSize: 14 }}>Chi tiết từng bước</h3>
+          <h3 style={{ margin: "0 0 10px", fontSize: 14 }}>📊 Chi tiết từng bước</h3>
           {result.step_results.map((s, i) => (
             <div
               key={s.step_id}
               style={{
-                padding: "8px 12px",
-                borderLeft: `3px solid ${s.passed ? "var(--ll-green-bright)" : "#fdba74"}`,
-                background: s.passed ? "var(--ll-green-soft)" : "#fff7ed",
-                borderRadius: "0 6px 6px 0",
-                marginBottom: 6,
+                padding: "10px 12px",
+                borderLeft: `4px solid ${s.passed ? "#10b981" : "#fbbf24"}`,
+                background: s.passed ? "#ecfdf5" : "#fffbeb",
+                borderRadius: "0 8px 8px 0",
+                marginBottom: 8,
                 fontSize: 13,
               }}
             >
-              Step {i + 1}: <strong>{s.score_pct}%</strong> — {s.passed ? "✓ pass" : "× chưa pass"}
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <strong>{STEP_PALETTE[i % STEP_PALETTE.length].emoji} Step {i + 1}</strong>
+                <span>{s.score_pct}% — {s.passed ? "✓ pass" : "× chưa pass"}</span>
+              </div>
+              {/* Per-question feedback */}
+              <div style={{ marginTop: 6, display: "flex", flexDirection: "column", gap: 4 }}>
+                {s.question_grades.map((qg, qi) => {
+                  const stepObj = flow.steps[i];
+                  const q = stepObj?.questions[qi];
+                  if (!q) return null;
+                  return (
+                    <div key={qg.question_id} style={{ fontSize: 12, padding: "4px 0" }}>
+                      <div>
+                        {qg.correct ? "✓" : "✗"} {q.prompt}
+                      </div>
+                      {!qg.correct && q.choices && qg.answer_idx !== null && (
+                        <div style={{ paddingLeft: 18, color: "#059669", marginTop: 2 }}>
+                          ➜ Đáp án đúng: <strong>{q.choices[qg.answer_idx]}</strong>
+                        </div>
+                      )}
+                      {qg.explanation && !qg.correct && (
+                        <div style={{ paddingLeft: 18, color: "var(--ll-muted)", fontStyle: "italic", marginTop: 2 }}>
+                          💡 {qg.explanation}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           ))}
         </div>
@@ -130,7 +229,9 @@ export function FlowTaker({ flow }: { flow: Flow }) {
               type="button"
               onClick={() => {
                 setResult(null);
+                setAnswers({});
                 setStepIdx(0);
+                window.scrollTo({ top: 0 });
               }}
               style={btnPrimary}
             >
@@ -166,27 +267,27 @@ export function FlowTaker({ flow }: { flow: Flow }) {
         fontSize: 12,
         color: "var(--ll-muted)",
       }}>
-        Bước {stepIdx + 1}/{flow.steps.length}
+        {palette.emoji} Bước {stepIdx + 1}/{flow.steps.length} · {encourage}
         <div style={{
           flex: 1,
-          height: 4,
+          height: 6,
           background: "var(--ll-border)",
-          borderRadius: 2,
+          borderRadius: 3,
           marginLeft: 8,
           overflow: "hidden",
         }}>
           <div style={{
             height: "100%",
             width: `${((stepIdx + 1) / flow.steps.length) * 100}%`,
-            background: "var(--ll-green-bright)",
+            background: palette.accent,
             transition: "width 200ms",
           }} />
         </div>
       </div>
 
-      <div className="ll-card" style={cardStyle}>
-        <h2 style={{ margin: "0 0 8px", fontSize: 18, color: "var(--ll-green-dark)" }}>
-          {step.goal}
+      <div className="ll-card" style={{ ...cardStyle, background: palette.bg, borderColor: palette.accent }}>
+        <h2 style={{ margin: "0 0 8px", fontSize: 20, color: palette.accent }}>
+          {palette.emoji} {step.goal}
         </h2>
         {step.intro && (
           <p style={{ margin: "0 0 12px", fontSize: 14, color: "var(--ll-ink-soft)" }}>
@@ -194,7 +295,7 @@ export function FlowTaker({ flow }: { flow: Flow }) {
           </p>
         )}
         {step.pass_criteria && (
-          <p style={{ margin: 0, fontSize: 12, color: "var(--ll-muted)", fontStyle: "italic" }}>
+          <p style={{ margin: 0, fontSize: 12, color: palette.accent, fontStyle: "italic" }}>
             🎯 {step.pass_criteria}
           </p>
         )}
@@ -202,7 +303,7 @@ export function FlowTaker({ flow }: { flow: Flow }) {
 
       {step.docs.length > 0 && (
         <div className="ll-card" style={cardStyle}>
-          <h3 style={{ margin: "0 0 10px", fontSize: 14 }}>📚 Tài liệu cần đọc</h3>
+          <h3 style={{ margin: "0 0 10px", fontSize: 14 }}>📚 Đọc trước để trả lời tốt hơn</h3>
           {step.docs.map((d) => (
             <div
               key={d.id}
@@ -228,7 +329,7 @@ export function FlowTaker({ flow }: { flow: Flow }) {
               )}
               {d.highlight && (
                 <blockquote style={{
-                  borderLeft: "3px solid var(--ll-green-bright)",
+                  borderLeft: `3px solid ${palette.accent}`,
                   margin: "8px 0 0",
                   padding: "4px 10px",
                   fontSize: 13,
@@ -245,28 +346,78 @@ export function FlowTaker({ flow }: { flow: Flow }) {
       )}
 
       <div className="ll-card" style={cardStyle}>
-        <h3 style={{ margin: "0 0 10px", fontSize: 14 }}>✏️ Trả lời ngắn gọn</h3>
+        <h3 style={{ margin: "0 0 10px", fontSize: 14 }}>✏️ Trả lời nào</h3>
         {step.questions.map((q, i) => (
-          <div key={q.id} style={{ marginBottom: 14 }}>
-            <label style={{ fontSize: 13, fontWeight: 500, display: "block", marginBottom: 4 }}>
-              Câu {i + 1}: {q.prompt}
-            </label>
-            <textarea
-              value={answers[q.id] ?? ""}
-              onChange={(e) => setAnswer(q.id, e.target.value)}
-              placeholder="Trả lời (1–3 câu)…"
-              rows={3}
-              style={{
-                width: "100%",
-                padding: "9px 12px",
-                borderRadius: 8,
-                border: "1px solid var(--ll-border)",
-                fontSize: 14,
-                fontFamily: "inherit",
-                resize: "vertical",
-                boxSizing: "border-box",
-              }}
-            />
+          <div key={q.id} style={{ marginBottom: 18 }}>
+            <div style={{ fontSize: 14, fontWeight: 500, marginBottom: 8 }}>
+              <span style={{
+                display: "inline-block",
+                width: 24,
+                height: 24,
+                borderRadius: "50%",
+                background: palette.accent,
+                color: "white",
+                textAlign: "center",
+                lineHeight: "24px",
+                fontSize: 12,
+                fontWeight: 700,
+                marginRight: 8,
+              }}>
+                {i + 1}
+              </span>
+              {q.prompt}
+            </div>
+            {isMC(q) ? (
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                {q.choices!.map((c, j) => {
+                  const picked = answers[q.id] === j;
+                  return (
+                    <label
+                      key={j}
+                      style={{
+                        display: "flex",
+                        gap: 10,
+                        alignItems: "flex-start",
+                        padding: "10px 14px",
+                        borderRadius: 10,
+                        cursor: "pointer",
+                        background: picked ? palette.bg : "white",
+                        border: picked ? `2px solid ${palette.accent}` : "1px solid var(--ll-border)",
+                        fontSize: 13,
+                        transition: "all 120ms",
+                      }}
+                    >
+                      <input
+                        type="radio"
+                        name={`q-${q.id}`}
+                        checked={picked}
+                        onChange={() => setAnswer(q.id, j)}
+                        style={{ marginTop: 3, accentColor: palette.accent }}
+                      />
+                      <span style={{ flex: 1 }}>{c}</span>
+                    </label>
+                  );
+                })}
+              </div>
+            ) : (
+              // Legacy keyword fallback
+              <textarea
+                value={typeof answers[q.id] === "string" ? (answers[q.id] as string) : ""}
+                onChange={(e) => setAnswer(q.id, e.target.value)}
+                placeholder="Trả lời (1–3 câu)…"
+                rows={3}
+                style={{
+                  width: "100%",
+                  padding: "9px 12px",
+                  borderRadius: 8,
+                  border: "1px solid var(--ll-border)",
+                  fontSize: 14,
+                  fontFamily: "inherit",
+                  resize: "vertical",
+                  boxSizing: "border-box",
+                }}
+              />
+            )}
           </div>
         ))}
       </div>
@@ -294,14 +445,14 @@ export function FlowTaker({ flow }: { flow: Flow }) {
           ← Trước
         </button>
         {isLast ? (
-          <button type="button" onClick={submit} disabled={busy} style={btnPrimary}>
+          <button type="button" onClick={submit} disabled={busy} style={{ ...btnPrimary, background: palette.accent }}>
             ✓ {busy ? "Đang chấm…" : "Nộp bài"}
           </button>
         ) : (
           <button
             type="button"
             onClick={() => setStepIdx((cur) => cur + 1)}
-            style={btnPrimary}
+            style={{ ...btnPrimary, background: palette.accent }}
           >
             Bước tiếp →
           </button>

@@ -81,6 +81,13 @@ export interface OnboardingDocRef {
 
 export interface OnboardingQuestion {
   prompt: string;
+  /** MC choices — luôn có 4. */
+  choices: string[];
+  /** Index 0-3 trong choices cho đáp án đúng. */
+  answer_idx: number;
+  /** 1-2 câu giải thích, hiển thị sau chấm. */
+  explanation: string;
+  /** Legacy field — giữ trống cho MC, chỉ dùng nếu rớt về tự luận. */
   expected_keywords: string[];
   min_keywords: number;
 }
@@ -142,7 +149,8 @@ YÊU CẦU:
 - Chia 3-5 step, mỗi step có goal rõ ràng + intro markdown 2-3 câu mời mọc.
 - Mỗi step gắn 1-3 doc THỰC SỰ trong catalog (đúng doc_path). heading_anchor là slug khớp với một H2 trong doc đó (KHÔNG bịa), hoặc null nếu chỉ cần đọc cả doc.
 - highlight: trích 1-2 câu cốt lõi cần đọc (≤ 240 ký tự, tiếng Việt).
-- 2-4 câu hỏi/step, có expected_keywords (3-6 từ khoá tiếng Việt thường) + min_keywords để chấm pass/fail.
+- 2-4 câu hỏi TRẮC NGHIỆM/step. Mỗi câu có 4 lựa chọn (choices), 1 đáp án đúng (answer_idx 0-3), explanation 1-2 câu giải thích vì sao đúng (xuất hiện sau khi user chấm — dạy nhanh khi user sai).
+- prompt câu hỏi đa dạng giọng điệu: thay vì "X là gì?", thử "Bạn sẽ nói thế nào về X?", "Đoán xem ai/cái gì làm việc này?", "Tình huống Y, bạn chọn cách nào?". Có thể có emoji ở đầu prompt cho vibe vui (vd "🤔", "💡", "🎯"). Đáp án phải PHÂN BIỆT RÕ — không 4 đáp án cùng nghĩa.
 - pass_criteria 1 câu, vd "Trả đúng ≥ 70% câu trong step này".
 - pass_threshold tổng: 60-80.
 - Tone: ấm áp, có cảm xúc nhỏ ở motto + intro. Không trang trọng quá.
@@ -167,9 +175,10 @@ Trả về DUY NHẤT JSON object:
       ],
       "questions": [
         {
-          "prompt": "Câu hỏi cụ thể",
-          "expected_keywords": ["từ_khoá_1","từ_khoá_2"],
-          "min_keywords": <number ≥ 1>
+          "prompt": "Câu hỏi (có thể có emoji đầu câu)",
+          "choices": ["Lựa chọn A","Lựa chọn B","Lựa chọn C","Lựa chọn D"],
+          "answer_idx": <0-3>,
+          "explanation": "1-2 câu giải thích vì sao đáp án đó đúng"
         }
       ]
     }
@@ -225,21 +234,72 @@ KHÔNG markdown wrapper, KHÔNG comment. JSON thuần.`;
                   .filter((x): x is OnboardingDocRef => x !== null)
               : [],
             questions: Array.isArray(o?.questions)
-              ? (o.questions as unknown[]).map((q): OnboardingQuestion => {
-                  const y = q as Record<string, unknown>;
-                  const kws = Array.isArray(y?.expected_keywords)
-                    ? (y.expected_keywords as unknown[]).map(String).slice(0, 8)
-                    : [];
-                  return {
-                    prompt: String(y?.prompt ?? "").slice(0, 400),
-                    expected_keywords: kws,
-                    min_keywords: clampInt(y?.min_keywords, 1, kws.length || 1, 1),
-                  };
-                })
+              ? (o.questions as unknown[])
+                  .map((q): OnboardingQuestion | null => {
+                    const y = q as Record<string, unknown>;
+                    const choices = Array.isArray(y?.choices)
+                      ? (y.choices as unknown[]).map(String).slice(0, 4)
+                      : [];
+                    if (choices.length < 2) return null; // bỏ câu invalid
+                    const ans = clampInt(y?.answer_idx, 0, choices.length - 1, 0);
+                    const kws = Array.isArray(y?.expected_keywords)
+                      ? (y.expected_keywords as unknown[]).map(String).slice(0, 8)
+                      : [];
+                    return {
+                      prompt: String(y?.prompt ?? "").slice(0, 400),
+                      choices,
+                      answer_idx: ans,
+                      explanation: String(y?.explanation ?? "").slice(0, 400),
+                      expected_keywords: kws,
+                      min_keywords: clampInt(y?.min_keywords, 1, kws.length || 1, 1),
+                    };
+                  })
+                  .filter((x: OnboardingQuestion | null): x is OnboardingQuestion => x !== null)
               : [],
           };
         })
       : [],
+  };
+}
+
+/**
+ * Sinh quiz "ôn lại" từ 1 flow đã có. Dùng cùng tập docs flow tham chiếu
+ * để giữ nội dung consistent. Câu hỏi nhẹ nhàng hơn (recall, không sâu).
+ *
+ * Trigger: khi admin save flow xong → server auto gen review quiz cùng
+ * topic, lưu link vào onboarding_flow.review_quiz_id. User pass flow →
+ * page result hiển thị nút "Ôn lại bằng quiz trong tuần".
+ */
+export async function generateReviewQuizForFlow(params: {
+  flowTitle: string;
+  flowMotto: string;
+  audienceRole: Role;
+  docPaths: string[];
+}): Promise<TrainingQuizDraft> {
+  if (params.docPaths.length === 0) {
+    // Không có docs → trả empty draft để caller skip lưu
+    return {
+      title: `Ôn lại · ${params.flowTitle}`,
+      motto: "",
+      intro: "",
+      pass_threshold: 60,
+      questions: [],
+    };
+  }
+  const draft = await generateTrainingQuiz({
+    docPaths: params.docPaths,
+    format: "quiz",
+    audience: [params.audienceRole],
+    customInstruction:
+      `Quiz này là "ôn lại" cho lộ trình "${params.flowTitle}". ` +
+      `Câu hỏi nên ngắn gọn (≤ 5 câu), tone nhẹ nhàng kiểu nhắc nhớ, ` +
+      `tập trung điểm cốt lõi vừa học. Có emoji vibrant ở motto.`,
+  });
+  // Force title rõ "ôn lại"
+  return {
+    ...draft,
+    title: `Ôn lại · ${params.flowTitle}`,
+    motto: draft.motto || `Vài phút ôn nhanh ${params.flowMotto || "🌟"}`,
   };
 }
 

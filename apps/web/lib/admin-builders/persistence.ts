@@ -68,9 +68,18 @@ export async function saveOnboardingFlow(params: {
       }
       for (const q of step.questions) {
         await client.query(
-          `INSERT INTO onboarding_step_question (step_id, prompt, expected_keywords, min_keywords)
-           VALUES ($1, $2, $3, $4)`,
-          [stepId, q.prompt, q.expected_keywords, q.min_keywords]
+          `INSERT INTO onboarding_step_question
+             (step_id, prompt, expected_keywords, min_keywords, choices, answer_idx, explanation)
+           VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+          [
+            stepId,
+            q.prompt,
+            q.expected_keywords,
+            q.min_keywords,
+            q.choices.length > 0 ? q.choices : null,
+            q.choices.length > 0 ? q.answer_idx : null,
+            q.explanation || null,
+          ]
         );
       }
     }
@@ -141,8 +150,12 @@ export interface FullOnboardingFlow {
       prompt: string;
       expected_keywords: string[];
       min_keywords: number;
+      choices: string[] | null;
+      answer_idx: number | null;
+      explanation: string | null;
     }>;
   }>;
+  review_quiz_id: number | null;
 }
 
 export async function getOnboardingFlow(
@@ -156,8 +169,9 @@ export async function getOnboardingFlow(
     brief: string | null;
     status: "draft" | "published" | "archived";
     pass_threshold: number;
+    review_quiz_id: number | null;
   }>(
-    `SELECT id, title, motto, brief, status, pass_threshold
+    `SELECT id, title, motto, brief, status, pass_threshold, review_quiz_id
      FROM onboarding_flow WHERE id = $1`,
     [id]
   );
@@ -199,8 +213,12 @@ export async function getOnboardingFlow(
         prompt: string;
         expected_keywords: string[];
         min_keywords: number;
+        choices: string[] | null;
+        answer_idx: number | null;
+        explanation: string | null;
       }>(
-        `SELECT id, step_id, prompt, expected_keywords, min_keywords
+        `SELECT id, step_id, prompt, expected_keywords, min_keywords,
+                choices, answer_idx, explanation
          FROM onboarding_step_question WHERE step_id = ANY($1::bigint[]) ORDER BY id`,
         [stepIds]
       )
@@ -222,9 +240,23 @@ export async function getOnboardingFlow(
         prompt: q.prompt,
         expected_keywords: q.expected_keywords ?? [],
         min_keywords: q.min_keywords,
+        choices: q.choices,
+        answer_idx: q.answer_idx,
+        explanation: q.explanation,
       })),
     })),
   };
+}
+
+export async function setFlowReviewQuiz(
+  flowId: number,
+  reviewQuizId: number | null
+): Promise<void> {
+  if (!isEnabled()) return;
+  await query(
+    `UPDATE onboarding_flow SET review_quiz_id = $2 WHERE id = $1`,
+    [flowId, reviewQuizId]
+  );
 }
 
 export async function deleteOnboardingFlow(id: number): Promise<boolean> {

@@ -16,7 +16,8 @@ const bodySchema = z.object({
     z.object({
       step_id: z.number().int(),
       question_id: z.number().int(),
-      answer: z.string().max(2000),
+      // MC: number (index choice). Keyword: string (free text). null = bỏ trắng.
+      answer: z.union([z.string().max(2000), z.number().int(), z.null()]),
     })
   ),
 });
@@ -55,9 +56,8 @@ export async function POST(
     return NextResponse.json({ error: "not_found" }, { status: 404 });
   }
 
-  // Build steps payload cho grader: pair từng question với answer (default empty
-  // string nếu user bỏ trống).
-  const answerByQ = new Map<number, string>();
+  // Build steps payload cho grader: pair từng question với answer
+  const answerByQ = new Map<number, string | number | null>();
   for (const a of parsed.data.answers) {
     answerByQ.set(a.question_id, a.answer);
   }
@@ -67,9 +67,13 @@ export async function POST(
     steps: flow.steps.map((s) => ({
       step_id: s.id,
       questions: s.questions.map((q) => ({
+        question_id: q.id,
+        choices: q.choices,
+        answer_idx: q.answer_idx,
+        explanation: q.explanation,
         expected_keywords: q.expected_keywords,
         min_keywords: q.min_keywords,
-        answer: answerByQ.get(q.id) ?? "",
+        answer: answerByQ.get(q.id) ?? null,
       })),
     })),
   });
@@ -105,5 +109,6 @@ export async function POST(
     passed: grade.passed,
     score_pct: grade.score_pct,
     step_results: grade.step_results,
+    review_quiz_id: flow.review_quiz_id,
   });
 }
