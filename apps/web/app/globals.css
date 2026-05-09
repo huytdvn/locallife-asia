@@ -523,13 +523,15 @@ a.ll-card:hover,
     display: none !important;
   }
   .ll-nav-link {
-    padding: 6px 8px !important;
+    padding: 8px 10px !important;
   }
   .ll-nav-link-label {
     display: none !important;
   }
-  .ll-nav-link span[aria-hidden] {
-    font-size: 22px !important;
+  /* SVG icon scale hơn trên mobile cho dễ tap */
+  .ll-nav-link-icon svg {
+    width: 22px !important;
+    height: 22px !important;
   }
 
   /* Generic mobile/desktop toggles */

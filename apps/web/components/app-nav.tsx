@@ -2,6 +2,7 @@ import Link from "next/link";
 import { UserBadge } from "@/components/user-badge";
 import type { NavLinkData } from "@/components/mobile-nav-drawer";
 import type { ProfileMenuItem } from "@/components/profile-menu";
+import { NavIcon, type NavIconKey } from "@/components/nav-icons";
 import type { Role } from "@/lib/rbac";
 
 type NavKey =
@@ -26,8 +27,8 @@ interface Props {
 interface TopbarLink {
   href: string;
   label: string;
-  /** Emoji/icon hiển thị trên mobile (icon-only). Desktop hiện cả icon + label. */
-  icon: string;
+  /** SVG icon key (nav-icons.tsx). Mobile chỉ icon, desktop icon + label. */
+  iconKey: NavIconKey;
   key: NavKey;
 }
 
@@ -48,7 +49,7 @@ export function AppNav({ role, active }: Props) {
   const navLinks: NavLinkData[] = topbar.map((s) => ({
     href: s.href,
     label: s.label,
-    icon: s.icon,
+    iconKey: s.iconKey,
     key: s.key,
     active: active === s.key,
     group: "primary",
@@ -114,7 +115,7 @@ export function AppNav({ role, active }: Props) {
               key={`${l.key}-${l.href}`}
               href={l.href}
               active={l.active}
-              icon={l.icon}
+              iconKey={l.iconKey}
               label={l.label}
             />
           ))}
@@ -164,21 +165,21 @@ function buildLinksForRole(role: Role): BuiltLinks {
   // bài admin tạo qua /admin/onboarding/new sẽ hiển thị. Admin/lead vẫn
   // dùng layer cũ làm dashboard, có shortcut tới layer mới ở trong page.
   if (isInternal) {
-    topbar.push({ href: "/dashboard", label: "Tổng quan", icon: "📊", key: "dashboard" });
-    topbar.push({ href: "/", label: "Trợ lý AI", icon: "💬", key: "home" });
-    topbar.push({ href: "/onboarding/flows", label: "Lộ trình", icon: "📚", key: "onboarding" });
-    topbar.push({ href: "/training/quizzes", label: "Quiz", icon: "🎯", key: "training" });
+    topbar.push({ href: "/dashboard", label: "Tổng quan", iconKey: "dashboard", key: "dashboard" });
+    topbar.push({ href: "/", label: "Trợ lý AI", iconKey: "chat", key: "home" });
+    topbar.push({ href: "/onboarding/flows", label: "Lộ trình", iconKey: "route", key: "onboarding" });
+    topbar.push({ href: "/training/quizzes", label: "Quiz", iconKey: "target", key: "training" });
   } else if (role === "host") {
-    topbar.push({ href: "/host", label: "Cổng Host", icon: "🏡", key: "host" });
-    topbar.push({ href: "/", label: "Trợ lý AI", icon: "💬", key: "home" });
-    topbar.push({ href: "/training/quizzes", label: "Quiz", icon: "🎯", key: "training" });
+    topbar.push({ href: "/host", label: "Cổng Host", iconKey: "home", key: "host" });
+    topbar.push({ href: "/", label: "Trợ lý AI", iconKey: "chat", key: "home" });
+    topbar.push({ href: "/training/quizzes", label: "Quiz", iconKey: "target", key: "training" });
   } else if (role === "lok") {
-    topbar.push({ href: "/lok", label: "Cổng LOK", icon: "🌟", key: "lok" });
-    topbar.push({ href: "/", label: "Trợ lý AI", icon: "💬", key: "home" });
-    topbar.push({ href: "/training/quizzes", label: "Quiz", icon: "🎯", key: "training" });
+    topbar.push({ href: "/lok", label: "Cổng LOK", iconKey: "star", key: "lok" });
+    topbar.push({ href: "/", label: "Trợ lý AI", iconKey: "chat", key: "home" });
+    topbar.push({ href: "/training/quizzes", label: "Quiz", iconKey: "target", key: "training" });
   } else {
-    topbar.push({ href: "/public", label: "Trang công khai", icon: "🌏", key: "public" });
-    topbar.push({ href: "/training/quizzes", label: "Quiz", icon: "🎯", key: "training" });
+    topbar.push({ href: "/public", label: "Trang công khai", iconKey: "globe", key: "public" });
+    topbar.push({ href: "/training/quizzes", label: "Quiz", iconKey: "target", key: "training" });
   }
 
   // ─── PROFILE MENU: quản trị ───
@@ -226,12 +227,12 @@ function buildLinksForRole(role: Role): BuiltLinks {
 function NavLink({
   href,
   active,
-  icon,
+  iconKey,
   label,
 }: {
   href: string;
   active: boolean;
-  icon?: string;
+  iconKey?: NavIconKey;
   label: string;
 }) {
   return (
@@ -245,7 +246,7 @@ function NavLink({
         fontWeight: active ? 600 : 500,
         color: active ? "var(--ll-green-dark)" : "var(--ll-ink-soft)",
         textDecoration: "none",
-        padding: "6px 8px",
+        padding: "6px 10px",
         borderRadius: 8,
         background: active ? "var(--ll-green-soft)" : "transparent",
         transition: "all 120ms var(--ll-ease)",
@@ -256,7 +257,11 @@ function NavLink({
         gap: 6,
       }}
     >
-      {icon && <span style={{ fontSize: 18, lineHeight: 1 }} aria-hidden>{icon}</span>}
+      {iconKey && (
+        <span className="ll-nav-link-icon" style={{ display: "inline-flex" }} aria-hidden>
+          <NavIcon name={iconKey} />
+        </span>
+      )}
       <span className="ll-nav-link-label">{label}</span>
     </Link>
   );
