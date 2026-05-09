@@ -557,6 +557,80 @@ export async function getQuizForUser(
   };
 }
 
+/**
+ * Analytics cho admin listing — group quiz theo audience role + thống kê
+ * users trong từng nhóm: bao nhiêu active, bao nhiêu đã pass, last online
+ * (max ts trong audit_log của email đó).
+ *
+ * Nhằm trả lời câu hỏi của admin: "Quiz này áp dụng cho ai, ai chưa làm,
+ * và bây giờ có thể nudge ai (ai online gần đây)?"
+ */
+export interface QuizGroupAnalytics {
+  audience_role: Role;
+  active_users: number;
+  attempted: number;
+  passed: number;
+  /** ISO date string của lần online gần nhất across users trong audience. */
+  most_recent_online: string | null;
+  /** Median (xấp xỉ) "online time of day" — hour-of-day mean. NULL nếu chưa có data. */
+  typical_online_hour: number | null;
+}
+
+export async function quizAudienceAnalytics(
+  quizId: number,
+  audience: Role[]
+): Promise<QuizGroupAnalytics[]> {
+  if (!isEnabled() || audience.length === 0) return [];
+  const rows = await query<{
+    audience_role: Role;
+    active_users: string | number;
+    attempted: string | number;
+    passed: string | number;
+    most_recent_online: string | null;
+    typical_online_hour: string | number | null;
+  }>(
+    `WITH role_users AS (
+       SELECT email, role FROM roles
+       WHERE NOT disabled AND role = ANY($2::text[])
+     ),
+     attempts AS (
+       SELECT email, BOOL_OR(passed) AS ever_passed
+       FROM training_quiz_attempt
+       WHERE quiz_id = $1
+       GROUP BY email
+     ),
+     online AS (
+       SELECT actor_email,
+              MAX(ts) AS last_ts,
+              AVG(EXTRACT(HOUR FROM ts AT TIME ZONE 'Asia/Ho_Chi_Minh'))::numeric(4,1) AS avg_hour
+       FROM audit_log
+       WHERE ts > now() - INTERVAL '30 days'
+       GROUP BY actor_email
+     )
+     SELECT r.role AS audience_role,
+            count(*) AS active_users,
+            count(a.email) AS attempted,
+            count(a.email) FILTER (WHERE a.ever_passed) AS passed,
+            MAX(o.last_ts)::text AS most_recent_online,
+            AVG(o.avg_hour)::numeric(4,1)::text AS typical_online_hour
+     FROM role_users r
+     LEFT JOIN attempts a ON a.email = r.email
+     LEFT JOIN online o ON o.actor_email = r.email
+     GROUP BY r.role
+     ORDER BY r.role`,
+    [quizId, audience]
+  );
+  return rows.map((r) => ({
+    audience_role: r.audience_role,
+    active_users: Number(r.active_users),
+    attempted: Number(r.attempted),
+    passed: Number(r.passed),
+    most_recent_online: r.most_recent_online,
+    typical_online_hour:
+      r.typical_online_hour === null ? null : Number(r.typical_online_hour),
+  }));
+}
+
 /** Full questions (incl answer_idx) — dùng khi chấm bài. */
 export async function getQuizFull(id: number): Promise<FullTrainingQuiz["questions_full"] | null> {
   if (!isEnabled()) return null;

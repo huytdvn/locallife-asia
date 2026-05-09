@@ -159,22 +159,28 @@ function buildLinksForRole(role: Role): BuiltLinks {
   const menuItems: ProfileMenuItem[] = [];
 
   // ─── TOP BAR: tương tác hằng ngày ───
+  // Internal có 2 layer onboarding/training:
+  //   - Legacy `/onboarding` `/training` (weekly_assignment + file-based)
+  //   - Mới `/onboarding/flows` `/training/quizzes` (admin builders)
+  // Topbar cho user thường (employee) trỏ thẳng vào layer mới — đó là nơi
+  // bài admin tạo qua /admin/onboarding/new sẽ hiển thị. Admin/lead vẫn
+  // dùng layer cũ làm dashboard, có shortcut tới layer mới ở trong page.
   if (isInternal) {
     topbar.push({ href: "/dashboard", label: "Tổng quan", key: "dashboard" });
     topbar.push({ href: "/", label: "Trợ lý AI", key: "home" });
-    topbar.push({ href: "/onboarding", label: "Onboarding", key: "onboarding" });
-    topbar.push({ href: "/training", label: "Training", key: "training" });
+    topbar.push({ href: "/onboarding/flows", label: "Lộ trình", key: "onboarding" });
+    topbar.push({ href: "/training/quizzes", label: "Quiz", key: "training" });
   } else if (role === "host") {
     topbar.push({ href: "/host", label: "Cổng Host", key: "host" });
     topbar.push({ href: "/", label: "Trợ lý AI", key: "home" });
-    topbar.push({ href: "/training", label: "Training", key: "training" });
+    topbar.push({ href: "/training/quizzes", label: "Quiz", key: "training" });
   } else if (role === "lok") {
     topbar.push({ href: "/lok", label: "Cổng LOK", key: "lok" });
     topbar.push({ href: "/", label: "Trợ lý AI", key: "home" });
-    topbar.push({ href: "/training", label: "Training", key: "training" });
+    topbar.push({ href: "/training/quizzes", label: "Quiz", key: "training" });
   } else {
     topbar.push({ href: "/public", label: "Trang công khai", key: "public" });
-    topbar.push({ href: "/training", label: "Training", key: "training" });
+    topbar.push({ href: "/training/quizzes", label: "Quiz", key: "training" });
   }
 
   // ─── PROFILE MENU: quản trị ───
@@ -192,6 +198,16 @@ function buildLinksForRole(role: Role): BuiltLinks {
       group: "manage",
     });
     if (isAdmin) {
+      menuItems.push({
+        href: "/admin/onboarding/new",
+        label: "✨ Tạo lộ trình mới",
+        group: "manage",
+      });
+      menuItems.push({
+        href: "/admin/training/new",
+        label: "🎯 Tạo quiz mới",
+        group: "manage",
+      });
       menuItems.push({
         href: "/admin/users",
         label: "Quản lý user",
