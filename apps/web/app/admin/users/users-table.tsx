@@ -125,6 +125,31 @@ export function UsersTable({
     });
   }
 
+  async function resetOtp(email: string) {
+    if (
+      !confirm(
+        `Reset OTP cho ${email}?\n` +
+          "User sẽ phải đăng ký lại Authenticator ở lần login tiếp theo " +
+          "(redirect tự động đến /profile/otp-setup)."
+      )
+    )
+      return;
+    setError(null);
+    startTransition(async () => {
+      const r = await fetch("/api/admin/users/reset-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok) {
+        setError(j.error ?? `HTTP ${r.status}`);
+        return;
+      }
+      alert(`✓ Reset OTP cho ${email}.`);
+    });
+  }
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
       <form
@@ -278,6 +303,15 @@ export function UsersTable({
                         title="Xoá password — user phải dùng Google SSO"
                       >
                         Clear pw
+                      </button>
+                      <button
+                        type="button"
+                        disabled={pending || row.disabled}
+                        onClick={() => resetOtp(row.email)}
+                        style={btnSecondary}
+                        title="Reset OTP — user phải đăng ký lại Authenticator ở lần login tiếp"
+                      >
+                        🔄 Reset OTP
                       </button>
                       <button
                         type="button"

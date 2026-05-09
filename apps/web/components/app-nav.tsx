@@ -182,6 +182,9 @@ function buildLinksForRole(role: Role): BuiltLinks {
     topbar.push({ href: "/training/quizzes", label: "Quiz", iconKey: "target", key: "training" });
   }
 
+  // ─── PROFILE MENU: tài khoản (mọi role login) ───
+  menuItems.push({ href: "/profile", label: "Hồ sơ", group: "account" });
+
   // ─── PROFILE MENU: quản trị ───
   if (isStaff) {
     menuItems.push({ href: "/admin", label: "Admin (tổng quan)", group: "manage" });

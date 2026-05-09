@@ -7,8 +7,9 @@ import { useEffect, useId, useRef, useState } from "react";
 export interface ProfileMenuItem {
   href: string;
   label: string;
-  /** "manage" hay "preview" — dùng để group section. */
-  group: "manage" | "preview";
+  /** Nhóm hiển thị: "account" (Hồ sơ + 2FA), "manage" (admin tools),
+   *  "preview" (xem dưới role khác). */
+  group: "account" | "manage" | "preview";
 }
 
 interface Props {
@@ -19,6 +20,7 @@ interface Props {
 }
 
 const GROUP_LABEL: Record<ProfileMenuItem["group"], string> = {
+  account: "Tài khoản",
   manage: "Quản trị",
   preview: "Xem dưới role khác",
 };
@@ -81,6 +83,7 @@ export function ProfileMenu({ email, role, items, signOutAction }: Props) {
   }, [open]);
 
   const initials = (email[0] ?? "?").toUpperCase();
+  const accountItems = items.filter((i) => i.group === "account");
   const manageItems = items.filter((i) => i.group === "manage");
   const previewItems = items.filter((i) => i.group === "preview");
 
@@ -204,6 +207,14 @@ export function ProfileMenu({ email, role, items, signOutAction }: Props) {
             </div>
           </header>
 
+          {accountItems.length > 0 && (
+            <Section
+              label={GROUP_LABEL.account}
+              items={accountItems}
+              pathname={pathname}
+              onClickItem={() => setOpen(false)}
+            />
+          )}
           {manageItems.length > 0 && (
             <Section
               label={GROUP_LABEL.manage}

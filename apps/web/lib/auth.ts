@@ -1,9 +1,14 @@
-import NextAuth, { type DefaultSession } from "next-auth";
+import NextAuth, { CredentialsSignin, type DefaultSession } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
 import { audienceFor, type Role, type Session as LLSession } from "@/lib/rbac";
 import { getRoleFromDb } from "@/lib/roles";
 import { verifyPassword } from "@/lib/password";
+import {
+  getOtpStatus,
+  otpRequiredForRole,
+  verifyEnrolledOtp,
+} from "@/lib/otp";
 
 const ALLOWED_DOMAIN =
   process.env.ALLOWED_EMAIL_DOMAIN ?? "locallife.asia";
@@ -27,14 +32,37 @@ function passwordCredentialsProvider() {
     credentials: {
       email: { label: "Email", type: "email" },
       password: { label: "Mật khẩu", type: "password" },
+      otp: { label: "Mã OTP (6 số)", type: "text" },
     },
     async authorize(creds) {
       const email = String(creds?.email ?? "").trim().toLowerCase();
       const password = String(creds?.password ?? "");
+      const otp = String(creds?.otp ?? "").trim();
       if (!email || !password) return null;
       const verified = await verifyPassword(email, password);
       if (!verified) return null;
-      // Role resolved later in jwt callback từ DB.
+
+      // Internal staff must present a valid TOTP code IF they're already
+      // enrolled. Not-yet-enrolled or expired-enrollment is handled
+      // post-login: jwt callback flags `needsOtpSetup` and middleware
+      // redirects to /profile/otp-setup. External roles skip OTP entirely.
+      const role = (await getRoleFromDb(email)) ?? null;
+      if (role && otpRequiredForRole(role)) {
+        const status = await getOtpStatus(email);
+        if (status.enrolled && !status.isExpired) {
+          if (!otp) {
+            // Throwing AuthError is the v5 idiomatic way to surface a
+            // specific code. Login page maps this to a 2-step flow:
+            // "tiếp tục" → form re-renders with OTP field.
+            throw new CredentialsSignin("OTP_REQUIRED");
+          }
+          const ok = await verifyEnrolledOtp(email, otp);
+          if (!ok) throw new CredentialsSignin("OTP_INVALID");
+        }
+        // setup/expired: allow login; jwt sets needsOtpSetup so middleware
+        // redirects to /profile/otp-setup.
+      }
+
       return { id: verified.email, email: verified.email, name: verified.email };
     },
   });
@@ -98,6 +126,10 @@ async function resolveRole(email: string | null | undefined): Promise<Role> {
 declare module "next-auth" {
   interface Session {
     role: Role;
+    /** True when the logged-in user is internal (employee/lead/admin)
+     *  and their TOTP enrollment is missing or older than 30 days.
+     *  Middleware redirects to /profile/otp-setup until cleared. */
+    needsOtpSetup: boolean;
   }
   interface User {
     role?: Role;
@@ -147,11 +179,31 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           token.roleCheckedAt = NOW;
         }
       }
+      // Track OTP status on the token so middleware can redirect internal
+      // users without a current enrollment to /profile/otp-setup before
+      // they touch app pages. Re-checked on every JWT refresh (cheap — one
+      // SELECT against `roles`).
+      const role = token.role as Role | undefined;
+      const email = token.email as string | undefined;
+      if (email && role && otpRequiredForRole(role)) {
+        const otpCheckedAt = (token.otpCheckedAt as number | undefined) ?? 0;
+        if (!("needsOtpSetup" in token) || otpCheckedAt + ROLE_TTL < NOW) {
+          const status = await getOtpStatus(email);
+          token.needsOtpSetup = !status.enrolled || status.isExpired;
+          token.otpCheckedAt = NOW;
+        }
+      } else {
+        token.needsOtpSetup = false;
+      }
       return token;
     },
     async session({ session, token }) {
       session.role = (token.role as Role | undefined) ?? "guest";
-      return session as DefaultSession & { role: Role };
+      session.needsOtpSetup = Boolean(token.needsOtpSetup);
+      return session as DefaultSession & {
+        role: Role;
+        needsOtpSetup: boolean;
+      };
     },
   },
   pages: {
