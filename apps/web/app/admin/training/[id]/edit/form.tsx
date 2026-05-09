@@ -135,7 +135,12 @@ export function QuizEditForm({ initial }: { initial: QuizInitial }) {
           <input value={motto} onChange={(e) => setMotto(e.target.value)} style={inputStyle} />
         </Row>
         <Row label="Intro">
-          <textarea value={intro} onChange={(e) => setIntro(e.target.value)} rows={2} style={{ ...inputStyle, resize: "vertical", fontFamily: "inherit" }} />
+          <textarea
+            value={intro}
+            onChange={(e) => setIntro(e.target.value)}
+            rows={4}
+            style={{ ...inputStyle, resize: "vertical", fontFamily: "inherit", minHeight: 100 }}
+          />
         </Row>
         <Row label={`Pass threshold (${passThreshold}%)`}>
           <input
@@ -180,8 +185,8 @@ export function QuizEditForm({ initial }: { initial: QuizInitial }) {
           <textarea
             value={docPathsRaw}
             onChange={(e) => setDocPathsRaw(e.target.value)}
-            rows={Math.max(2, docPathsRaw.split("\n").length)}
-            style={{ ...inputStyle, fontFamily: "ui-monospace,monospace", resize: "vertical" }}
+            rows={Math.max(5, docPathsRaw.split("\n").length + 1)}
+            style={{ ...inputStyle, fontFamily: "ui-monospace,monospace", resize: "vertical", minHeight: 120 }}
           />
           <p style={{ fontSize: 11, color: "var(--ll-muted)", margin: "4px 0 0" }}>
             Hiện có {docPaths.length} doc. Đổi để AI gen từ nguồn khác.
@@ -256,8 +261,8 @@ export function QuizEditForm({ initial }: { initial: QuizInitial }) {
               value={q.explanation}
               onChange={(e) => updateQ(i, { explanation: e.target.value })}
               placeholder="Giải thích sau khi chấm"
-              rows={2}
-              style={{ ...inputStyle, marginTop: 8, resize: "vertical", fontFamily: "inherit" }}
+              rows={4}
+              style={{ ...inputStyle, marginTop: 8, resize: "vertical", fontFamily: "inherit", minHeight: 90 }}
             />
           </div>
         ))}

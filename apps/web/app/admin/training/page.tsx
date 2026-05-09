@@ -117,7 +117,7 @@ function QuizCard({
             {" "}{quiz.doc_paths.length} tài liệu nguồn
           </div>
         </div>
-        <div style={{ display: "flex", gap: 6, flexShrink: 0, alignItems: "flex-start" }}>
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
           <span
             style={{
               padding: "3px 10px",

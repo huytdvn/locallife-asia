@@ -518,6 +518,24 @@ a.ll-card:hover,
   .ll-users-form {
     grid-template-columns: 1fr !important;
   }
+  /* Doc-pane header — stack thành 3 row riêng để title không bị status switcher
+   * lấn ngang (mobile flex-wrap trong cùng row gây lệch). */
+  .ll-doc-pane-header {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+    padding: 10px 14px !important;
+  }
+  .ll-doc-pane-header > div:nth-child(2) {
+    /* Middle group (badges/title/path) — full width, badges xuống dòng nếu chật */
+    width: 100% !important;
+    flex: none !important;
+  }
+  .ll-doc-pane-header h2 {
+    font-size: 15px !important;
+    white-space: normal !important;
+    overflow: visible !important;
+  }
   /* Users table giữ horizontal scroll, hint user vuốt ngang */
   .ll-users-table-wrap {
     position: relative;

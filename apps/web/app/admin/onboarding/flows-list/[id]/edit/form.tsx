@@ -119,7 +119,12 @@ export function FlowEditForm({ initial }: { initial: FlowInitial }) {
           <div style={{ marginTop: 12 }}>
             <Row label="Mục tiêu"><input value={step.goal} onChange={(e) => updateStep(i, { goal: e.target.value })} style={inputStyle} /></Row>
             <Row label="Intro">
-              <textarea value={step.intro ?? ""} onChange={(e) => updateStep(i, { intro: e.target.value })} rows={2} style={{ ...inputStyle, resize: "vertical", fontFamily: "inherit" }} />
+              <textarea
+                value={step.intro ?? ""}
+                onChange={(e) => updateStep(i, { intro: e.target.value })}
+                rows={4}
+                style={{ ...inputStyle, resize: "vertical", fontFamily: "inherit", minHeight: 100 }}
+              />
             </Row>
             <Row label="Pass criteria"><input value={step.pass_criteria ?? ""} onChange={(e) => updateStep(i, { pass_criteria: e.target.value })} style={inputStyle} /></Row>
 

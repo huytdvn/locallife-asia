@@ -25,6 +25,7 @@ export function QuizDeleteButton({ id, title }: { id: number; title: string }) {
       type="button"
       onClick={del}
       disabled={pending}
+      title="Xoá quiz vĩnh viễn"
       style={{
         padding: "3px 10px",
         borderRadius: 999,
@@ -36,10 +37,14 @@ export function QuizDeleteButton({ id, title }: { id: number; title: string }) {
         fontWeight: 500,
         whiteSpace: "nowrap",
         lineHeight: 1.4,
+        display: "inline-block",
+        fontFamily: "inherit",
+        appearance: "none",
+        WebkitAppearance: "none",
+        margin: 0,
       }}
-      title="Xoá quiz vĩnh viễn"
     >
-      🗑 Xoá
+      Xoá
     </button>
   );
 }
