@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { AppNav } from "@/components/app-nav";
-import { PageShell, SectionHeader } from "@/components/ui";
+import { BackLink, PageShell, SectionHeader } from "@/components/ui";
 import {
   getOnboardingFlow,
   userIsAssignedToFlow,
@@ -37,6 +37,7 @@ export default async function FlowTakePage({
   return (
     <PageShell>
       <AppNav role={role} active="onboarding" />
+      <BackLink href="/onboarding/flows" label="Lộ trình của bạn" />
       <SectionHeader
         title={flow.title}
         subtitle={flow.motto ?? undefined}

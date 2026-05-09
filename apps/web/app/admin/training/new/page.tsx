@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { AppNav } from "@/components/app-nav";
-import { PageShell, SectionHeader } from "@/components/ui";
+import { BackLink, PageShell, SectionHeader } from "@/components/ui";
 import type { Role } from "@/lib/rbac";
 import { TrainingBuilderWizard } from "./builder-wizard";
 
@@ -16,6 +16,7 @@ export default async function AdminTrainingNewPage() {
   return (
     <PageShell>
       <AppNav role={role} active="admin" />
+      <BackLink href="/admin/training" label="Quản lý quiz" />
       <SectionHeader
         title="Tạo training mới 🎯"
         subtitle="Chọn vài tài liệu, AI sẽ ghép thành quiz tự chấm. Tài liệu chưa duyệt cho audience đích sẽ có cảnh báo — bạn click duyệt nhanh ngay tại đây."

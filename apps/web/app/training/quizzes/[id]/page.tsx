@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { AppNav } from "@/components/app-nav";
-import { PageShell, SectionHeader } from "@/components/ui";
+import { BackLink, PageShell, SectionHeader } from "@/components/ui";
 import { getQuizForUser } from "@/lib/admin-builders/persistence";
 import type { Role } from "@/lib/rbac";
 import { QuizTaker } from "./taker";
@@ -26,6 +26,7 @@ export default async function QuizTakePage({
   return (
     <PageShell>
       <AppNav role={role} active="training" />
+      <BackLink href="/training/quizzes" label="Quiz của bạn" />
       <SectionHeader title={quiz.title} subtitle={quiz.motto ?? undefined} />
       <QuizTaker
         quiz={{

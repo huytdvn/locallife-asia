@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { AppNav } from "@/components/app-nav";
-import { PageShell, SectionHeader } from "@/components/ui";
+import { BackLink, PageShell, SectionHeader } from "@/components/ui";
 import { getQuizForAdmin } from "@/lib/admin-builders/persistence";
 import type { Role } from "@/lib/rbac";
 import { QuizEditForm } from "./form";
@@ -26,6 +26,7 @@ export default async function AdminQuizEditPage({
   return (
     <PageShell>
       <AppNav role={role} active="admin" />
+      <BackLink href="/admin/training" label="Quản lý quiz" />
       <SectionHeader
         title="Sửa quiz 🎯"
         subtitle={quiz.title}

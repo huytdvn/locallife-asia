@@ -42,7 +42,7 @@ export default async function ChatPage() {
           minHeight: 0,
         }}
       >
-        <Chat starterQuestions={questions} userName={displayName} />
+        <Chat starterQuestions={questions.slice(0, 4)} userName={displayName} />
 
         <aside
           style={{

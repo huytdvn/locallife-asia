@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { AppNav } from "@/components/app-nav";
-import { PageShell, SectionHeader } from "@/components/ui";
+import { BackLink, PageShell, SectionHeader } from "@/components/ui";
 import { getOnboardingFlow } from "@/lib/admin-builders/persistence";
 import type { Role } from "@/lib/rbac";
 import { FlowEditForm } from "./form";
@@ -26,6 +26,7 @@ export default async function AdminFlowEditPage({
   return (
     <PageShell>
       <AppNav role={role} active="admin-onboarding" />
+      <BackLink href="/admin/onboarding/flows-list" label="Quản lý lộ trình" />
       <SectionHeader title="Sửa lộ trình 📚" subtitle={flow.title} />
       <FlowEditForm initial={flow} />
     </PageShell>

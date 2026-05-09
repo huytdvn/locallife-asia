@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { AppNav } from "@/components/app-nav";
-import { PageShell, SectionHeader } from "@/components/ui";
+import { BackLink, PageShell, SectionHeader } from "@/components/ui";
 import {
   listTrainingQuizzes,
   quizAudienceAnalytics,
@@ -30,6 +30,7 @@ export default async function AdminTrainingListPage() {
   return (
     <PageShell>
       <AppNav role={role} active="admin" />
+      <BackLink href="/admin/onboarding" label="Trung tâm đào tạo" />
       <SectionHeader
         title="Training quiz — listing 🎯"
         subtitle={`${quizzes.length} quiz · phân nhóm theo audience · last online + tỉ lệ pass để bạn biết nudge ai`}

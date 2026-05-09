@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { AppNav } from "@/components/app-nav";
-import { PageShell, SectionHeader } from "@/components/ui";
+import { BackLink, PageShell, SectionHeader } from "@/components/ui";
 import { otpRequiredForRole } from "@/lib/otp";
 import type { Role } from "@/lib/rbac";
 import { OtpEnrollWizard } from "./enroll-wizard";
@@ -17,6 +17,7 @@ export default async function OtpSetupPage() {
   return (
     <PageShell maxWidth={560}>
       <AppNav role={role} active="dashboard" />
+      <BackLink href="/profile" label="Hồ sơ" />
       <SectionHeader
         title="Kích hoạt xác thực 2 yếu tố"
         subtitle="Quét QR bằng app Authenticator → nhập 6 số để xác nhận"
