@@ -129,11 +129,11 @@ export function UsersTable({
     <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
       <form
         onSubmit={add}
-        className="ll-card"
+        className="ll-card ll-users-form"
         style={{
           display: "grid",
           gap: 12,
-          gridTemplateColumns: "1.2fr 140px 1.2fr auto",
+          gridTemplateColumns: "minmax(0, 1.2fr) 140px minmax(0, 1.2fr) auto",
           alignItems: "end",
         }}
       >
@@ -207,8 +207,8 @@ export function UsersTable({
         </p>
       </form>
 
-      <div className="ll-card" style={{ overflowX: "auto" }}>
-        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 14 }}>
+      <div className="ll-card ll-users-table-wrap" style={{ overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
+        <table style={{ width: "100%", minWidth: 720, borderCollapse: "collapse", fontSize: 14 }}>
           <thead>
             <tr style={{ textAlign: "left", color: "var(--ll-muted)" }}>
               <th style={th}>Email</th>

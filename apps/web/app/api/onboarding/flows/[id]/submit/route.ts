@@ -11,12 +11,13 @@ import { writeAudit } from "@/lib/audit";
 
 export const runtime = "nodejs";
 
+// pg trả BIGSERIAL dưới dạng string → coerce về number cho id fields.
+// answer giữ union: MC = number (choice idx), keyword = string, null = bỏ trắng.
 const bodySchema = z.object({
   answers: z.array(
     z.object({
-      step_id: z.number().int(),
-      question_id: z.number().int(),
-      // MC: number (index choice). Keyword: string (free text). null = bỏ trắng.
+      step_id: z.coerce.number().int(),
+      question_id: z.coerce.number().int(),
       answer: z.union([z.string().max(2000), z.number().int(), z.null()]),
     })
   ),
@@ -48,7 +49,10 @@ export async function POST(
 
   const parsed = bodySchema.safeParse(await req.json());
   if (!parsed.success) {
-    return NextResponse.json({ error: "invalid_body" }, { status: 400 });
+    return NextResponse.json(
+      { error: "invalid_body", detail: parsed.error.format() },
+      { status: 400 }
+    );
   }
 
   const flow = await getOnboardingFlow(flowId);

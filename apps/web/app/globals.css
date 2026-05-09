@@ -514,6 +514,25 @@ a.ll-card:hover,
     padding-top: 16px !important;
   }
 
+  /* Users-admin form 4-cột → stack 1 cột mobile cho khỏi cắt */
+  .ll-users-form {
+    grid-template-columns: 1fr !important;
+  }
+  /* Users table giữ horizontal scroll, hint user vuốt ngang */
+  .ll-users-table-wrap {
+    position: relative;
+  }
+  .ll-users-table-wrap::after {
+    content: "← vuốt →";
+    position: absolute;
+    bottom: 4px;
+    right: 8px;
+    font-size: 10px;
+    color: var(--ll-muted);
+    pointer-events: none;
+    opacity: 0.6;
+  }
+
   /* Nav: GIỮ inline links cả mobile, ẩn label chỉ còn icon. Hamburger ẩn. */
   .ll-nav-desktop {
     display: flex !important;

@@ -102,6 +102,21 @@ export const NAV_ICONS = {
 
 export type NavIconKey = keyof typeof NAV_ICONS;
 
+/**
+ * Color theo ý nghĩa từng icon, hợp với LL palette (xanh lá làm chủ đạo,
+ * cam/đỏ/tím cho accent). Inactive: icon nhuộm fg, bg pastel rất nhẹ.
+ * Active state ở component cha override hết.
+ */
+export const ICON_ACCENTS: Record<NavIconKey, { fg: string; bg: string }> = {
+  dashboard: { fg: "#0d9488", bg: "#ccfbf1" }, // teal — analytics
+  chat:      { fg: "#0284c7", bg: "#e0f2fe" }, // sky — AI vibes
+  route:     { fg: "#c2410c", bg: "#ffedd5" }, // orange — adventure
+  target:    { fg: "#be185d", bg: "#fce7f3" }, // pink — game
+  home:      { fg: "#b45309", bg: "#fef3c7" }, // amber — warm home
+  star:      { fg: "#7c3aed", bg: "#ede9fe" }, // purple — celebrity
+  globe:     { fg: "#059669", bg: "#d1fae5" }, // emerald — earth
+};
+
 export function NavIcon({ name, size }: { name: NavIconKey; size?: number }) {
   const Cmp = NAV_ICONS[name];
   return <Cmp size={size} />;

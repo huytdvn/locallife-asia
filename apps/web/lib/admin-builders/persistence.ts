@@ -423,20 +423,28 @@ export async function listAssignedFlowsForUser(
     created_at: string;
     step_count: string | number;
   }>(
-    // Mọi role (kể cả admin/lead) chỉ thấy flow đã được giao đích danh
-    // hoặc broadcast role của họ. Admin xem toàn bộ qua /admin/onboarding/flows-list.
-    `SELECT f.id, f.title, f.motto, f.pass_threshold, f.status, f.created_by,
-            f.created_at::text AS created_at,
-            (SELECT count(*) FROM onboarding_step s WHERE s.flow_id = f.id) AS step_count
-     FROM onboarding_flow f
-     WHERE f.status = 'published'
-       AND EXISTS (
-         SELECT 1 FROM onboarding_assignment a
-         WHERE a.flow_id = f.id
-           AND (a.target_email = $1 OR a.target_role = $2)
-       )
-     ORDER BY f.created_at DESC`,
-    [email.toLowerCase(), role]
+    // Admin/lead xem được mọi flow published để QA + thấy bài user role khác đang
+    // có. UI hiển thị audience badge để admin biết flow này thực sự dành cho ai.
+    // User thường chỉ thấy flow giao đích danh hoặc broadcast role của họ.
+    role === "admin" || role === "lead"
+      ? `SELECT f.id, f.title, f.motto, f.pass_threshold, f.status, f.created_by,
+                f.created_at::text AS created_at,
+                (SELECT count(*) FROM onboarding_step s WHERE s.flow_id = f.id) AS step_count
+         FROM onboarding_flow f
+         WHERE f.status = 'published'
+         ORDER BY f.created_at DESC`
+      : `SELECT f.id, f.title, f.motto, f.pass_threshold, f.status, f.created_by,
+                f.created_at::text AS created_at,
+                (SELECT count(*) FROM onboarding_step s WHERE s.flow_id = f.id) AS step_count
+         FROM onboarding_flow f
+         WHERE f.status = 'published'
+           AND EXISTS (
+             SELECT 1 FROM onboarding_assignment a
+             WHERE a.flow_id = f.id
+               AND (a.target_email = $1 OR a.target_role = $2)
+           )
+         ORDER BY f.created_at DESC`,
+    role === "admin" || role === "lead" ? [] : [email.toLowerCase(), role]
   );
   return rows.map((r) => ({
     id: r.id,

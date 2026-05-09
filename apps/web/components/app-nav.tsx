@@ -2,7 +2,7 @@ import Link from "next/link";
 import { UserBadge } from "@/components/user-badge";
 import type { NavLinkData } from "@/components/mobile-nav-drawer";
 import type { ProfileMenuItem } from "@/components/profile-menu";
-import { NavIcon, type NavIconKey } from "@/components/nav-icons";
+import { NavIcon, ICON_ACCENTS, type NavIconKey } from "@/components/nav-icons";
 import type { Role } from "@/lib/rbac";
 
 type NavKey =
@@ -235,6 +235,11 @@ function NavLink({
   iconKey?: NavIconKey;
   label: string;
 }) {
+  const accent = iconKey ? ICON_ACCENTS[iconKey] : null;
+  // Active: icon nhuộm green-dark trên pill green-soft (LL primary).
+  // Inactive: icon nhuộm theo accent fg, pill nhẹ accent bg → đa sắc.
+  const iconColor = active ? "var(--ll-green-dark)" : accent?.fg ?? "var(--ll-ink-soft)";
+  const pillBg = active ? "var(--ll-green-soft)" : accent?.bg ?? "transparent";
   return (
     <Link
       href={href}
@@ -247,9 +252,9 @@ function NavLink({
         color: active ? "var(--ll-green-dark)" : "var(--ll-ink-soft)",
         textDecoration: "none",
         padding: "6px 10px",
-        borderRadius: 8,
-        background: active ? "var(--ll-green-soft)" : "transparent",
-        transition: "all 120ms var(--ll-ease)",
+        borderRadius: 10,
+        background: pillBg,
+        transition: "all 140ms var(--ll-ease)",
         whiteSpace: "nowrap",
         flexShrink: 0,
         display: "inline-flex",
@@ -258,7 +263,11 @@ function NavLink({
       }}
     >
       {iconKey && (
-        <span className="ll-nav-link-icon" style={{ display: "inline-flex" }} aria-hidden>
+        <span
+          className="ll-nav-link-icon"
+          style={{ display: "inline-flex", color: iconColor }}
+          aria-hidden
+        >
           <NavIcon name={iconKey} />
         </span>
       )}
