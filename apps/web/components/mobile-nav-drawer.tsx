@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 export interface NavLinkData {
   href: string;
   label: string;
+  icon?: string;
   key: string;
   active: boolean;
   subtle?: boolean;

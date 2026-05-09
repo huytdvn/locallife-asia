@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { UserBadge } from "@/components/user-badge";
-import { MobileNavDrawer, type NavLinkData } from "@/components/mobile-nav-drawer";
+import type { NavLinkData } from "@/components/mobile-nav-drawer";
 import type { ProfileMenuItem } from "@/components/profile-menu";
 import type { Role } from "@/lib/rbac";
 
@@ -26,6 +26,8 @@ interface Props {
 interface TopbarLink {
   href: string;
   label: string;
+  /** Emoji/icon hiển thị trên mobile (icon-only). Desktop hiện cả icon + label. */
+  icon: string;
   key: NavKey;
 }
 
@@ -46,6 +48,7 @@ export function AppNav({ role, active }: Props) {
   const navLinks: NavLinkData[] = topbar.map((s) => ({
     href: s.href,
     label: s.label,
+    icon: s.icon,
     key: s.key,
     active: active === s.key,
     group: "primary",
@@ -76,27 +79,22 @@ export function AppNav({ role, active }: Props) {
       >
         <Link
           href={homeForRole(role)}
+          aria-label="Bé Tre — về trang chủ"
           style={{
-            fontWeight: 700,
-            color: "var(--ll-green-dark)",
-            fontSize: 17,
             display: "flex",
             alignItems: "center",
-            gap: 8,
             textDecoration: "none",
             flexShrink: 0,
-            whiteSpace: "nowrap",
           }}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/mascot.webp"
             alt="Bé Tre"
-            width={24}
-            height={32}
+            width={28}
+            height={36}
             style={{ borderRadius: 8, objectFit: "contain" }}
           />
-          Bé Tre
         </Link>
 
         <div
@@ -104,11 +102,11 @@ export function AppNav({ role, active }: Props) {
           style={{
             display: "flex",
             alignItems: "center",
-            gap: 18,
+            gap: 6,
             minWidth: 0,
             overflowX: "auto",
             overflowY: "hidden",
-            paddingLeft: 8,
+            paddingLeft: 4,
           }}
         >
           {navLinks.map((l) => (
@@ -116,9 +114,9 @@ export function AppNav({ role, active }: Props) {
               key={`${l.key}-${l.href}`}
               href={l.href}
               active={l.active}
-            >
-              {l.label}
-            </NavLink>
+              icon={l.icon}
+              label={l.label}
+            />
           ))}
         </div>
       </div>
@@ -132,7 +130,7 @@ export function AppNav({ role, active }: Props) {
         }}
       >
         <UserBadge menuItems={menuItems} />
-        <MobileNavDrawer links={navLinks} />
+        {/* MobileNavDrawer ẩn — nav links inline mọi viewport (icon-only mobile) */}
       </div>
     </nav>
   );
@@ -166,21 +164,21 @@ function buildLinksForRole(role: Role): BuiltLinks {
   // bài admin tạo qua /admin/onboarding/new sẽ hiển thị. Admin/lead vẫn
   // dùng layer cũ làm dashboard, có shortcut tới layer mới ở trong page.
   if (isInternal) {
-    topbar.push({ href: "/dashboard", label: "Tổng quan", key: "dashboard" });
-    topbar.push({ href: "/", label: "Trợ lý AI", key: "home" });
-    topbar.push({ href: "/onboarding/flows", label: "Lộ trình", key: "onboarding" });
-    topbar.push({ href: "/training/quizzes", label: "Quiz", key: "training" });
+    topbar.push({ href: "/dashboard", label: "Tổng quan", icon: "📊", key: "dashboard" });
+    topbar.push({ href: "/", label: "Trợ lý AI", icon: "💬", key: "home" });
+    topbar.push({ href: "/onboarding/flows", label: "Lộ trình", icon: "📚", key: "onboarding" });
+    topbar.push({ href: "/training/quizzes", label: "Quiz", icon: "🎯", key: "training" });
   } else if (role === "host") {
-    topbar.push({ href: "/host", label: "Cổng Host", key: "host" });
-    topbar.push({ href: "/", label: "Trợ lý AI", key: "home" });
-    topbar.push({ href: "/training/quizzes", label: "Quiz", key: "training" });
+    topbar.push({ href: "/host", label: "Cổng Host", icon: "🏡", key: "host" });
+    topbar.push({ href: "/", label: "Trợ lý AI", icon: "💬", key: "home" });
+    topbar.push({ href: "/training/quizzes", label: "Quiz", icon: "🎯", key: "training" });
   } else if (role === "lok") {
-    topbar.push({ href: "/lok", label: "Cổng LOK", key: "lok" });
-    topbar.push({ href: "/", label: "Trợ lý AI", key: "home" });
-    topbar.push({ href: "/training/quizzes", label: "Quiz", key: "training" });
+    topbar.push({ href: "/lok", label: "Cổng LOK", icon: "🌟", key: "lok" });
+    topbar.push({ href: "/", label: "Trợ lý AI", icon: "💬", key: "home" });
+    topbar.push({ href: "/training/quizzes", label: "Quiz", icon: "🎯", key: "training" });
   } else {
-    topbar.push({ href: "/public", label: "Trang công khai", key: "public" });
-    topbar.push({ href: "/training/quizzes", label: "Quiz", key: "training" });
+    topbar.push({ href: "/public", label: "Trang công khai", icon: "🌏", key: "public" });
+    topbar.push({ href: "/training/quizzes", label: "Quiz", icon: "🎯", key: "training" });
   }
 
   // ─── PROFILE MENU: quản trị ───
@@ -228,30 +226,38 @@ function buildLinksForRole(role: Role): BuiltLinks {
 function NavLink({
   href,
   active,
-  children,
+  icon,
+  label,
 }: {
   href: string;
   active: boolean;
-  children: React.ReactNode;
+  icon?: string;
+  label: string;
 }) {
   return (
     <Link
       href={href}
+      title={label}
+      aria-label={label}
+      className="ll-nav-link"
       style={{
         fontSize: 14,
         fontWeight: active ? 600 : 500,
         color: active ? "var(--ll-green-dark)" : "var(--ll-ink-soft)",
         textDecoration: "none",
-        padding: "4px 2px",
-        borderBottom: active
-          ? "2px solid var(--ll-green-bright)"
-          : "2px solid transparent",
-        transition: "color 120ms var(--ll-ease)",
+        padding: "6px 8px",
+        borderRadius: 8,
+        background: active ? "var(--ll-green-soft)" : "transparent",
+        transition: "all 120ms var(--ll-ease)",
         whiteSpace: "nowrap",
         flexShrink: 0,
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 6,
       }}
     >
-      {children}
+      {icon && <span style={{ fontSize: 18, lineHeight: 1 }} aria-hidden>{icon}</span>}
+      <span className="ll-nav-link-label">{label}</span>
     </Link>
   );
 }
