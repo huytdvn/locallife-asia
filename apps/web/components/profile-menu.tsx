@@ -161,11 +161,9 @@ export function ProfileMenu({ email, role, items, signOutAction }: Props) {
           role="menu"
           className="ll-profile-menu"
           style={{
-            position: "absolute",
-            top: "calc(100% + 8px)",
-            right: 0,
-            minWidth: 260,
-            maxWidth: 320,
+            // position fixed để không bị parent container clip width.
+            // CSS class .ll-profile-menu chịu trách nhiệm responsive
+            // (mobile full-width, desktop right-anchored 280-320px).
             background: "white",
             border: "1px solid var(--ll-border)",
             borderRadius: 12,

@@ -474,6 +474,17 @@ a.ll-card:hover,
   display: none;
 }
 
+/* Profile dropdown desktop — anchored phải avatar, fixed width
+ * không bị parent (.ll-app-nav justify-between) co lại. Mobile rule
+ * trong @media (max-width: 768px) override toàn bộ thành drawer. */
+.ll-profile-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 280px;
+  max-width: 320px;
+}
+
 /* ── 900px: medium screens — 2-col grid collapses ── */
 @media (max-width: 900px) {
   .ll-grid-2col {
@@ -634,12 +645,17 @@ a.ll-card:hover,
   .ll-diff-pair {
     grid-template-columns: 1fr !important;
   }
-  /* Profile dropdown — sát mép viewport, dùng calc để không tràn */
+  /* Profile dropdown mobile — drawer full width sát 2 mép, không bị parent clip */
   .ll-profile-menu {
+    position: fixed !important;
+    top: auto !important;
+    bottom: 12px !important;
     right: 8px !important;
     left: 8px !important;
     min-width: 0 !important;
     max-width: none !important;
+    max-height: 70vh;
+    overflow-y: auto;
   }
 
   /* Login: card co vừa viewport, padding nhỏ hơn, mascot scale nhỏ */
