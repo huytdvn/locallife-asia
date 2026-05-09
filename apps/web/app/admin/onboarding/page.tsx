@@ -75,10 +75,10 @@ export default async function AdminOnboardingPage() {
     <PageShell>
       <AppNav role={role} active="admin-onboarding" />
 
-      <div style={{ maxWidth: 1024, margin: "0 auto", padding: "32px 16px" }}>
-        <h1 style={{ fontSize: 28, marginBottom: 4 }}>Onboarding Dashboard</h1>
+      <div style={{ padding: "8px 0" }}>
+        <h1 style={{ fontSize: 28, marginBottom: 4 }}>Trung tâm đào tạo (Onboarding)</h1>
         <p style={{ color: "var(--ll-muted)", fontSize: 14, marginBottom: 16 }}>
-          Tuần <strong>{week}</strong> · {teamRows.length} nhân viên active.
+          Tuần <strong>{week}</strong> · {teamRows.length} nhân viên active. Mọi việc liên quan đào tạo (kiến thức, lộ trình, quiz, focus score) đều ở đây.
         </p>
         {role === "admin" && (
           <div style={{ display: "flex", gap: 10, marginBottom: 24, flexWrap: "wrap" }}>
@@ -94,7 +94,7 @@ export default async function AdminOnboardingPage() {
                 textDecoration: "none",
               }}
             >
-              ✨ Tạo lộ trình onboarding mới
+              ✨ Tạo lộ trình mới
             </Link>
             <Link
               href="/admin/training/new"
@@ -109,7 +109,37 @@ export default async function AdminOnboardingPage() {
                 textDecoration: "none",
               }}
             >
-              🎯 Tạo training mới
+              🎯 Tạo quiz mới
+            </Link>
+            <Link
+              href="/admin/onboarding/flows-list"
+              style={{
+                padding: "10px 16px",
+                borderRadius: 10,
+                background: "white",
+                color: "var(--ll-ink)",
+                border: "1px solid var(--ll-border)",
+                fontWeight: 500,
+                fontSize: 14,
+                textDecoration: "none",
+              }}
+            >
+              📚 Quản lý lộ trình
+            </Link>
+            <Link
+              href="/admin/training"
+              style={{
+                padding: "10px 16px",
+                borderRadius: 10,
+                background: "white",
+                color: "var(--ll-ink)",
+                border: "1px solid var(--ll-border)",
+                fontWeight: 500,
+                fontSize: 14,
+                textDecoration: "none",
+              }}
+            >
+              📋 Quản lý quiz
             </Link>
           </div>
         )}

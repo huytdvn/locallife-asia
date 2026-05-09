@@ -2,9 +2,11 @@ import type { ReactNode } from "react";
 
 /* ─── Shared UI primitives — dùng chung 3 zones, giảm duplication. ─── */
 
+// 1280 đồng bộ với chat AI page (`/`) — user navigate giữa AI ↔ admin pages
+// không bị co/giãn container.
 export function PageShell({
   children,
-  maxWidth = 1120,
+  maxWidth = 1280,
 }: {
   children: ReactNode;
   maxWidth?: number;

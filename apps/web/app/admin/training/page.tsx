@@ -10,6 +10,7 @@ import {
   type QuizGroupAnalytics,
 } from "@/lib/admin-builders/persistence";
 import type { Role } from "@/lib/rbac";
+import { QuizDeleteButton } from "./quiz-delete-button";
 
 export const dynamic = "force-dynamic";
 
@@ -18,6 +19,7 @@ export default async function AdminTrainingListPage() {
   if (!session?.user?.email) redirect("/login?next=/admin/training");
   const role = (session.role ?? "guest") as Role;
   if (role !== "admin" && role !== "lead") redirect("/dashboard");
+  const canDelete = role === "admin";
 
   const quizzes = await listTrainingQuizzes();
   // Lấy analytics song song cho từng quiz
@@ -67,7 +69,7 @@ export default async function AdminTrainingListPage() {
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           {quizzes.map((q, i) => (
-            <QuizCard key={q.id} quiz={q} groups={analytics[i]} />
+            <QuizCard key={q.id} quiz={q} groups={analytics[i]} canDelete={canDelete} />
           ))}
         </div>
       )}
@@ -78,9 +80,11 @@ export default async function AdminTrainingListPage() {
 function QuizCard({
   quiz,
   groups,
+  canDelete,
 }: {
   quiz: SavedTrainingQuiz;
   groups: QuizGroupAnalytics[];
+  canDelete: boolean;
 }) {
   const totalUsers = groups.reduce((s, g) => s + g.active_users, 0);
   const totalAttempted = groups.reduce((s, g) => s + g.attempted, 0);
@@ -142,6 +146,7 @@ function QuizCard({
           >
             👁 preview
           </Link>
+          {canDelete && <QuizDeleteButton id={quiz.id} title={quiz.title} />}
         </div>
       </div>
 

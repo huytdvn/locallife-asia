@@ -199,13 +199,13 @@ function buildLinksForRole(role: Role): BuiltLinks {
     });
     if (isAdmin) {
       menuItems.push({
-        href: "/admin/onboarding/new",
-        label: "✨ Tạo lộ trình mới",
+        href: "/admin/onboarding/flows-list",
+        label: "📚 Quản lý lộ trình",
         group: "manage",
       });
       menuItems.push({
-        href: "/admin/training/new",
-        label: "🎯 Tạo quiz mới",
+        href: "/admin/training",
+        label: "🎯 Quản lý quiz",
         group: "manage",
       });
       menuItems.push({

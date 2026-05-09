@@ -227,6 +227,25 @@ export async function getOnboardingFlow(
   };
 }
 
+export async function deleteOnboardingFlow(id: number): Promise<boolean> {
+  if (!isEnabled()) return false;
+  // CASCADE xoá step + step_doc + step_question + assignment + attempt
+  const rows = await query<{ id: number }>(
+    `DELETE FROM onboarding_flow WHERE id = $1 RETURNING id`,
+    [id]
+  );
+  return rows.length > 0;
+}
+
+export async function deleteTrainingQuiz(id: number): Promise<boolean> {
+  if (!isEnabled()) return false;
+  const rows = await query<{ id: number }>(
+    `DELETE FROM training_quiz WHERE id = $1 RETURNING id`,
+    [id]
+  );
+  return rows.length > 0;
+}
+
 export async function publishOnboardingFlow(id: number): Promise<boolean> {
   if (!isEnabled()) return false;
   const rows = await query<{ id: number }>(
