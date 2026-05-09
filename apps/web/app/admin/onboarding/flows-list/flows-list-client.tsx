@@ -3,6 +3,23 @@
 import Link from "next/link";
 import { useState, useTransition } from "react";
 
+function pill(bg: string, color: string, border: string): React.CSSProperties {
+  return {
+    padding: "3px 10px",
+    borderRadius: 999,
+    fontSize: 11,
+    background: bg,
+    color,
+    border: `1px solid ${border}`,
+    textDecoration: "none",
+    fontWeight: 500,
+    whiteSpace: "nowrap",
+    lineHeight: 1.4,
+    display: "inline-block",
+    fontFamily: "inherit",
+  };
+}
+
 interface Flow {
   id: number;
   title: string;
@@ -106,26 +123,27 @@ export function FlowsListClient({
             </span>
             <Link
               href={`/onboarding/flows/${f.id}`}
-              style={{
-                padding: "4px 10px", borderRadius: 6, fontSize: 11,
-                background: "white", color: "var(--ll-ink)",
-                border: "1px solid var(--ll-border)", textDecoration: "none",
-              }}
+              style={pill("white", "var(--ll-ink)", "var(--ll-border)")}
             >
               👁 Preview
             </Link>
+            {canDelete && (
+              <Link
+                href={`/admin/onboarding/flows-list/${f.id}/edit`}
+                style={pill("var(--ll-green-soft)", "var(--ll-green-dark)", "var(--ll-green-bright)")}
+                title="Sửa lộ trình"
+              >
+                ✏️ Sửa
+              </Link>
+            )}
             {canDelete && (
               <button
                 type="button"
                 onClick={() => del(f.id, f.title)}
                 disabled={pending}
-                style={{
-                  padding: "4px 10px", borderRadius: 6, fontSize: 11,
-                  background: "transparent", color: "#b91c1c",
-                  border: "1px solid #fca5a5", cursor: "pointer",
-                }}
+                style={{ ...pill("white", "#b91c1c", "#fca5a5"), cursor: pending ? "wait" : "pointer" }}
               >
-                Xoá
+                🗑 Xoá
               </button>
             )}
           </div>

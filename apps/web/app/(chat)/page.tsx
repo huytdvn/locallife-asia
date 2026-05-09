@@ -124,7 +124,9 @@ export default async function ChatPage() {
               </li>
               <li>
                 Cần tự học có hệ thống?{" "}
-                <Link href="/training">Xem lộ trình training →</Link>
+                <Link href="/onboarding/flows">Mở lộ trình của bạn →</Link>
+                {" · "}
+                <Link href="/training/quizzes">Quiz</Link>
               </li>
             </ul>
           </section>

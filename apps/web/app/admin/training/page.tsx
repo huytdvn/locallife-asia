@@ -132,20 +132,20 @@ function QuizCard({
           </span>
           <Link
             href={`/training/quizzes/${quiz.id}`}
-            style={{
-              padding: "3px 10px",
-              borderRadius: 999,
-              fontSize: 11,
-              background: "white",
-              color: "var(--ll-ink)",
-              border: "1px solid var(--ll-border)",
-              textDecoration: "none",
-              fontWeight: 500,
-            }}
+            style={pillStyle("white", "var(--ll-ink)", "var(--ll-border)")}
             title="Xem dưới góc nhìn user"
           >
-            👁 preview
+            👁 Preview
           </Link>
+          {canDelete && (
+            <Link
+              href={`/admin/training/${quiz.id}/edit`}
+              style={pillStyle("var(--ll-green-soft)", "var(--ll-green-dark)", "var(--ll-green-bright)")}
+              title="Sửa quiz (AI gen lại, đổi docs, đổi audience)"
+            >
+              ✏️ Sửa
+            </Link>
+          )}
           {canDelete && <QuizDeleteButton id={quiz.id} title={quiz.title} />}
         </div>
       </div>
@@ -233,6 +233,22 @@ function QuizCard({
       </div>
     </div>
   );
+}
+
+function pillStyle(bg: string, color: string, border: string): React.CSSProperties {
+  return {
+    padding: "3px 10px",
+    borderRadius: 999,
+    fontSize: 11,
+    background: bg,
+    color,
+    border: `1px solid ${border}`,
+    textDecoration: "none",
+    fontWeight: 500,
+    whiteSpace: "nowrap",
+    lineHeight: 1.4,
+    display: "inline-block",
+  };
 }
 
 function timeAgo(iso: string): string {

@@ -29,15 +29,17 @@ export function QuizDeleteButton({ id, title }: { id: number; title: string }) {
         padding: "3px 10px",
         borderRadius: 999,
         fontSize: 11,
-        background: "transparent",
+        background: "white",
         color: "#b91c1c",
         border: "1px solid #fca5a5",
         cursor: pending ? "wait" : "pointer",
         fontWeight: 500,
+        whiteSpace: "nowrap",
+        lineHeight: 1.4,
       }}
       title="Xoá quiz vĩnh viễn"
     >
-      Xoá
+      🗑 Xoá
     </button>
   );
 }

@@ -224,27 +224,38 @@ export async function getOnboardingFlow(
       )
     : [];
 
+  // pg trả BIGSERIAL dạng string. Ép Number cho tất cả id để client xài
+  // Map.get(number) match được, server grading so sánh đúng kiểu.
   return {
     ...flow,
-    steps: stepRows.map((s) => ({
-      ...s,
-      docs: docRows.filter((d) => d.step_id === s.id).map((d) => ({
-        id: d.id,
-        doc_path: d.doc_path,
-        heading_anchor: d.heading_anchor,
-        highlight: d.highlight,
-        reason: d.reason,
-      })),
-      questions: qRows.filter((q) => q.step_id === s.id).map((q) => ({
-        id: q.id,
-        prompt: q.prompt,
-        expected_keywords: q.expected_keywords ?? [],
-        min_keywords: q.min_keywords,
-        choices: q.choices,
-        answer_idx: q.answer_idx,
-        explanation: q.explanation,
-      })),
-    })),
+    id: Number(flow.id),
+    steps: stepRows.map((s) => {
+      const stepIdNum = Number(s.id);
+      return {
+        ...s,
+        id: stepIdNum,
+        docs: docRows
+          .filter((d) => Number(d.step_id) === stepIdNum)
+          .map((d) => ({
+            id: Number(d.id),
+            doc_path: d.doc_path,
+            heading_anchor: d.heading_anchor,
+            highlight: d.highlight,
+            reason: d.reason,
+          })),
+        questions: qRows
+          .filter((q) => Number(q.step_id) === stepIdNum)
+          .map((q) => ({
+            id: Number(q.id),
+            prompt: q.prompt,
+            expected_keywords: q.expected_keywords ?? [],
+            min_keywords: q.min_keywords,
+            choices: q.choices,
+            answer_idx: q.answer_idx,
+            explanation: q.explanation,
+          })),
+      };
+    }),
   };
 }
 
@@ -257,6 +268,154 @@ export async function setFlowReviewQuiz(
     `UPDATE onboarding_flow SET review_quiz_id = $2 WHERE id = $1`,
     [flowId, reviewQuizId]
   );
+}
+
+/** Replace toàn bộ flow content trong 1 transaction. Steps + docs + questions
+ *  cũ sẽ bị xoá (CASCADE) rồi insert lại từ draft mới. Giữ flow.id + assignment. */
+export async function updateOnboardingFlow(params: {
+  id: number;
+  draft: OnboardingFlowDraft;
+  brief?: string | null;
+  updatedBy: string;
+}): Promise<boolean> {
+  if (!isEnabled()) throw new Error("DATABASE_URL chưa set");
+  const pool = getPool();
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    const upd = await client.query<{ id: number }>(
+      `UPDATE onboarding_flow
+         SET title = $2, motto = $3, brief = $4, pass_threshold = $5, updated_at = now()
+       WHERE id = $1
+       RETURNING id`,
+      [
+        params.id,
+        params.draft.title,
+        params.draft.motto || null,
+        params.brief ?? null,
+        params.draft.pass_threshold,
+      ]
+    );
+    if (upd.rows.length === 0) {
+      await client.query("ROLLBACK");
+      return false;
+    }
+    // Xoá toàn bộ step (CASCADE → docs + questions). Assignment + attempt giữ.
+    await client.query(`DELETE FROM onboarding_step WHERE flow_id = $1`, [params.id]);
+    for (let i = 0; i < params.draft.steps.length; i++) {
+      const step = params.draft.steps[i];
+      const stepRes = await client.query<{ id: number }>(
+        `INSERT INTO onboarding_step (flow_id, idx, goal, intro, pass_criteria)
+         VALUES ($1, $2, $3, $4, $5)
+         RETURNING id`,
+        [params.id, i, step.goal, step.intro, step.pass_criteria]
+      );
+      const stepId = stepRes.rows[0].id;
+      for (const d of step.docs) {
+        await client.query(
+          `INSERT INTO onboarding_step_doc (step_id, doc_path, heading_anchor, highlight, reason)
+           VALUES ($1, $2, $3, $4, $5)`,
+          [stepId, d.doc_path, d.heading_anchor, d.highlight, d.reason]
+        );
+      }
+      for (const q of step.questions) {
+        await client.query(
+          `INSERT INTO onboarding_step_question
+             (step_id, prompt, expected_keywords, min_keywords, choices, answer_idx, explanation)
+           VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+          [
+            stepId,
+            q.prompt,
+            q.expected_keywords,
+            q.min_keywords,
+            q.choices.length > 0 ? q.choices : null,
+            q.choices.length > 0 ? q.answer_idx : null,
+            q.explanation || null,
+          ]
+        );
+      }
+    }
+    await client.query("COMMIT");
+    return true;
+  } catch (err) {
+    await client.query("ROLLBACK");
+    throw err;
+  } finally {
+    client.release();
+  }
+}
+
+/** Update quiz: replace questions JSONB + meta fields. Attempt history giữ. */
+export async function updateTrainingQuiz(params: {
+  id: number;
+  draft: TrainingQuizDraft;
+  audience: Role[];
+  docPaths: string[];
+  format: "quiz" | "reading" | "flashcard";
+}): Promise<boolean> {
+  if (!isEnabled()) throw new Error("DATABASE_URL chưa set");
+  const rows = await query<{ id: number }>(
+    `UPDATE training_quiz
+        SET title = $2, motto = $3, intro = $4, audience = $5, doc_paths = $6,
+            questions = $7::jsonb, pass_threshold = $8, format = $9, updated_at = now()
+      WHERE id = $1
+      RETURNING id`,
+    [
+      params.id,
+      params.draft.title,
+      params.draft.motto || null,
+      params.draft.intro || null,
+      params.audience,
+      params.docPaths,
+      JSON.stringify(params.draft.questions),
+      params.draft.pass_threshold,
+      params.format,
+    ]
+  );
+  return rows.length > 0;
+}
+
+/** Get full quiz cho admin edit (không filter audience). */
+export async function getQuizForAdmin(id: number): Promise<{
+  id: number;
+  title: string;
+  motto: string | null;
+  intro: string | null;
+  audience: Role[];
+  doc_paths: string[];
+  pass_threshold: number;
+  format: "quiz" | "reading" | "flashcard";
+  questions: Array<{
+    id: string;
+    prompt: string;
+    choices: string[];
+    answer_idx: number;
+    explanation: string;
+  }>;
+} | null> {
+  if (!isEnabled()) return null;
+  const rows = await query<{
+    id: number;
+    title: string;
+    motto: string | null;
+    intro: string | null;
+    audience: Role[];
+    doc_paths: string[];
+    pass_threshold: number;
+    format: "quiz" | "reading" | "flashcard";
+    questions: Array<{
+      id: string;
+      prompt: string;
+      choices: string[];
+      answer_idx: number;
+      explanation: string;
+    }>;
+  }>(
+    `SELECT id, title, motto, intro, audience, doc_paths, pass_threshold, format, questions
+     FROM training_quiz WHERE id = $1`,
+    [id]
+  );
+  return rows[0] ?? null;
 }
 
 export async function deleteOnboardingFlow(id: number): Promise<boolean> {
