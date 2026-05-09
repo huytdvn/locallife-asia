@@ -16,7 +16,7 @@ export default async function MyFlowsPage() {
   const flows = await listAssignedFlowsForUser(session.user.email, role);
 
   return (
-    <PageShell maxWidth={760}>
+    <PageShell>
       <AppNav role={role} active="onboarding" />
       <SectionHeader
         title="Lộ trình onboarding của bạn 🌱"

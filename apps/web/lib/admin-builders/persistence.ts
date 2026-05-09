@@ -9,7 +9,7 @@ import type {
   OnboardingStepDraft,
   TrainingQuizDraft,
 } from "@/lib/admin-builders/ai";
-import type { Role } from "@/lib/rbac";
+import { audienceFor, type Role } from "@/lib/rbac";
 
 // ────────────────────────────────────────────────────────────────────
 // Onboarding flow
@@ -372,15 +372,27 @@ export async function listAssignedFlowsForUser(
     created_at: string;
     step_count: string | number;
   }>(
-    `SELECT DISTINCT f.id, f.title, f.motto, f.pass_threshold, f.status, f.created_by,
-            f.created_at::text AS created_at,
-            (SELECT count(*) FROM onboarding_step s WHERE s.flow_id = f.id) AS step_count
-     FROM onboarding_flow f
-     INNER JOIN onboarding_assignment a ON a.flow_id = f.id
-     WHERE f.status = 'published'
-       AND (a.target_email = $1 OR a.target_role = $2)
-     ORDER BY f.created_at DESC`,
-    [email.toLowerCase(), role]
+    // admin/lead xem được mọi flow published (preview/QA); user thường chỉ
+    // thấy flow đã được giao đích danh hoặc broadcast role.
+    role === "admin" || role === "lead"
+      ? `SELECT f.id, f.title, f.motto, f.pass_threshold, f.status, f.created_by,
+                f.created_at::text AS created_at,
+                (SELECT count(*) FROM onboarding_step s WHERE s.flow_id = f.id) AS step_count
+         FROM onboarding_flow f
+         WHERE f.status = 'published'
+         ORDER BY f.created_at DESC`
+      : `SELECT f.id, f.title, f.motto, f.pass_threshold, f.status, f.created_by,
+                f.created_at::text AS created_at,
+                (SELECT count(*) FROM onboarding_step s WHERE s.flow_id = f.id) AS step_count
+         FROM onboarding_flow f
+         WHERE f.status = 'published'
+           AND EXISTS (
+             SELECT 1 FROM onboarding_assignment a
+             WHERE a.flow_id = f.id
+               AND (a.target_email = $1 OR a.target_role = $2)
+           )
+         ORDER BY f.created_at DESC`,
+    role === "admin" || role === "lead" ? [] : [email.toLowerCase(), role]
   );
   return rows.map((r) => ({
     id: r.id,
@@ -445,11 +457,13 @@ export async function recordFlowAttempt(params: {
   return { id: rows[0].id };
 }
 
-/** List quiz mà user có thể làm dựa trên audience của role. */
+/** List quiz mà user có thể làm dựa trên audience của role + roles kế thừa
+ *  (admin/lead xem được mọi audience). */
 export async function listQuizzesForRole(
   role: Role
 ): Promise<SavedTrainingQuiz[]> {
   if (!isEnabled()) return [];
+  const inherited = audienceFor(role);
   const rows = await query<{
     id: number;
     title: string;
@@ -467,9 +481,9 @@ export async function listQuizzesForRole(
             status, created_by, created_at::text AS created_at,
             jsonb_array_length(questions) AS question_count
      FROM training_quiz
-     WHERE status = 'published' AND $1 = ANY(audience)
+     WHERE status = 'published' AND audience && $1::text[]
      ORDER BY created_at DESC`,
-    [role]
+    [inherited]
   );
   return rows.map((r) => ({
     id: r.id,
@@ -516,6 +530,7 @@ export async function getQuizForUser(
   role: Role
 ): Promise<FullTrainingQuiz | null> {
   if (!isEnabled()) return null;
+  const inherited = audienceFor(role);
   const rows = await query<{
     id: number;
     title: string;
@@ -535,8 +550,8 @@ export async function getQuizForUser(
   }>(
     `SELECT id, title, motto, intro, audience, doc_paths, pass_threshold, format, questions
      FROM training_quiz
-     WHERE id = $1 AND status = 'published' AND $2 = ANY(audience)`,
-    [id, role]
+     WHERE id = $1 AND status = 'published' AND audience && $2::text[]`,
+    [id, inherited]
   );
   if (rows.length === 0) return null;
   const q = rows[0];

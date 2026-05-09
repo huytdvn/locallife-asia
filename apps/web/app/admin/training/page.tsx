@@ -26,7 +26,7 @@ export default async function AdminTrainingListPage() {
   );
 
   return (
-    <PageShell maxWidth={1080}>
+    <PageShell>
       <AppNav role={role} active="admin" />
       <SectionHeader
         title="Training quiz — listing 🎯"

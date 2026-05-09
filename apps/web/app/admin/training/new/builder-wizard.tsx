@@ -517,8 +517,8 @@ export function TrainingBuilderWizard({ adminEmail }: { adminEmail: string }) {
           User trong audience đã chọn sẽ thấy quiz này trong /training.
         </p>
         <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
-          <button type="button" onClick={() => router.push("/admin/training-report")} style={btnPrimary}>
-            Về training report
+          <button type="button" onClick={() => router.push("/admin/training")} style={btnPrimary}>
+            Về listing quiz
           </button>
           <button type="button" onClick={() => router.push("/admin/training/new")} style={btnGhost}>
             Tạo quiz khác

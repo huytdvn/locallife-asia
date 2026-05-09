@@ -35,7 +35,7 @@ export default async function FlowTakePage({
   }
 
   return (
-    <PageShell maxWidth={820}>
+    <PageShell>
       <AppNav role={role} active="onboarding" />
       <SectionHeader
         title={flow.title}

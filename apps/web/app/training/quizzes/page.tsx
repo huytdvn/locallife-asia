@@ -16,7 +16,7 @@ export default async function MyQuizzesPage() {
   const quizzes = await listQuizzesForRole(role);
 
   return (
-    <PageShell maxWidth={760}>
+    <PageShell>
       <AppNav role={role} active="training" />
       <SectionHeader
         title="Quiz training 🎯"

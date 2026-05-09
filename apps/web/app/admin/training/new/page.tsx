@@ -14,7 +14,7 @@ export default async function AdminTrainingNewPage() {
   if (role !== "admin") redirect("/admin/training-report");
 
   return (
-    <PageShell maxWidth={920}>
+    <PageShell>
       <AppNav role={role} active="admin" />
       <SectionHeader
         title="Tạo training mới 🎯"

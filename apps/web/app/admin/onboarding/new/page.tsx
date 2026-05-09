@@ -14,7 +14,7 @@ export default async function AdminOnboardingNewPage() {
   if (role !== "admin") redirect("/admin/onboarding");
 
   return (
-    <PageShell maxWidth={920}>
+    <PageShell>
       <AppNav role={role} active="admin-onboarding" />
       <SectionHeader
         title="Cùng dựng một lộ trình onboarding 🌱"

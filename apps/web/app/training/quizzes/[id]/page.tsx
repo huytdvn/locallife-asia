@@ -24,7 +24,7 @@ export default async function QuizTakePage({
   if (!quiz) redirect("/training/quizzes");
 
   return (
-    <PageShell maxWidth={760}>
+    <PageShell>
       <AppNav role={role} active="training" />
       <SectionHeader title={quiz.title} subtitle={quiz.motto ?? undefined} />
       <QuizTaker
