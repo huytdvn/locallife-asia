@@ -6,13 +6,15 @@ title: >-
 owner: huytran@locallife.asia
 audience:
   - employee
-sensitivity: public
+  - lead
+  - admin
+sensitivity: internal
 tags:
   - onboarding
   - ai-drafted
 last_reviewed: '2026-05-12'
 reviewer: huytran@locallife.asia
-status: draft
+status: approved
 source: []
 ---
 CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM
